@@ -4,31 +4,25 @@ fetch.py — Pull all federal IT services contracts from Tango API.
 Covers NAICS 541511 (custom programming) and 541512 (systems design),
 FY2020 through the current fiscal year. Writes data/contracts_raw.csv.
 
-CHECKPOINT/RESUME: Batches by fiscal year. Each completed (naics, fy) batch
-is saved to data/checkpoints/. Re-running skips already-completed batches,
-so daily rate-limit interruptions are safe — just re-run tomorrow.
+CHECKPOINT/RESUME: Batches by calendar month. Each completed (naics, year, month)
+batch saves to data/checkpoints/. Re-running skips completed batches. Safe to
+interrupt at any time — just re-run to continue.
 
-Fields captured per contract:
-  - tradeoff_code:  LPTA / TO (trade-off) / O (other) / null
-  - contract_type:  J (FFP/deliverable) / Y (T&M) / Z (Labor Hours) / etc.
-  - set_aside:      SBA, 8A, SDVOSBC, NONE, etc.
-  - obligated, award_date, naics_code, recipient UEI + name, agency
-
-Rate limits:
-  Free tier:  100 calls/day — completes in ~12 days
-  Micro tier: 250 calls/day — completes in ~5 days
+Free tier  (100 calls/day): ~12 months/day → ~12 days to complete
+Micro tier (250 calls/day): ~30 months/day → ~5 days to complete
 
 Run:
     pip install tango-python python-dotenv pandas
     python fetch.py
 
-Re-running is safe and resumes from the last completed batch.
+Re-running is safe — resumes from last saved month.
 """
 
 import os
-import sys
 import time
+from datetime import date, timedelta
 from pathlib import Path
+from calendar import monthrange
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -41,13 +35,13 @@ load_dotenv()
 # Settings
 # ---------------------------------------------------------------------------
 
-NAICS_CODES = [541511, 541512]   # Custom programming + systems design
-FY_START    = 2020               # First fiscal year to fetch
-FY_END      = 2025               # Last fiscal year (current)
-OUTPUT_CSV  = Path("data/contracts_raw.csv")
+NAICS_CODES    = [541511, 541512]   # Custom programming + systems design
+START_DATE     = date(2019, 10, 1)  # FY2020 starts Oct 1 2019
+END_DATE       = date.today()
+OUTPUT_CSV     = Path("data/contracts_raw.csv")
 CHECKPOINT_DIR = Path("data/checkpoints")
-PAGE_LIMIT  = 100                # Tango max per page
-SLEEP_BETWEEN_CALLS = 3          # Seconds between pages (free: 25/min limit)
+PAGE_LIMIT     = 100
+SLEEP_BETWEEN_CALLS = 3             # Seconds between pages (free: 25/min)
 
 SHAPE = (
     "key,obligated,award_date,naics_code,set_aside,"
@@ -56,6 +50,26 @@ SHAPE = (
     "recipient(uei,display_name),"
     "awarding_office(*)"
 )
+
+
+# ---------------------------------------------------------------------------
+# Month window generation
+# ---------------------------------------------------------------------------
+
+def month_windows(start: date, end: date):
+    """Yield (year, month, window_start, window_end) for each calendar month."""
+    cur = date(start.year, start.month, 1)
+    while cur <= end:
+        yr, mo = cur.year, cur.month
+        last_day = monthrange(yr, mo)[1]
+        ws = cur
+        we = min(date(yr, mo, last_day), end)
+        yield yr, mo, ws, we
+        # Advance to first of next month
+        if mo == 12:
+            cur = date(yr + 1, 1, 1)
+        else:
+            cur = date(yr, mo + 1, 1)
 
 
 # ---------------------------------------------------------------------------
@@ -100,13 +114,13 @@ class DailyLimitReached(Exception):
     pass
 
 
-def api_call(client: TangoClient, naics: int, fy: int, cursor, limit: int) -> dict:
-    """One paginated API call with retry. Raises DailyLimitReached if limit persists."""
+def api_call(client, naics, date_gte, date_lte, cursor, limit):
     for attempt in range(4):
         try:
             resp = client.list_contracts(
                 naics_code=str(naics),
-                fiscal_year=fy,
+                award_date_gte=date_gte,
+                award_date_lte=date_lte,
                 cursor=cursor,
                 limit=limit,
                 shape=SHAPE,
@@ -128,42 +142,40 @@ def api_call(client: TangoClient, naics: int, fy: int, cursor, limit: int) -> di
             print(f"\n  API error: {e} — retrying in {wait}s")
             time.sleep(wait)
             if attempt == 3:
-                raise RuntimeError(f"API error persisted on NAICS {naics} FY{fy}")
+                raise RuntimeError(f"API error on NAICS {naics} {date_gte}–{date_lte}")
 
 
 # ---------------------------------------------------------------------------
-# Fetch one (naics, fy) batch
+# Fetch one monthly batch
 # ---------------------------------------------------------------------------
 
-def fetch_batch(client: TangoClient, naics: int, fy: int) -> list[dict]:
-    """Fetch all contracts for one NAICS + fiscal year combination."""
+def fetch_month(client, naics, yr, mo, ws, we):
     records = []
     cursor  = None
     page    = 0
+    date_gte = ws.isoformat()
+    date_lte = we.isoformat()
 
-    first = api_call(client, naics, fy, cursor=None, limit=1)
+    first = api_call(client, naics, date_gte, date_lte, cursor=None, limit=1)
     total = first["total_count"]
-    total_pages = (total + PAGE_LIMIT - 1) // PAGE_LIMIT
-    print(f"  FY{fy}: {total:,} contracts (~{total_pages} pages)", end="  ", flush=True)
-
     if total == 0:
-        print()
         return []
 
-    while True:
-        resp    = api_call(client, naics, fy, cursor=cursor, limit=PAGE_LIMIT)
-        batch   = resp["results"]
-        records.extend(batch)
-        page   += 1
+    total_pages = (total + PAGE_LIMIT - 1) // PAGE_LIMIT
 
-        print(f"\r  FY{fy}: page {page}/{total_pages} — {len(records):,} records", end="", flush=True)
+    while True:
+        resp   = api_call(client, naics, date_gte, date_lte, cursor=cursor, limit=PAGE_LIMIT)
+        batch  = resp["results"]
+        records.extend(batch)
+        page  += 1
+
+        print(f"\r    page {page}/{total_pages} — {len(records)}/{total} records", end="", flush=True)
 
         cursor = resp.get("cursor")
         if not resp.get("next") or not cursor:
             break
         time.sleep(SLEEP_BETWEEN_CALLS)
 
-    print(f"\r  FY{fy}: done — {len(records):,} records          ")
     return records
 
 
@@ -175,60 +187,56 @@ def main():
     client = TangoClient(api_key=os.environ["TANGO_API_KEY"])
     CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
 
-    total_calls_used = 0
+    windows = list(month_windows(START_DATE, END_DATE))
+    total_batches = len(NAICS_CODES) * len(windows)
+    done_batches  = sum(
+        1 for n in NAICS_CODES for yr, mo, ws, we in windows
+        if (CHECKPOINT_DIR / f"{n}_{yr}{mo:02d}.csv").exists()
+    )
 
-    print(f"Fetching IT services contracts")
-    print(f"NAICS: {NAICS_CODES}  |  FY{FY_START}–FY{FY_END}")
-    print(f"Checkpoints: {CHECKPOINT_DIR}/\n")
+    print(f"IT Services Contract Fetch")
+    print(f"NAICS {NAICS_CODES} | {START_DATE} → {END_DATE}")
+    print(f"Progress: {done_batches}/{total_batches} monthly batches done\n")
 
     try:
         for naics in NAICS_CODES:
-            print(f"NAICS {naics}:")
-            for fy in range(FY_START, FY_END + 1):
-                cp = CHECKPOINT_DIR / f"{naics}_fy{fy}.csv"
+            for yr, mo, ws, we in windows:
+                cp = CHECKPOINT_DIR / f"{naics}_{yr}{mo:02d}.csv"
                 if cp.exists():
-                    n = sum(1 for _ in open(cp)) - 1
-                    print(f"  FY{fy}: already done ({n:,} records) — skipping")
                     continue
 
-                records = fetch_batch(client, naics, fy)
-
+                label = f"NAICS {naics}  {yr}-{mo:02d}"
+                print(f"  {label}", end="  ", flush=True)
+                records = fetch_month(client, naics, yr, mo, ws, we)
                 pd.DataFrame(records).to_csv(cp, index=False)
-            print()
+                print(f"\r  {label}  →  {len(records):,} records          ")
 
     except DailyLimitReached as e:
         print(f"\n⚠  {e}")
         print("Progress saved. Re-run tomorrow to continue.\n")
 
-    # Merge all checkpoints into final CSV
-    frames = []
-    for cp in sorted(CHECKPOINT_DIR.glob("*.csv")):
-        df = pd.read_csv(cp)
-        if not df.empty:
-            frames.append(df)
-
+    # Merge all checkpoints
+    frames = [pd.read_csv(cp) for cp in sorted(CHECKPOINT_DIR.glob("*.csv"))]
     if not frames:
-        print("No data yet.")
+        print("No data yet — rate limit hit before first batch completed.")
         return
 
-    df = pd.concat(frames, ignore_index=True)
-    df = df.drop_duplicates(subset="key")
-    df = df.sort_values(["naics_code", "award_date"]).reset_index(drop=True)
+    df = (pd.concat(frames, ignore_index=True)
+            .drop_duplicates(subset="key")
+            .sort_values(["naics_code", "award_date"])
+            .reset_index(drop=True))
     df.to_csv(OUTPUT_CSV, index=False)
 
-    tp_pct = df["tradeoff_code"].notna().mean()
-    ct_pct = df["contract_type"].notna().mean()
+    done = sum(1 for _ in CHECKPOINT_DIR.glob("*.csv"))
+    remaining = total_batches - done
 
-    print(f"contracts_raw.csv: {len(df):,} contracts")
-    print(f"  tradeoff_process populated: {df['tradeoff_code'].notna().sum():,} ({tp_pct:.1%})")
-    print(f"  contract_type populated:    {df['contract_type'].notna().sum():,} ({ct_pct:.1%})")
-    print(f"\nSaved → {OUTPUT_CSV}")
-
-    # Show how many batches remain
-    done    = sum(1 for _ in CHECKPOINT_DIR.glob("*.csv"))
-    total_b = len(NAICS_CODES) * (FY_END - FY_START + 1)
-    if done < total_b:
-        print(f"\n{total_b - done} batches remaining — re-run to continue fetching.")
+    print(f"contracts_raw.csv: {len(df):,} contracts from {done} batches")
+    print(f"  tradeoff_process: {df['tradeoff_code'].notna().mean():.1%} populated")
+    print(f"  contract_type:    {df['contract_type'].notna().mean():.1%} populated")
+    if remaining:
+        print(f"\n{remaining} batches remaining — re-run tomorrow to continue.")
+    else:
+        print("\nFetch complete!")
 
 
 if __name__ == "__main__":

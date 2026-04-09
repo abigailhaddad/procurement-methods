@@ -1,0 +1,4 @@
+tango-python
+python-dotenv
+pandas
+requests
