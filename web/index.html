@@ -6,205 +6,32 @@
   <title>Federal IT Procurement Methods</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="shared/shared.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    /* ── Design tokens (matching usajobs_historical) ─────────────────────── */
-    :root {
-      --color-bg:           #FFF8F0;
-      --color-surface:      #F5EDE0;
-      --color-text:         #3D2B1F;
-      --color-text-muted:   #7A6E62;
-      --color-accent:       #2D6A4F;
-      --color-accent-hover: #245A42;
-      --color-highlight:    #D4A03C;
-      --color-border:       #E8DDD0;
-      --color-code-bg:      #2A211A;
-      --color-code-text:    #F5EDE0;
-      --color-error:        #C0392B;
-      --font-heading:       'DM Sans', sans-serif;
-      --font-body:          'Source Sans 3', sans-serif;
-      --font-mono:          'JetBrains Mono', monospace;
-    }
+    /* ── Page layout ───────────────────────────────────────────────────── */
+    .site-container { max-width: 1300px; margin: 0 auto; padding: 0 1.5rem; }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: var(--color-bg);
-      color: var(--color-text);
-      font-family: var(--font-body);
-      font-size: 1rem;
-      line-height: 1.5;
-    }
-
-    /* ── Layout ──────────────────────────────────────────────────────────── */
-    .container { max-width: 1300px; margin: 0 auto; padding: 0 1.5rem; }
-
-    /* ── Header ──────────────────────────────────────────────────────────── */
-    header {
-      background: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
-      padding: 1.25rem 0;
-    }
-    header .container { display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
-    header h1 {
-      font-family: var(--font-heading);
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--color-text);
-    }
-    header .subtitle {
-      font-size: 0.875rem;
-      color: var(--color-text-muted);
-    }
-    .data-note {
-      font-size: 0.75rem;
-      color: var(--color-text-muted);
-      margin-left: auto;
-      font-family: var(--font-mono);
-    }
-
-    /* ── Toolbar ─────────────────────────────────────────────────────────── */
-    .toolbar {
-      padding: 0.75rem 0;
-      border-bottom: 1px solid var(--color-border);
-      background: var(--color-bg);
-    }
-    .toolbar .container { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
-    .toolbar-label {
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: var(--color-text-muted);
-      margin-right: 0.25rem;
-    }
-
-    /* ── Buttons ─────────────────────────────────────────────────────────── */
-    button {
-      font-family: var(--font-heading);
-      font-size: 0.8125rem;
-      font-weight: 500;
-      padding: 0.375rem 0.75rem;
-      border-radius: 0.375rem;
-      cursor: pointer;
-      border: 1px solid var(--color-border);
-      background: transparent;
-      color: var(--color-text);
-      transition: background 0.15s, border-color 0.15s;
-    }
-    button:hover { border-color: var(--color-highlight); }
-    .btn-primary {
-      background: var(--color-accent);
-      color: var(--color-bg);
-      border-color: var(--color-accent);
-    }
-    .btn-primary:hover {
-      background: var(--color-accent-hover);
-      border-color: var(--color-accent-hover);
-    }
-
-    /* ── Filter chips bar ────────────────────────────────────────────────── */
-    .filters-bar-wrap {
-      border-bottom: 1px solid var(--color-border);
-      background: var(--color-surface);
-      min-height: 2.5rem;
-      display: flex;
-      align-items: center;
-    }
-    .filters-bar-wrap .container { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-    .filters-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.375rem;
-      align-items: center;
-      min-height: 1.75rem;
-    }
-    .filters-bar-empty { font-size: 0.8125rem; color: var(--color-text-muted); font-style: italic; }
-    .bar-label {
-      font-size: 0.8125rem;
-      font-weight: 600;
-      color: var(--color-text-muted);
-    }
-    .filter-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.375rem;
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: 0.25rem;
-      padding: 0.2rem 0.5rem;
-      font-size: 0.8125rem;
-    }
-    .filter-chip-label { font-weight: 600; color: var(--color-text-muted); white-space: nowrap; }
-    .filter-chip-value { color: var(--color-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-    .filter-chip-remove { cursor: pointer; color: var(--color-text-muted); font-size: 1.1rem; line-height: 1; transition: color 0.15s; }
-    .filter-chip-remove:hover { color: var(--color-error); }
-
-    /* ── Main content ────────────────────────────────────────────────────── */
-    main { padding: 1.5rem 0 3rem; }
-
-    /* ── Stat cards ──────────────────────────────────────────────────────── */
-    .stats-grid {
+    .charts-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
       gap: 1rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
     }
-    .stat-card {
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: 0.5rem;
-      padding: 1.25rem 1.5rem;
-      transition: border-color 0.2s;
-    }
-    .stat-card:hover { border-color: var(--color-highlight); }
-    .stat-card h3 {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--color-text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 0.375rem;
-    }
-    .stat-value {
-      font-family: var(--font-heading);
-      font-size: 2rem;
-      font-weight: 700;
-      color: var(--color-text);
-      line-height: 1.1;
-    }
+    .chart-card canvas     { max-height: 260px; }
+    .chart-card.chart-tall canvas { max-height: 380px; }
+    .chart-full { grid-column: 1 / -1; }
+
     .stat-sub {
       font-size: 0.8125rem;
       color: var(--color-text-muted);
       margin-top: 0.25rem;
     }
 
-    /* ── Charts ──────────────────────────────────────────────────────────── */
-    .charts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .chart-card {
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: 0.5rem;
-      padding: 1.25rem 1.5rem;
-    }
-    .chart-card h3 {
-      font-family: var(--font-heading);
-      font-size: 0.9375rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: var(--color-text);
-    }
-    .chart-card canvas { max-height: 260px; }
-    .chart-card.chart-tall canvas { max-height: 360px; }
-
-    /* ── Section header ──────────────────────────────────────────────────── */
     .section-header {
       font-family: var(--font-heading);
-      font-size: 1rem;
+      font-size: 0.875rem;
       font-weight: 600;
       color: var(--color-text-muted);
       text-transform: uppercase;
@@ -214,15 +41,10 @@
       border-bottom: 1px solid var(--color-border);
     }
 
-    /* ── Table ───────────────────────────────────────────────────────────── */
-    .table-wrap { overflow-x: auto; }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: var(--font-body);
-      font-size: 0.875rem;
-    }
-    thead th {
+    /* ── Vendor table ──────────────────────────────────────────────────── */
+    .table-scroll-wrapper { overflow-x: auto; }
+    table.vendor-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    table.vendor-table thead th {
       background: var(--color-surface);
       font-family: var(--font-heading);
       font-weight: 600;
@@ -231,584 +53,478 @@
       border-bottom: 2px solid var(--color-border);
       text-align: left;
       white-space: nowrap;
-      position: sticky;
-      top: 0;
     }
-    tbody td {
-      padding: 0.5rem 1rem;
-      border-bottom: 1px solid var(--color-border);
-    }
-    tbody tr:nth-child(odd)  { background: var(--color-bg); }
-    tbody tr:nth-child(even) { background: var(--color-surface); }
-    tbody tr:hover { background: var(--color-border); }
-    .num { text-align: right; font-family: var(--font-mono); font-size: 0.8125rem; }
-    .bar-cell { position: relative; }
+    table.vendor-table tbody td { padding: 0.5rem 1rem; border-bottom: 1px solid var(--color-border); }
+    table.vendor-table tbody tr:nth-child(odd)  { background: var(--color-bg); }
+    table.vendor-table tbody tr:nth-child(even) { background: var(--color-surface); }
+    table.vendor-table tbody tr:hover { background: var(--color-border); }
+    .num { text-align: right; font-family: var(--font-mono, monospace); font-size: 0.8125rem; }
     .bar-inline {
       display: inline-block;
-      height: 0.75rem;
+      height: 0.6875rem;
       background: var(--color-accent);
       border-radius: 2px;
-      opacity: 0.75;
+      opacity: 0.7;
       vertical-align: middle;
-      margin-right: 0.375rem;
+      margin-right: 0.3rem;
     }
 
-    /* ── Filter modal ────────────────────────────────────────────────────── */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(61,43,31,0.35);
-      z-index: 9999;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal-box {
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: 0.5rem;
-      padding: 1.25rem;
-      box-shadow: 0 6px 20px rgba(61,43,31,0.15);
-      width: 90vw;
-      max-width: 420px;
-      max-height: 80vh;
-      overflow-y: auto;
-    }
-    .modal-box h4 {
-      font-family: var(--font-heading);
-      font-size: 0.9375rem;
-      font-weight: 600;
-      margin-bottom: 0.75rem;
-    }
-    .filter-search {
-      width: 100%;
-      padding: 0.5rem 0.75rem;
-      border: 1px solid var(--color-border);
+    /* ── Mock data banner ──────────────────────────────────────────────── */
+    .mock-banner {
+      background: #FFF3CD;
+      border: 1px solid #D4A03C;
       border-radius: 0.375rem;
-      font-family: var(--font-body);
-      font-size: 0.875rem;
-      background: var(--color-bg);
-      color: var(--color-text);
-      margin-bottom: 0.75rem;
-    }
-    .filter-search:focus { outline: none; border-color: var(--color-accent); }
-    .filter-options { max-height: 280px; overflow-y: auto; }
-    .filter-option {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.375rem 0.25rem;
-      cursor: pointer;
-      font-size: 0.875rem;
-      border-radius: 0.25rem;
-    }
-    .filter-option:hover { background: var(--color-surface); }
-    .filter-option input { accent-color: var(--color-accent); }
-    .modal-actions {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.75rem;
-      justify-content: flex-end;
+      padding: 0.5rem 1rem;
+      font-size: 0.8125rem;
+      margin-bottom: 1rem;
+      color: #3D2B1F;
     }
 
-    /* ── Toast ───────────────────────────────────────────────────────────── */
-    .toast {
-      position: fixed;
-      bottom: 1.5rem;
-      right: 1.5rem;
-      padding: 0.75rem 1.25rem;
-      border-radius: 0.375rem;
-      font-size: 0.875rem;
-      z-index: 10000;
-      background: var(--color-code-bg);
-      color: var(--color-code-text);
-      box-shadow: 0 4px 12px rgba(61,43,31,0.15);
-      opacity: 0;
-      transform: translateY(0.5rem);
-      transition: opacity 0.25s, transform 0.25s;
-      pointer-events: none;
-    }
-    .toast.show { opacity: 1; transform: translateY(0); }
-
-    /* ── Responsive ──────────────────────────────────────────────────────── */
     @media (max-width: 768px) {
       .charts-grid { grid-template-columns: 1fr; }
-      .stats-grid  { grid-template-columns: repeat(2, 1fr); }
-      header h1 { font-size: 1.2rem; }
+      .stats-row   { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
 
-<!-- Header -->
-<header>
-  <div class="container">
+<div class="site-container">
+
+  <!-- Header -->
+  <header class="site-header">
     <h1>Federal IT Procurement Methods</h1>
-    <span class="subtitle">LPTA vs. Best-Value Tradeoff for Developer &amp; Systems Design Contracts</span>
-    <span class="data-note" id="dataNote">Loading…</span>
-  </div>
-</header>
+    <p class="site-subtitle">LPTA vs. Best-Value Tradeoff for developer &amp; systems design contracts (NAICS 541511 + 541512, FY2020–present)</p>
+  </header>
 
-<!-- Toolbar -->
-<div class="toolbar">
-  <div class="container">
-    <span class="toolbar-label">Filter by:</span>
-    <button class="btn-primary" id="filterFY">Fiscal Year</button>
-    <button id="filterNAICS">NAICS Code</button>
-    <button id="filterDept">Department</button>
-    <button id="filterMethod">Eval Method</button>
-    <button id="filterCT">Contract Type</button>
-    <button id="clearFilters" style="margin-left:auto;">Clear filters</button>
-    <button id="copyLink">Copy link</button>
-  </div>
-</div>
+  <!-- Toolbar -->
+  <div id="toolbarButtons" class="toolbar-row"></div>
 
-<!-- Active filters bar -->
-<div class="filters-bar-wrap">
-  <div class="container">
+  <!-- Filter chips bar -->
+  <div class="filters-bar-container">
     <div class="filters-bar" id="filtersBar">
       <span class="filters-bar-empty">No filters applied</span>
     </div>
   </div>
-</div>
 
-<!-- Main -->
-<main>
-  <div class="container">
-
-    <!-- Stat cards -->
-    <div class="stats-grid" id="statsGrid">
-      <div class="stat-card"><h3>Contracts</h3><div class="stat-value" id="statContracts">—</div><div class="stat-sub" id="statObligation">—</div></div>
-      <div class="stat-card"><h3>LPTA Rate</h3><div class="stat-value" id="statLPTA">—</div><div class="stat-sub">of contracts with method reported</div></div>
-      <div class="stat-card"><h3>Best-Value Rate</h3><div class="stat-value" id="statTO">—</div><div class="stat-sub">of contracts with method reported</div></div>
-      <div class="stat-card"><h3>Staff Aug Share</h3><div class="stat-value" id="statStaff">—</div><div class="stat-sub">T&amp;M or Labor Hours</div></div>
-    </div>
-
-    <!-- Charts row 1 -->
-    <p class="section-header">Evaluation Method Over Time</p>
-    <div class="charts-grid">
-      <div class="chart-card" style="grid-column: 1 / -1;">
-        <h3>LPTA vs. Best-Value Tradeoff by Fiscal Year</h3>
-        <canvas id="chartFY"></canvas>
-      </div>
-    </div>
-
-    <!-- Charts row 2 -->
-    <p class="section-header">Method by Contract Structure</p>
-    <div class="charts-grid">
-      <div class="chart-card">
-        <h3>Evaluation Method — Deliverable (FFP) vs. Staff Aug (T&amp;M / Labor Hours)</h3>
-        <canvas id="chartCT"></canvas>
-      </div>
-      <div class="chart-card">
-        <h3>Evaluation Method — Small Business Set-Aside vs. Unrestricted</h3>
-        <canvas id="chartSA"></canvas>
-      </div>
-    </div>
-
-    <!-- Charts row 3 -->
-    <p class="section-header">By Agency</p>
-    <div class="charts-grid">
-      <div class="chart-card chart-tall" style="grid-column: 1 / -1;">
-        <h3>LPTA Rate by Department (min. 20 contracts with method reported)</h3>
-        <canvas id="chartAgency"></canvas>
-      </div>
-    </div>
-
-    <!-- Top vendors table -->
-    <p class="section-header">Top Vendors</p>
-    <div class="chart-card" style="margin-bottom:1rem;">
-      <h3>Top 20 Vendors by Obligated Amount — LPTA vs. Tradeoff Breakdown</h3>
-      <div class="table-wrap" style="margin-top:0.75rem;">
-        <table id="vendorTable">
-          <thead>
-            <tr>
-              <th>Vendor</th>
-              <th class="num">Total $M</th>
-              <th class="num">Contracts</th>
-              <th class="num">LPTA</th>
-              <th class="num">Tradeoff</th>
-              <th style="min-width:120px;">LPTA Share</th>
-            </tr>
-          </thead>
-          <tbody id="vendorBody"></tbody>
-        </table>
-      </div>
-    </div>
-
+  <!-- Mock data notice (hidden when real data loaded) -->
+  <div class="mock-banner" id="mockBanner" style="display:none;">
+    ⚠ Showing illustrative placeholder data. Run <code>fetch.py</code> + <code>analyze.py</code> to populate with real contract records.
   </div>
-</main>
 
-<!-- Filter modal -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal-box">
-    <h4 id="modalTitle">Filter</h4>
-    <input type="text" class="filter-search" id="modalSearch" placeholder="Search…" />
-    <div class="filter-options" id="modalOptions"></div>
-    <div class="modal-actions">
-      <button id="modalClear">Clear</button>
-      <button id="modalClose" class="btn-primary">Apply</button>
+  <!-- Stat cards -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <h3>Contracts</h3>
+      <div class="stat-value" id="statContracts">—</div>
+      <div class="stat-sub" id="statObligation">—</div>
+    </div>
+    <div class="stat-card">
+      <h3>LPTA Rate</h3>
+      <div class="stat-value" id="statLPTA">—</div>
+      <div class="stat-sub">of contracts with method reported</div>
+    </div>
+    <div class="stat-card">
+      <h3>Best-Value Rate</h3>
+      <div class="stat-value" id="statTO">—</div>
+      <div class="stat-sub">of contracts with method reported</div>
+    </div>
+    <div class="stat-card">
+      <h3>Staff Aug Share</h3>
+      <div class="stat-value" id="statStaff">—</div>
+      <div class="stat-sub">T&amp;M or Labor Hours</div>
     </div>
   </div>
-</div>
 
-<!-- Toast -->
-<div class="toast" id="toast"></div>
+  <!-- Section: Over time -->
+  <p class="section-header">Evaluation Method Over Time</p>
+  <div class="charts-grid">
+    <div class="chart-card chart-full">
+      <h3>LPTA vs. Best-Value Tradeoff by Fiscal Year</h3>
+      <canvas id="chartFY"></canvas>
+    </div>
+  </div>
 
+  <!-- Section: By contract structure -->
+  <p class="section-header">Method by Contract Structure</p>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Deliverable (FFP) vs. Staff Aug (T&amp;M / Labor Hours)</h3>
+      <canvas id="chartCT"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Small Business Set-Aside vs. Unrestricted</h3>
+      <canvas id="chartSA"></canvas>
+    </div>
+  </div>
+
+  <!-- Section: Who wins -->
+  <p class="section-header">Who Wins Under Each Method?</p>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Small Business Share of Awards</h3>
+      <canvas id="chartWinnerBiz"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Market Concentration — Top 10 Vendors' Share</h3>
+      <canvas id="chartConcentration"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Median Contract Size ($K)</h3>
+      <canvas id="chartMedianSize"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>New Entrant Share (first contract within 1yr of SAM registration)</h3>
+      <canvas id="chartNewEntrant"></canvas>
+    </div>
+  </div>
+
+  <!-- Section: By agency -->
+  <p class="section-header">By Agency</p>
+  <div class="charts-grid">
+    <div class="chart-card chart-tall chart-full">
+      <h3>LPTA Rate by Department (min. 20 contracts with method reported)</h3>
+      <canvas id="chartAgency"></canvas>
+    </div>
+  </div>
+
+  <!-- Section: Top vendors -->
+  <p class="section-header">Top Vendors</p>
+  <div class="chart-card" style="margin-bottom:2rem;">
+    <h3>Top 20 Vendors by Obligated Amount — LPTA vs. Tradeoff Breakdown</h3>
+    <div class="table-scroll-wrapper" style="margin-top:0.75rem;">
+      <table class="vendor-table">
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th class="num">Total $M</th>
+            <th class="num">Contracts</th>
+            <th class="num">LPTA</th>
+            <th class="num">Tradeoff</th>
+            <th style="min-width:130px;">LPTA Share</th>
+          </tr>
+        </thead>
+        <tbody id="vendorBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>Data via <a href="https://govcon.dev">Tango API</a> · FPDS/USASpending · NAICS 541511 + 541512 · FY2020–present ·
+       Code on <a href="https://github.com/abigailhaddad/procurement-methods">GitHub</a></p>
+  </footer>
+
+</div><!-- /site-container -->
+
+<script src="shared/filters.js"></script>
 <script>
-// ── Chart defaults ──────────────────────────────────────────────────────────
+// ── Chart palette ────────────────────────────────────────────────────────────
 const C = {
-  green:       '#2D6A4F',
-  greenLight:  'rgba(45,106,79,0.65)',
-  gold:        '#D4A03C',
-  goldLight:   'rgba(212,160,60,0.65)',
-  muted:       'rgba(122,110,98,0.5)',
-  grid:        '#E8DDD0',
-  tick:        '#7A6E62',
-  tooltipBg:   '#2A211A',
-  tooltipText: '#F5EDE0',
+  green:      '#2D6A4F',
+  greenL:     'rgba(45,106,79,0.65)',
+  gold:       '#D4A03C',
+  goldL:      'rgba(212,160,60,0.65)',
+  muted:      'rgba(122,110,98,0.45)',
+  grid:       '#E8DDD0',
+  tick:       '#7A6E62',
+  bg:         '#2A211A',
+  bgText:     '#F5EDE0',
 };
+
 Chart.defaults.font.family = "'Source Sans 3', sans-serif";
 Chart.defaults.color = C.tick;
 
-function tooltipDefaults() {
-  return {
-    backgroundColor: C.tooltipBg,
-    titleColor: C.tooltipText,
-    bodyColor: C.tooltipText,
-    borderColor: '#3D2B1F',
-    borderWidth: 1,
-    cornerRadius: 6,
-    padding: 10,
-  };
+function tt() {
+  return { backgroundColor:C.bg, titleColor:C.bgText, bodyColor:C.bgText,
+           borderColor:'#3D2B1F', borderWidth:1, cornerRadius:6, padding:10 };
 }
 
-// ── State ───────────────────────────────────────────────────────────────────
-let RAW = {}; // will hold all loaded JSON
-let FILTERS = {}; // { fy: Set, naics: Set, dept: Set, method: Set, ct: Set }
+// ── Data & state ─────────────────────────────────────────────────────────────
+let DATA = {};
 let CHARTS = {};
+let FILTERS_ACTIVE = {};
 
-const FILTER_DEFS = [
-  { key: 'fy',     btn: 'filterFY',     label: 'Fiscal Year',    dataKey: 'fiscal_years' },
-  { key: 'naics',  btn: 'filterNAICS',  label: 'NAICS',          dataKey: 'naics_codes'  },
-  { key: 'dept',   btn: 'filterDept',   label: 'Department',     dataKey: 'departments'  },
-  { key: 'method', btn: 'filterMethod', label: 'Eval Method',    dataKey: 'tradeoff_codes'},
-  { key: 'ct',     btn: 'filterCT',     label: 'Contract Type',  dataKey: 'contract_types'},
+// ── Filter column definitions ─────────────────────────────────────────────────
+const COLUMNS = [
+  { name: 'Fiscal Year',    field: 'fiscal_year',   filterType: 'multiselect' },
+  { name: 'NAICS Code',     field: 'naics_code',    filterType: 'multiselect' },
+  { name: 'Department',     field: 'department',    filterType: 'multiselect' },
+  { name: 'Eval Method',    field: 'tradeoff_code', filterType: 'multiselect' },
+  { name: 'Contract Type',  field: 'contract_type', filterType: 'multiselect' },
 ];
 
-// ── Load data ───────────────────────────────────────────────────────────────
+// ── Load ──────────────────────────────────────────────────────────────────────
 async function loadAll() {
-  const files = ['summary','by_fy','by_agency','by_contract_type','by_set_aside','top_vendors','filters'];
-  const results = await Promise.all(files.map(f => fetch(`data/${f}.json`).then(r => r.json()).catch(() => null)));
-  files.forEach((f, i) => { RAW[f] = results[i]; });
+  const files = ['summary','by_fy','by_agency','by_contract_type','by_set_aside',
+                 'top_vendors','by_winner_type','filters'];
+  const results = await Promise.all(
+    files.map(f => fetch(`data/${f}.json`).then(r => r.json()).catch(() => null))
+  );
+  files.forEach((f, i) => { DATA[f] = results[i]; });
 
-  if (!RAW.summary) {
-    document.getElementById('dataNote').textContent = 'Data not yet available — run fetch.py + analyze.py';
+  if (!DATA.summary) {
+    document.getElementById('statContracts').textContent = 'No data yet';
     return;
   }
 
-  updateDataNote();
-  initFilters();
+  // Show banner if placeholder data (heuristic: total < 1000 or summary has no fy_min)
+  if (!DATA.summary.fy_min || DATA.summary.total_contracts > 100000) {
+    document.getElementById('mockBanner').style.display = '';
+  }
+
+  // Init filter manager
+  const fm = new FilterManager({
+    columns:       COLUMNS,
+    filterBarId:   'filtersBar',
+    toolbarId:     'toolbarButtons',
+    filterOptions: buildFilterOptions(),
+    onFilterChange: (filters) => { FILTERS_ACTIVE = filters; render(); },
+  });
+
   render();
 }
 
-function updateDataNote() {
-  const s = RAW.summary;
-  const note = `${(s.total_contracts||0).toLocaleString()} contracts · FY${s.fy_min}–FY${s.fy_max} · NAICS 541511+541512`;
-  document.getElementById('dataNote').textContent = note;
-}
-
-// ── Filters ─────────────────────────────────────────────────────────────────
-function initFilters() {
-  FILTER_DEFS.forEach(({ key }) => { FILTERS[key] = new Set(); });
-
-  // Restore from URL
-  const params = new URLSearchParams(location.search);
-  FILTER_DEFS.forEach(({ key }) => {
-    const v = params.get(key);
-    if (v) v.split(',').forEach(x => FILTERS[key].add(x));
-  });
-
-  // Wire buttons
-  FILTER_DEFS.forEach(({ key, btn, label, dataKey }) => {
-    document.getElementById(btn).addEventListener('click', () => openModal(key, label, dataKey));
-  });
-  document.getElementById('clearFilters').addEventListener('click', clearAll);
-  document.getElementById('copyLink').addEventListener('click', copyLink);
-}
-
-let _modalKey = null;
-function openModal(key, label, dataKey) {
-  _modalKey = key;
-  document.getElementById('modalTitle').textContent = `Filter by ${label}`;
-  document.getElementById('modalSearch').value = '';
-  const opts = (RAW.filters || {})[dataKey] || [];
-  renderModalOptions(opts, key);
-  document.getElementById('modalOverlay').classList.add('open');
-  document.getElementById('modalSearch').focus();
-  document.getElementById('modalSearch').oninput = () => {
-    const q = document.getElementById('modalSearch').value.toLowerCase();
-    renderModalOptions(opts.filter(o => o.label.toLowerCase().includes(q)), key);
+function buildFilterOptions() {
+  const f = DATA.filters || {};
+  return {
+    fiscal_year:   f.fiscal_years   || [],
+    naics_code:    f.naics_codes    || [],
+    department:    f.departments    || [],
+    tradeoff_code: f.tradeoff_codes || [],
+    contract_type: f.contract_types || [],
   };
 }
 
-function renderModalOptions(opts, key) {
-  const el = document.getElementById('modalOptions');
-  el.innerHTML = opts.map(o => `
-    <label class="filter-option">
-      <input type="checkbox" value="${o.value}" ${FILTERS[key].has(String(o.value)) ? 'checked' : ''} />
-      ${o.label}
-    </label>`).join('');
-  el.querySelectorAll('input').forEach(cb => {
-    cb.addEventListener('change', () => {
-      if (cb.checked) FILTERS[key].add(cb.value);
-      else FILTERS[key].delete(cb.value);
-    });
-  });
-}
-
-document.getElementById('modalClose').addEventListener('click', () => {
-  document.getElementById('modalOverlay').classList.remove('open');
-  updateFilterBar();
-  updateURL();
-  render();
-});
-document.getElementById('modalClear').addEventListener('click', () => {
-  if (_modalKey) { FILTERS[_modalKey].clear(); renderModalOptions((RAW.filters||{})[FILTER_DEFS.find(d=>d.key===_modalKey)?.dataKey]||[], _modalKey); }
-});
-document.getElementById('modalOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('modalOverlay')) {
-    document.getElementById('modalOverlay').classList.remove('open');
-    updateFilterBar(); updateURL(); render();
-  }
-});
-
-function clearAll() {
-  FILTER_DEFS.forEach(({ key }) => FILTERS[key].clear());
-  updateFilterBar(); updateURL(); render();
-}
-
-function updateFilterBar() {
-  const bar = document.getElementById('filtersBar');
-  const chips = [];
-  FILTER_DEFS.forEach(({ key, label }) => {
-    if (FILTERS[key].size === 0) return;
-    const vals = [...FILTERS[key]].join(', ');
-    chips.push(`
-      <div class="filter-chip">
-        <span class="filter-chip-label">${label}:</span>
-        <span class="filter-chip-value" title="${vals}">${vals}</span>
-        <span class="filter-chip-remove" data-key="${key}">×</span>
-      </div>`);
-  });
-  if (chips.length === 0) {
-    bar.innerHTML = '<span class="filters-bar-empty">No filters applied</span>';
-  } else {
-    bar.innerHTML = '<span class="bar-label">Filtered by:</span>' + chips.join('');
-    bar.querySelectorAll('.filter-chip-remove').forEach(el => {
-      el.addEventListener('click', () => {
-        FILTERS[el.dataset.key].clear();
-        updateFilterBar(); updateURL(); render();
-      });
-    });
-  }
-}
-
-function updateURL() {
-  const params = new URLSearchParams();
-  FILTER_DEFS.forEach(({ key }) => {
-    if (FILTERS[key].size > 0) params.set(key, [...FILTERS[key]].join(','));
-  });
-  const q = params.toString();
-  history.replaceState(null, '', q ? `?${q}` : location.pathname);
-}
-
-function copyLink() {
-  navigator.clipboard.writeText(location.href).then(() => showToast('Link copied!'));
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ── Render ───────────────────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────────────
 function render() {
   renderStats();
   renderFYChart();
   renderCTChart();
   renderSAChart();
+  renderWinnerCharts();
   renderAgencyChart();
   renderVendorTable();
 }
 
 function renderStats() {
-  const s = RAW.summary || {};
-  document.getElementById('statContracts').textContent = (s.total_contracts||0).toLocaleString();
+  const s = DATA.summary || {};
+  document.getElementById('statContracts').textContent  = (s.total_contracts||0).toLocaleString();
   document.getElementById('statObligation').textContent = s.total_obligated_b ? `$${s.total_obligated_b}B total obligated` : '';
-  document.getElementById('statLPTA').textContent  = s.lpta_pct    != null ? `${s.lpta_pct}%`   : '—';
-  document.getElementById('statTO').textContent    = s.tradeoff_pct != null ? `${s.tradeoff_pct}%` : '—';
-  document.getElementById('statStaff').textContent = s.staff_aug_pct != null ? `${s.staff_aug_pct}%` : '—';
+  document.getElementById('statLPTA').textContent       = s.lpta_pct    != null ? `${s.lpta_pct}%`    : '—';
+  document.getElementById('statTO').textContent         = s.tradeoff_pct!= null ? `${s.tradeoff_pct}%` : '—';
+  document.getElementById('statStaff').textContent      = s.staff_aug_pct!= null ? `${s.staff_aug_pct}%` : '—';
 }
 
-function makeOrUpdate(id, config) {
-  if (CHARTS[id]) { CHARTS[id].destroy(); }
-  const ctx = document.getElementById(id).getContext('2d');
-  CHARTS[id] = new Chart(ctx, config);
+function mkChart(id, config) {
+  if (CHARTS[id]) CHARTS[id].destroy();
+  CHARTS[id] = new Chart(document.getElementById(id).getContext('2d'), config);
 }
 
 function renderFYChart() {
-  const data = RAW.by_fy || {};
-  const fys = Object.keys(data).map(Number).sort();
+  const d = DATA.by_fy || {};
+  const fys = Object.keys(d).map(Number).sort();
   if (!fys.length) return;
-
-  const lptaPct = fys.map(fy => data[fy]?.LPTA?.pct || 0);
-  const toPct   = fys.map(fy => data[fy]?.TO?.pct   || 0);
-  const otherPct= fys.map(fy => data[fy]?.O?.pct    || 0);
-
-  makeOrUpdate('chartFY', {
+  mkChart('chartFY', {
     type: 'bar',
     data: {
       labels: fys.map(y => `FY${y}`),
       datasets: [
-        { label: 'LPTA',             data: lptaPct,  backgroundColor: C.green,     stack: 's' },
-        { label: 'Best-Value Tradeoff', data: toPct, backgroundColor: C.gold,      stack: 's' },
-        { label: 'Other',            data: otherPct, backgroundColor: C.muted,     stack: 's' },
+        { label:'LPTA',              data: fys.map(y => d[y]?.LPTA?.pct||0), backgroundColor:C.green, stack:'s' },
+        { label:'Best-Value Tradeoff', data: fys.map(y => d[y]?.TO?.pct||0), backgroundColor:C.gold,  stack:'s' },
+        { label:'Other',             data: fys.map(y => d[y]?.O?.pct  ||0), backgroundColor:C.muted, stack:'s' },
       ],
     },
     options: {
-      responsive: true,
-      plugins: { tooltip: tooltipDefaults(), legend: { position: 'bottom' } },
-      scales: {
-        x: { stacked: true, grid: { color: C.grid } },
-        y: { stacked: true, max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
+      responsive:true,
+      plugins:{ tooltip:tt(), legend:{position:'bottom'} },
+      scales:{
+        x:{ stacked:true, grid:{color:C.grid} },
+        y:{ stacked:true, max:100, ticks:{callback:v=>`${v}%`}, grid:{color:C.grid} },
       },
     },
   });
 }
 
 function renderCTChart() {
-  const data = RAW.by_contract_type || {};
-  const types = Object.keys(data);
+  const d = DATA.by_contract_type || {};
+  const types = Object.keys(d);
   if (!types.length) return;
-
-  const lpta  = types.map(t => data[t]?.LPTA?.pct || 0);
-  const to    = types.map(t => data[t]?.TO?.pct   || 0);
-  const other = types.map(t => data[t]?.O?.pct    || 0);
-
-  makeOrUpdate('chartCT', {
-    type: 'bar',
-    data: {
-      labels: types,
-      datasets: [
-        { label: 'LPTA',             data: lpta,  backgroundColor: C.green,  stack: 's' },
-        { label: 'Best-Value Tradeoff', data: to, backgroundColor: C.gold,   stack: 's' },
-        { label: 'Other',            data: other, backgroundColor: C.muted,  stack: 's' },
+  mkChart('chartCT', {
+    type:'bar',
+    data:{
+      labels:types,
+      datasets:[
+        { label:'LPTA',              data:types.map(t=>d[t]?.LPTA?.pct||0), backgroundColor:C.green, stack:'s' },
+        { label:'Best-Value Tradeoff', data:types.map(t=>d[t]?.TO?.pct||0), backgroundColor:C.gold,  stack:'s' },
+        { label:'Other',             data:types.map(t=>d[t]?.O?.pct  ||0), backgroundColor:C.muted, stack:'s' },
       ],
     },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      plugins: { tooltip: tooltipDefaults(), legend: { position: 'bottom' } },
-      scales: {
-        x: { stacked: true, max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
-        y: { stacked: true, grid: { color: C.grid } },
+    options:{
+      indexAxis:'y', responsive:true,
+      plugins:{ tooltip:tt(), legend:{position:'bottom'} },
+      scales:{
+        x:{ stacked:true, max:100, ticks:{callback:v=>`${v}%`}, grid:{color:C.grid} },
+        y:{ stacked:true, grid:{display:false} },
       },
     },
   });
 }
 
 function renderSAChart() {
-  const data = RAW.by_set_aside || [];
-  if (!data.length) return;
-
-  makeOrUpdate('chartSA', {
-    type: 'bar',
-    data: {
-      labels: data.map(d => d.category),
-      datasets: [{
-        label: 'LPTA %',
-        data: data.map(d => d.lpta_pct),
-        backgroundColor: data.map((_, i) => i === 0 ? C.greenLight : C.goldLight),
-        borderColor:     data.map((_, i) => i === 0 ? C.green : C.gold),
-        borderWidth: 1,
+  const d = DATA.by_set_aside || [];
+  if (!d.length) return;
+  mkChart('chartSA', {
+    type:'bar',
+    data:{
+      labels:d.map(x=>x.category),
+      datasets:[{
+        label:'LPTA %',
+        data:d.map(x=>x.lpta_pct),
+        backgroundColor:[C.greenL, C.goldL],
+        borderColor:[C.green, C.gold],
+        borderWidth:1,
       }],
     },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: { ...tooltipDefaults(), callbacks: { label: ctx => `${ctx.parsed.y}% LPTA` } },
-        legend: { display: false },
+    options:{
+      responsive:true,
+      plugins:{ tooltip:{...tt(),callbacks:{label:ctx=>`${ctx.parsed.y}% LPTA`}}, legend:{display:false} },
+      scales:{
+        y:{ max:100, ticks:{callback:v=>`${v}%`}, grid:{color:C.grid} },
+        x:{ grid:{display:false} },
       },
-      scales: {
-        y: { max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
-        x: { grid: { color: C.grid } },
+    },
+  });
+}
+
+function renderWinnerCharts() {
+  const d = DATA.by_winner_type || {};
+  const methods = ['LPTA','TO','O'];
+  const labels  = ['LPTA','Best-Value Tradeoff','Other'];
+  const colors  = [C.green, C.gold, C.muted];
+  const colorsL = [C.greenL, C.goldL, 'rgba(122,110,98,0.35)'];
+
+  // Small biz share
+  mkChart('chartWinnerBiz', {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Small Business %',
+        data:methods.map(m=>d[m]?.small_biz_pct||0),
+        backgroundColor:colorsL, borderColor:colors, borderWidth:1,
+      }],
+    },
+    options:{
+      responsive:true,
+      plugins:{ tooltip:{...tt(),callbacks:{label:ctx=>`${ctx.parsed.y}% small biz`}}, legend:{display:false} },
+      scales:{
+        y:{ max:100, ticks:{callback:v=>`${v}%`}, grid:{color:C.grid} },
+        x:{ grid:{display:false} },
+      },
+    },
+  });
+
+  // Market concentration
+  mkChart('chartConcentration', {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Top 10 vendors share',
+        data:methods.map(m=>d[m]?.top10_share_pct||0),
+        backgroundColor:colorsL, borderColor:colors, borderWidth:1,
+      }],
+    },
+    options:{
+      responsive:true,
+      plugins:{ tooltip:{...tt(),callbacks:{label:ctx=>`Top 10 = ${ctx.parsed.y}% of contracts`}}, legend:{display:false} },
+      scales:{
+        y:{ max:100, ticks:{callback:v=>`${v}%`}, grid:{color:C.grid} },
+        x:{ grid:{display:false} },
+      },
+    },
+  });
+
+  // Median contract size
+  mkChart('chartMedianSize', {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Median obligated $K',
+        data:methods.map(m=>d[m]?.median_obligated_k||0),
+        backgroundColor:colorsL, borderColor:colors, borderWidth:1,
+      }],
+    },
+    options:{
+      responsive:true,
+      plugins:{ tooltip:{...tt(),callbacks:{label:ctx=>`Median $${ctx.parsed.y.toLocaleString()}K`}}, legend:{display:false} },
+      scales:{
+        y:{ ticks:{callback:v=>`$${v}K`}, grid:{color:C.grid} },
+        x:{ grid:{display:false} },
+      },
+    },
+  });
+
+  // New entrant share
+  mkChart('chartNewEntrant', {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'New entrant %',
+        data:methods.map(m=>d[m]?.new_entrant_pct||0),
+        backgroundColor:colorsL, borderColor:colors, borderWidth:1,
+      }],
+    },
+    options:{
+      responsive:true,
+      plugins:{ tooltip:{...tt(),callbacks:{label:ctx=>`${ctx.parsed.y}% new entrant`}}, legend:{display:false} },
+      scales:{
+        y:{ max:100, ticks:{callback:v=>`${v}%`}, grid:{color:C.grid} },
+        x:{ grid:{display:false} },
       },
     },
   });
 }
 
 function renderAgencyChart() {
-  const data = RAW.by_agency || [];
-  if (!data.length) return;
-
-  const sorted = [...data].sort((a, b) => b.lpta_pct - a.lpta_pct).slice(0, 25);
-
-  makeOrUpdate('chartAgency', {
-    type: 'bar',
-    data: {
-      labels: sorted.map(d => d.agency),
-      datasets: [{
-        label: 'LPTA %',
-        data: sorted.map(d => d.lpta_pct),
-        backgroundColor: C.greenLight,
-        borderColor: C.green,
-        borderWidth: 1,
-      }],
+  const d = DATA.by_agency || [];
+  if (!d.length) return;
+  const sorted = [...d].sort((a,b)=>b.lpta_pct-a.lpta_pct).slice(0,25);
+  mkChart('chartAgency', {
+    type:'bar',
+    data:{
+      labels:sorted.map(x=>x.agency),
+      datasets:[{ label:'LPTA %', data:sorted.map(x=>x.lpta_pct), backgroundColor:C.greenL, borderColor:C.green, borderWidth:1 }],
     },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      plugins: {
-        tooltip: {
-          ...tooltipDefaults(),
-          callbacks: {
-            label: ctx => {
-              const d = sorted[ctx.dataIndex];
-              return [`${ctx.parsed.x}% LPTA`, `${d.total.toLocaleString()} total contracts`];
-            },
-          },
-        },
-        legend: { display: false },
+    options:{
+      indexAxis:'y', responsive:true,
+      plugins:{
+        tooltip:{...tt(), callbacks:{label:ctx=>{
+          const x=sorted[ctx.dataIndex];
+          return [`${ctx.parsed.x}% LPTA`,`${x.total.toLocaleString()} total contracts`];
+        }}},
+        legend:{display:false},
       },
-      scales: {
-        x: { max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
-        y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      scales:{
+        x:{ max:100, ticks:{callback:v=>`${v}%`}, grid:{color:C.grid} },
+        y:{ grid:{display:false}, ticks:{font:{size:11}} },
       },
     },
   });
 }
 
 function renderVendorTable() {
-  const data = RAW.top_vendors || [];
-  const tbody = document.getElementById('vendorBody');
-  const maxObl = Math.max(...data.map(d => d.total_obligated_m), 1);
-  tbody.innerHTML = data.map(d => {
-    const barW = Math.round(d.lpta_share_pct);
-    return `<tr>
-      <td>${d.name}</td>
-      <td class="num">$${d.total_obligated_m.toLocaleString()}</td>
-      <td class="num">${d.total_contracts.toLocaleString()}</td>
-      <td class="num">${d.lpta_contracts.toLocaleString()}</td>
-      <td class="num">${d.to_contracts.toLocaleString()}</td>
-      <td class="bar-cell">
-        <span class="bar-inline" style="width:${barW}px;"></span>${d.lpta_share_pct}%
-      </td>
-    </tr>`;
-  }).join('');
+  const d = DATA.top_vendors || [];
+  document.getElementById('vendorBody').innerHTML = d.map(v => `<tr>
+    <td>${v.name}</td>
+    <td class="num">$${v.total_obligated_m.toLocaleString()}</td>
+    <td class="num">${v.total_contracts.toLocaleString()}</td>
+    <td class="num">${v.lpta_contracts.toLocaleString()}</td>
+    <td class="num">${v.to_contracts.toLocaleString()}</td>
+    <td><span class="bar-inline" style="width:${Math.round(v.lpta_share_pct)}px;"></span>${v.lpta_share_pct}%</td>
+  </tr>`).join('');
 }
 
 // ── Boot ─────────────────────────────────────────────────────────────────────

@@ -1,0 +1,22 @@
+[
+  {"name": "LEIDOS INC.",                                   "total_contracts": 1243, "total_obligated_m": 3241.2, "lpta_contracts": 412,  "to_contracts": 681, "lpta_share_pct": 33.1},
+  {"name": "BOOZ ALLEN HAMILTON INC.",                     "total_contracts": 1102, "total_obligated_m": 2918.4, "lpta_contracts": 298,  "to_contracts": 694, "lpta_share_pct": 27.0},
+  {"name": "SCIENCE APPLICATIONS INTERNATIONAL CORP",      "total_contracts": 984,  "total_obligated_m": 2103.7, "lpta_contracts": 521,  "to_contracts": 381, "lpta_share_pct": 52.9},
+  {"name": "GENERAL DYNAMICS INFORMATION TECHNOLOGY, INC.","total_contracts": 873,  "total_obligated_m": 1984.1, "lpta_contracts": 389,  "to_contracts": 412, "lpta_share_pct": 44.6},
+  {"name": "ACCENTURE FEDERAL SERVICES LLC",               "total_contracts": 621,  "total_obligated_m": 1742.3, "lpta_contracts": 142,  "to_contracts": 421, "lpta_share_pct": 22.9},
+  {"name": "PERATON INC.",                                  "total_contracts": 741,  "total_obligated_m": 1621.8, "lpta_contracts": 334,  "to_contracts": 341, "lpta_share_pct": 45.1},
+  {"name": "DELOITTE CONSULTING LLP",                      "total_contracts": 512,  "total_obligated_m": 1438.2, "lpta_contracts": 98,   "to_contracts": 381, "lpta_share_pct": 19.1},
+  {"name": "MANTECH INTERNATIONAL CORPORATION",            "total_contracts": 683,  "total_obligated_m": 1312.4, "lpta_contracts": 412,  "to_contracts": 221, "lpta_share_pct": 60.3},
+  {"name": "CACI INTERNATIONAL INC",                       "total_contracts": 612,  "total_obligated_m": 1241.7, "lpta_contracts": 287,  "to_contracts": 289, "lpta_share_pct": 46.9},
+  {"name": "IBM CORPORATION",                              "total_contracts": 421,  "total_obligated_m": 1184.3, "lpta_contracts": 189,  "to_contracts": 198, "lpta_share_pct": 44.9},
+  {"name": "ENGILITY CORPORATION",                         "total_contracts": 534,  "total_obligated_m": 1043.8, "lpta_contracts": 312,  "to_contracts": 187, "lpta_share_pct": 58.4},
+  {"name": "UNISON GLOBAL INC",                            "total_contracts": 891,  "total_obligated_m": 987.4,  "lpta_contracts": 684,  "to_contracts": 167, "lpta_share_pct": 76.8},
+  {"name": "CENTURION RESEARCH SOLUTIONS",                 "total_contracts": 743,  "total_obligated_m": 912.1,  "lpta_contracts": 612,  "to_contracts": 98,  "lpta_share_pct": 82.4},
+  {"name": "MAXIMUS FEDERAL SERVICES INC",                 "total_contracts": 398,  "total_obligated_m": 874.2,  "lpta_contracts": 112,  "to_contracts": 251, "lpta_share_pct": 28.1},
+  {"name": "MITRE CORPORATION",                            "total_contracts": 312,  "total_obligated_m": 841.3,  "lpta_contracts": 48,   "to_contracts": 241, "lpta_share_pct": 15.4},
+  {"name": "NORTHROP GRUMMAN SYSTEMS CORPORATION",         "total_contracts": 421,  "total_obligated_m": 812.7,  "lpta_contracts": 198,  "to_contracts": 189, "lpta_share_pct": 47.0},
+  {"name": "LMIT",                                         "total_contracts": 512,  "total_obligated_m": 784.1,  "lpta_contracts": 289,  "to_contracts": 187, "lpta_share_pct": 56.4},
+  {"name": "DXC TECHNOLOGY SERVICES LLC",                  "total_contracts": 287,  "total_obligated_m": 741.8,  "lpta_contracts": 74,   "to_contracts": 187, "lpta_share_pct": 25.8},
+  {"name": "CALIX INC",                                    "total_contracts": 621,  "total_obligated_m": 698.4,  "lpta_contracts": 498,  "to_contracts": 98,  "lpta_share_pct": 80.2},
+  {"name": "OPTUM GOVERNMENT SOLUTIONS INC",               "total_contracts": 312,  "total_obligated_m": 641.2,  "lpta_contracts": 87,   "to_contracts": 198, "lpta_share_pct": 27.9}
+]

@@ -1,0 +1,32 @@
+{
+  "fiscal_years": [
+    {"value": 2020, "label": "FY2020"},
+    {"value": 2021, "label": "FY2021"},
+    {"value": 2022, "label": "FY2022"},
+    {"value": 2023, "label": "FY2023"},
+    {"value": 2024, "label": "FY2024"},
+    {"value": 2025, "label": "FY2025"}
+  ],
+  "naics_codes": [
+    {"value": 541511, "label": "Custom Programming (541511)"},
+    {"value": 541512, "label": "Systems Design (541512)"}
+  ],
+  "departments": [
+    {"value": "DEPT OF THE AIR FORCE", "label": "DEPT OF THE AIR FORCE"},
+    {"value": "DEPT OF THE ARMY", "label": "DEPT OF THE ARMY"},
+    {"value": "VETERANS AFFAIRS, DEPARTMENT OF", "label": "VETERANS AFFAIRS, DEPARTMENT OF"},
+    {"value": "NATIONAL INSTITUTES OF HEALTH", "label": "NATIONAL INSTITUTES OF HEALTH"},
+    {"value": "GENERAL SERVICES ADMINISTRATION", "label": "GENERAL SERVICES ADMINISTRATION"},
+    {"value": "INTERNAL REVENUE SERVICE", "label": "INTERNAL REVENUE SERVICE"}
+  ],
+  "tradeoff_codes": [
+    {"value": "LPTA", "label": "LPTA"},
+    {"value": "TO", "label": "Best-Value Tradeoff"},
+    {"value": "O", "label": "Other"}
+  ],
+  "contract_types": [
+    {"value": "J", "label": "Firm Fixed Price"},
+    {"value": "Y", "label": "Time & Materials"},
+    {"value": "Z", "label": "Labor Hours"}
+  ]
+}

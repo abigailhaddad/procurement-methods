@@ -1,0 +1,17 @@
+{
+  "Deliverable (FFP)": {
+    "LPTA": {"count": 8241, "pct": 29.4},
+    "TO":   {"count": 15832, "pct": 56.5},
+    "O":    {"count": 3960, "pct": 14.1}
+  },
+  "Staff Aug (T&M)": {
+    "LPTA": {"count": 9103, "pct": 51.2},
+    "TO":   {"count": 6218, "pct": 34.9},
+    "O":    {"count": 2462, "pct": 13.8}
+  },
+  "Staff Aug (Labor Hours)": {
+    "LPTA": {"count": 3874, "pct": 55.8},
+    "TO":   {"count": 1941, "pct": 28.0},
+    "O":    {"count": 1125, "pct": 16.2}
+  }
+}

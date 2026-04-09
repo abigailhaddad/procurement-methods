@@ -1,7 +1,4 @@
 .env
-data/
+/data/
 __pycache__/
 *.pyc
-
-# web/data/ is NOT ignored — committed for Vercel deployment
-# data/ (raw CSVs, checkpoints, SAM cache) IS ignored
