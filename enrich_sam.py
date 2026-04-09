@@ -2,14 +2,12 @@
 enrich_sam.py — Enrich contracts_raw.csv with SAM.gov entity data.
 
 Uses the SAM.gov monthly bulk extract — one API call downloads a full
-snapshot of all registered entities (~500MB zip). We filter to just the
+snapshot of all registered entities (~1-3GB zip). We filter to just the
 UEIs in our contracts dataset and save data/sam_lookup.csv.
-
-This is much more efficient than per-entity API calls (would be 10k+ calls).
 
 Output: data/sam_lookup.csv
   Columns: uei, legal_business_name, sam_registration_date, entity_start_date,
-           city, state
+           city, state, number_of_employees, sba_business_types, business_types
 
 Setup:
   1. Get a free API key at sam.gov (Account Details → API Keys)
@@ -25,6 +23,7 @@ import os
 import sys
 import time
 import zipfile
+from datetime import date
 from pathlib import Path
 
 import requests
@@ -34,21 +33,10 @@ load_dotenv()
 
 csv.field_size_limit(min(sys.maxsize, 2**31 - 1))
 
-CONTRACTS_CSV  = Path("data/contracts_raw.csv")
-OUTPUT_CSV     = Path("data/sam_lookup.csv")
-EXTRACT_CACHE  = Path("data/sam_extract_cache.zip")
-EXTRACT_URL    = "https://api.sam.gov/data-services/v1/extracts"
-
-# SAM Public V2 .dat file — pipe-delimited, no header row.
-# Field positions confirmed against known UEIs.
-SAM_FIELDS = {
-    0:  "uei",
-    7:  "sam_registration_date",  # YYYYMMDD
-    11: "legal_business_name",
-    17: "city",
-    18: "state",
-    24: "entity_start_date",      # YYYYMMDD
-}
+CONTRACTS_CSV = Path("data/contracts_raw.csv")
+OUTPUT_CSV    = Path("data/sam_lookup.csv")
+EXTRACT_CACHE = Path("data/sam_extract_cache.zip")
+EXTRACT_URL   = "https://api.sam.gov/data-services/v1/extracts"
 
 
 def collect_ueis() -> set[str]:
@@ -56,8 +44,7 @@ def collect_ueis() -> set[str]:
         raise FileNotFoundError(f"{CONTRACTS_CSV} not found — run fetch.py first.")
     ueis = set()
     with open(CONTRACTS_CSV) as f:
-        reader = csv.DictReader(f)
-        for row in reader:
+        for row in csv.DictReader(f):
             uei = (row.get("recipient_uei") or "").strip()
             if uei:
                 ueis.add(uei)
@@ -65,25 +52,50 @@ def collect_ueis() -> set[str]:
     return ueis
 
 
+def _get_redirect_url(params: dict, retries: int = 3) -> str | None:
+    for attempt in range(retries):
+        resp = requests.get(EXTRACT_URL, params=params, timeout=60, allow_redirects=False)
+        if resp.status_code in (301, 302, 303, 307, 308):
+            return resp.headers.get("location") or resp.headers.get("Location") or ""
+        if resp.status_code == 429:
+            wait = 60 * (attempt + 1)
+            print(f"  Rate limited — waiting {wait}s before retry {attempt+1}/{retries}...")
+            time.sleep(wait)
+            continue
+        print(f"  Unexpected HTTP {resp.status_code}: {resp.text[:200]}")
+        return None
+    return None
+
+
 def download_extract(api_key: str) -> Path:
     if EXTRACT_CACHE.exists():
-        print(f"Using cached extract: {EXTRACT_CACHE} ({EXTRACT_CACHE.stat().st_size // 1_000_000}MB)")
+        size_mb = EXTRACT_CACHE.stat().st_size // 1_000_000
+        print(f"Using cached extract: {EXTRACT_CACHE} ({size_mb}MB)")
         return EXTRACT_CACHE
 
-    print("Downloading SAM.gov monthly entity extract (~500MB)...")
-    params = {"api_key": api_key, "fileType": "ENTITY", "sensitivity": "PUBLIC"}
-    resp = requests.get(EXTRACT_URL, params=params, timeout=60)
-    if not resp.ok:
-        raise RuntimeError(f"SAM extract download failed: HTTP {resp.status_code} — {resp.text[:200]}")
+    print("Requesting SAM.gov monthly entity extract URL...")
+    today = date.today()
+    params = {
+        "api_key":     api_key,
+        "fileType":    "ENTITY",
+        "sensitivity": "PUBLIC",
+        "frequency":   "MONTHLY",
+        "date":        today.strftime("%m/%Y"),
+    }
+    url = _get_redirect_url(params)
+    if not url:
+        # Try previous month
+        from datetime import timedelta
+        prev = (today.replace(day=1) - timedelta(days=1))
+        params["date"] = prev.strftime("%m/%Y")
+        print(f"  Current month not available, trying {params['date']}...")
+        url = _get_redirect_url(params)
+    if not url:
+        raise RuntimeError("Could not get SAM extract download URL. Check SAM_API_KEY.")
 
-    # Response is a JSON with a download URL
-    data = resp.json()
-    download_url = data.get("fileExtracts", [{}])[0].get("fileUri")
-    if not download_url:
-        raise RuntimeError(f"No download URL in response: {data}")
-
-    print(f"Downloading from: {download_url}")
-    with requests.get(download_url, stream=True, timeout=300) as r:
+    print(f"Downloading extract (~1-3GB)...")
+    EXTRACT_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    with requests.get(url, stream=True, timeout=600) as r:
         r.raise_for_status()
         total = int(r.headers.get("content-length", 0))
         downloaded = 0
@@ -97,32 +109,84 @@ def download_extract(api_key: str) -> Path:
     return EXTRACT_CACHE
 
 
+def parse_date(val: str) -> str:
+    if not val:
+        return ""
+    val = val.strip()
+    if len(val) == 8 and val.isdigit():
+        return f"{val[:4]}-{val[4:6]}-{val[6:8]}"
+    return val[:10]
+
+
+def get_field(row: dict, *keys: str) -> str:
+    for k in keys:
+        v = row.get(k, "")
+        if v and v.strip() not in ("", "~", "null", "NULL"):
+            return v.strip()
+    return ""
+
+
+def extract_row(row: dict) -> dict:
+    """Map SAM extract columns to our output schema. Handles column name variants."""
+    uei = get_field(row, "UNIQUE_ENTITY_ID", "UEI_SAM")
+
+    biz_raw = get_field(row, "BUSINESS_TYPES", "BUSINESS_TYPE_DESC", "BUSINESS_TYPES_DESC")
+    sba_raw = get_field(row, "SBA_BUSINESS_TYPES", "SBA_BUSINESS_TYPE_DESC", "SBA_CERTIFICATIONS")
+    business_types  = "; ".join(t.strip() for t in biz_raw.split("~") if t.strip()) if biz_raw else ""
+    sba_types       = "; ".join(t.strip() for t in sba_raw.split("~") if t.strip()) if sba_raw else ""
+
+    num_employees = get_field(row, "NUMBER_OF_EMPLOYEES", "NUMBEROFEMPLOYEES", "NUMBER_EMPLOYEES")
+
+    return {
+        "uei":                   uei,
+        "legal_business_name":   get_field(row, "LEGAL_BUSINESS_NAME"),
+        "sam_registration_date": parse_date(get_field(row, "REGISTRATION_DATE", "SAM_REGISTRATION_DATE")),
+        "entity_start_date":     parse_date(get_field(row, "ENTITY_START_DATE", "ENTITY_CREATION_DATE")),
+        "city":                  get_field(row, "PHYSICAL_ADDRESS_CITY", "CITY"),
+        "state":                 get_field(row, "PHYSICAL_ADDRESS_PROVINCE_OR_STATE", "PHYSICAL_ADDRESS_STATE", "STATE"),
+        "number_of_employees":   num_employees,
+        "sba_business_types":    sba_types,
+        "business_types":        business_types,
+    }
+
+
 def parse_extract(zip_path: Path, target_ueis: set[str]) -> list[dict]:
     print("Parsing extract (scanning for matching UEIs)...")
     matches = []
-    field_indices = sorted(SAM_FIELDS.keys())
 
     with zipfile.ZipFile(zip_path) as zf:
-        dat_files = [n for n in zf.namelist() if n.endswith(".dat")]
-        if not dat_files:
-            raise RuntimeError(f"No .dat file found in zip. Contents: {zf.namelist()}")
-        dat_file = dat_files[0]
-        print(f"  Reading {dat_file}...")
+        data_files = [n for n in zf.namelist()
+                      if not n.endswith("/") and any(n.lower().endswith(e) for e in (".dat", ".csv", ".txt"))]
+        if not data_files:
+            data_files = [n for n in zf.namelist() if not n.endswith("/")]
+        print(f"  Files in ZIP: {data_files}")
+        dat_file = data_files[0]
 
-        with zf.open(dat_file) as f:
-            for i, raw_line in enumerate(f):
-                line = raw_line.decode("utf-8", errors="replace").rstrip("\n")
-                parts = line.split("|")
-                if not parts or len(parts) < max(field_indices) + 1:
-                    continue
-                uei = parts[0].strip()
-                if uei not in target_ueis:
-                    continue
-                row = {col: parts[idx].strip() for idx, col in SAM_FIELDS.items()}
-                matches.append(row)
+        with zf.open(dat_file) as raw:
+            wrapper = io.TextIOWrapper(raw, encoding="latin-1", newline="", errors="replace")
+            reader  = csv.DictReader(wrapper, delimiter="|")
 
+            # Print column names on first run so we can verify
+            if reader.fieldnames:
+                emp_cols = [c for c in reader.fieldnames if "EMPLOYEE" in c.upper()]
+                sba_cols = [c for c in reader.fieldnames if "SBA" in c.upper()]
+                print(f"  Employee-related columns: {emp_cols}")
+                print(f"  SBA-related columns: {sba_cols}")
+            else:
+                print("  WARNING: No column headers found in extract file!")
+
+            for i, row in enumerate(reader):
                 if i % 500_000 == 0 and i > 0:
-                    print(f"  ...scanned {i:,} lines, {len(matches):,} matches so far")
+                    print(f"  ...scanned {i:,} rows, {len(matches):,} matches so far")
+
+                uei = (row.get("UNIQUE_ENTITY_ID") or row.get("UEI_SAM") or "").strip()
+                if not uei or uei not in target_ueis:
+                    continue
+
+                matches.append(extract_row(row))
+                if len(matches) == len(target_ueis):
+                    print(f"  Found all {len(target_ueis)} UEIs — stopping early at row {i:,}")
+                    break
 
     print(f"Found {len(matches):,} matching entities")
     return matches
@@ -145,17 +209,19 @@ def main():
 
     import pandas as pd
     df = pd.DataFrame(matches).drop_duplicates(subset="uei")
-
-    # Normalize dates YYYYMMDD → YYYY-MM-DD
-    for col in ["sam_registration_date", "entity_start_date"]:
-        df[col] = pd.to_datetime(df[col], format="%Y%m%d", errors="coerce").dt.date.astype(str)
-        df[col] = df[col].replace("NaT", "")
-
     df.to_csv(OUTPUT_CSV, index=False)
+
     coverage = len(df) / len(ueis) * 100
     print(f"\nSaved {len(df):,} entities → {OUTPUT_CSV}")
     print(f"Coverage: {coverage:.1f}% of UEIs in contracts_raw.csv")
-    print(f"(Unmatched UEIs are likely deregistered or foreign entities)")
+
+    # Quick stats
+    has_emp = (df["number_of_employees"] != "").sum()
+    has_sba = (df["sba_business_types"] != "").sum()
+    print(f"  Has employee count: {has_emp:,} ({has_emp/len(df)*100:.0f}%)")
+    print(f"  Has SBA types:      {has_sba:,} ({has_sba/len(df)*100:.0f}%)")
+    if has_emp:
+        print(f"  Employee count sample: {df[df['number_of_employees']!='']['number_of_employees'].head(5).tolist()}")
 
 
 if __name__ == "__main__":
