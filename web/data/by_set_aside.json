@@ -1,4 +1,14 @@
 [
-  {"category": "Small Business Set-Aside", "total": 28431, "lpta": 13247, "lpta_pct": 46.6},
-  {"category": "Unrestricted",             "total": 52184, "lpta": 17821, "lpta_pct": 34.1}
+  {
+    "category": "Small Business Set-Aside",
+    "total": 144,
+    "lpta": 19,
+    "lpta_pct": 13.2
+  },
+  {
+    "category": "Unrestricted",
+    "total": 407,
+    "lpta": 18,
+    "lpta_pct": 4.4
+  }
 ]

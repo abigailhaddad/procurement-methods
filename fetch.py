@@ -36,12 +36,12 @@ load_dotenv()
 # ---------------------------------------------------------------------------
 
 NAICS_CODES    = [541511, 541512]   # Custom programming + systems design
-START_DATE     = date(2019, 10, 1)  # FY2020 starts Oct 1 2019
+START_DATE     = date(2025, 10, 1)  # FY2026 starts Oct 1 2025
 END_DATE       = date.today()
 OUTPUT_CSV     = Path("data/contracts_raw.csv")
 CHECKPOINT_DIR = Path("data/checkpoints")
 PAGE_LIMIT     = 100
-SLEEP_BETWEEN_CALLS = 3             # Seconds between pages (free: 25/min)
+SLEEP_BETWEEN_CALLS = 3             # Seconds between pages (25/min limit)
 
 SHAPE = (
     "key,obligated,award_date,naics_code,set_aside,"
@@ -150,33 +150,62 @@ def api_call(client, naics, date_gte, date_lte, cursor, limit):
 # ---------------------------------------------------------------------------
 
 def fetch_month(client, naics, yr, mo, ws, we):
-    records = []
-    cursor  = None
-    page    = 0
-    date_gte = ws.isoformat()
-    date_lte = we.isoformat()
+    """Fetch one month, saving every page to the checkpoint file as it arrives.
 
+    A companion cursor file tracks progress so we can resume mid-month after
+    a rate-limit hit.
+    """
+    cp          = CHECKPOINT_DIR / f"{naics}_{yr}{mo:02d}.csv"
+    cursor_file = CHECKPOINT_DIR / f"{naics}_{yr}{mo:02d}.cursor"
+    date_gte    = ws.isoformat()
+    date_lte    = we.isoformat()
+
+    # --- resume state ---
+    cursor      = None
+    page        = 0
+    total_saved = 0
+
+    if cursor_file.exists():
+        cursor = cursor_file.read_text().strip()
+        if cp.exists():
+            total_saved = max(0, sum(1 for _ in open(cp)) - 1)  # minus header
+            page = (total_saved + PAGE_LIMIT - 1) // PAGE_LIMIT
+
+    # --- get total count ---
     first = api_call(client, naics, date_gte, date_lte, cursor=None, limit=1)
     total = first["total_count"]
     if total == 0:
-        return []
+        # write empty checkpoint so we skip this month next time
+        pd.DataFrame(columns=list(first["results"][0].keys()) if first["results"] else []).to_csv(cp, index=False)
+        return 0
 
     total_pages = (total + PAGE_LIMIT - 1) // PAGE_LIMIT
 
     while True:
         resp   = api_call(client, naics, date_gte, date_lte, cursor=cursor, limit=PAGE_LIMIT)
         batch  = resp["results"]
-        records.extend(batch)
         page  += 1
 
-        print(f"\r    page {page}/{total_pages} — {len(records)}/{total} records", end="", flush=True)
+        # append page to checkpoint file
+        df_page = pd.DataFrame(batch)
+        write_header = not cp.exists() or cp.stat().st_size == 0
+        df_page.to_csv(cp, mode="a", index=False, header=write_header)
+        total_saved += len(batch)
+
+        print(f"\r    page {page}/{total_pages} — {total_saved}/{total} records", end="", flush=True)
 
         cursor = resp.get("cursor")
         if not resp.get("next") or not cursor:
+            # done — remove cursor file
+            if cursor_file.exists():
+                cursor_file.unlink()
             break
+
+        # save cursor so we can resume here
+        cursor_file.write_text(cursor)
         time.sleep(SLEEP_BETWEEN_CALLS)
 
-    return records
+    return total_saved
 
 
 # ---------------------------------------------------------------------------
@@ -202,14 +231,16 @@ def main():
         for naics in NAICS_CODES:
             for yr, mo, ws, we in windows:
                 cp = CHECKPOINT_DIR / f"{naics}_{yr}{mo:02d}.csv"
-                if cp.exists():
+                cursor_file = CHECKPOINT_DIR / f"{naics}_{yr}{mo:02d}.cursor"
+                # skip if checkpoint exists AND no cursor file (fully done)
+                if cp.exists() and not cursor_file.exists():
                     continue
 
                 label = f"NAICS {naics}  {yr}-{mo:02d}"
-                print(f"  {label}", end="  ", flush=True)
-                records = fetch_month(client, naics, yr, mo, ws, we)
-                pd.DataFrame(records).to_csv(cp, index=False)
-                print(f"\r  {label}  →  {len(records):,} records          ")
+                resuming = cursor_file.exists()
+                print(f"  {label}{'  (resuming)' if resuming else ''}", end="  ", flush=True)
+                count = fetch_month(client, naics, yr, mo, ws, we)
+                print(f"\r  {label}  →  {count:,} records          ")
 
     except DailyLimitReached as e:
         print(f"\n⚠  {e}")

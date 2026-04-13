@@ -33,6 +33,24 @@ TRADEOFF_LABELS = {
     "O":    "Other",
 }
 
+EVAL_METHOD_LABELS = {
+    "LPTA":                   "LPTA",
+    "Best-Value Tradeoff":    "Best-Value Tradeoff",
+    "Fair Opportunity":       "Fair Opportunity (IDIQ/GWAC)",
+    "Negotiated Proposal":    "Negotiated Proposal",
+    "Simplified Acquisition": "Simplified Acquisition",
+    "Sole Source":            "Sole Source",
+    "Not Competed":           "Not Competed",
+    "Unknown":                "Unknown",
+}
+
+# Order for charts (competed → non-competed)
+EVAL_METHOD_ORDER = [
+    "LPTA", "Best-Value Tradeoff", "Fair Opportunity",
+    "Negotiated Proposal", "Simplified Acquisition",
+    "Sole Source", "Not Competed", "Unknown",
+]
+
 SET_ASIDE_LABELS = {
     "SBA":     "Small Business",
     "8A":      "8(a)",
@@ -72,6 +90,11 @@ def load_data() -> pd.DataFrame:
         "Y": "Staff Aug (T&M)",
         "Z": "Staff Aug (Labor Hours)",
     })
+
+    # eval_method: granular classification from build_contracts.py
+    if "eval_method" not in df.columns:
+        df["eval_method"] = df["tradeoff_code"].map(TRADEOFF_LABELS)
+    df["eval_method_label"] = df["eval_method"].map(EVAL_METHOD_LABELS).fillna(df["eval_method"])
 
     # Small biz from set-aside codes (always available)
     df["is_small_biz_setaside"] = df["set_aside"].isin(SMALL_BIZ_SET_ASIDES)
@@ -145,6 +168,55 @@ def summary_stats(df: pd.DataFrame) -> dict:
         "fy_min":                int(df["fiscal_year"].min()) if df["fiscal_year"].notna().any() else None,
         "fy_max":                int(df["fiscal_year"].max()) if df["fiscal_year"].notna().any() else None,
     }
+
+
+def by_eval_method(df: pd.DataFrame) -> list:
+    """Full breakdown of how contracts were evaluated/competed."""
+    sub = df[df["eval_method"].notna() & (df["eval_method"] != "Unknown")].copy()
+    total = len(sub)
+    if total == 0:
+        return []
+
+    result = []
+    for method in EVAL_METHOD_ORDER:
+        g = sub[sub["eval_method"] == method]
+        if len(g) == 0:
+            continue
+        obl = g["obligated"].sum()
+        result.append({
+            "method":       method,
+            "label":        EVAL_METHOD_LABELS.get(method, method),
+            "count":        int(len(g)),
+            "pct":          round(len(g) / total * 100, 1),
+            "obligated_b":  round(obl / 1e9, 2),
+            "obligated_pct": round(obl / sub["obligated"].sum() * 100, 1) if sub["obligated"].sum() else 0,
+            "median_k":     round(g["obligated"].median() / 1000) if g["obligated"].notna().any() else None,
+        })
+    return result
+
+
+def by_eval_method_fy(df: pd.DataFrame) -> dict:
+    """Eval method breakdown by fiscal year for trend chart."""
+    sub = df[df["eval_method"].notna() & (df["eval_method"] != "Unknown")].copy()
+    if sub.empty:
+        return {}
+
+    result = {}
+    for fy, g in sub.groupby("fiscal_year"):
+        if pd.isna(fy):
+            continue
+        fy_total = len(g)
+        methods = {}
+        for method in EVAL_METHOD_ORDER:
+            mg = g[g["eval_method"] == method]
+            if len(mg) == 0:
+                continue
+            methods[method] = {
+                "count": int(len(mg)),
+                "pct":   round(len(mg) / fy_total * 100, 1),
+            }
+        result[int(fy)] = methods
+    return result
 
 
 def by_fiscal_year(df: pd.DataFrame) -> dict:
@@ -356,15 +428,17 @@ def main():
         print("  No SAM data — run enrich_sam.py for age/size enrichment")
 
     outputs = {
-        "summary.json":          summary_stats(df),
-        "by_fy.json":            by_fiscal_year(df),
-        "by_agency.json":        by_agency(df),
-        "by_contract_type.json": by_contract_type(df),
-        "by_set_aside.json":     by_set_aside(df),
-        "by_winner_type.json":   by_winner_type(df),
-        "by_vendor_age.json":    by_vendor_age(df),
-        "top_vendors.json":      top_vendors(df),
-        "filters.json":          filter_options(df),
+        "summary.json":            summary_stats(df),
+        "by_eval_method.json":     by_eval_method(df),
+        "by_eval_method_fy.json":  by_eval_method_fy(df),
+        "by_fy.json":              by_fiscal_year(df),
+        "by_agency.json":          by_agency(df),
+        "by_contract_type.json":   by_contract_type(df),
+        "by_set_aside.json":       by_set_aside(df),
+        "by_winner_type.json":     by_winner_type(df),
+        "by_vendor_age.json":      by_vendor_age(df),
+        "top_vendors.json":        top_vendors(df),
+        "filters.json":            filter_options(df),
     }
 
     for fname, data in outputs.items():

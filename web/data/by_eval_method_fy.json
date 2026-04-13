@@ -1,0 +1,28 @@
+{
+  "2026": {
+    "LPTA": {
+      "count": 37,
+      "pct": 0.6
+    },
+    "Best-Value Tradeoff": {
+      "count": 193,
+      "pct": 3.0
+    },
+    "Fair Opportunity": {
+      "count": 1592,
+      "pct": 25.1
+    },
+    "Negotiated Proposal": {
+      "count": 3757,
+      "pct": 59.2
+    },
+    "Simplified Acquisition": {
+      "count": 347,
+      "pct": 5.5
+    },
+    "Sole Source": {
+      "count": 423,
+      "pct": 6.7
+    }
+  }
+}

@@ -168,11 +168,29 @@
     </div>
   </div>
 
+  <!-- Section: How contracts are evaluated -->
+  <p class="section-header">How Contracts Are Evaluated</p>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>By Number of Contracts</h3>
+      <canvas id="chartEvalCount"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>By Dollar Value Obligated</h3>
+      <canvas id="chartEvalDollars"></canvas>
+    </div>
+  </div>
+
   <!-- Section: Over time -->
   <p class="section-header">Evaluation Method Over Time</p>
   <div class="charts-grid">
     <div class="chart-card chart-full">
+      <h3>How Contracts Are Evaluated by Fiscal Year</h3>
+      <canvas id="chartEvalFY"></canvas>
+    </div>
+    <div class="chart-card chart-full">
       <h3>LPTA vs. Best-Value Tradeoff by Fiscal Year</h3>
+      <p style="font-size:0.78rem;color:var(--color-text-muted);margin:0 0 0.5rem;">Only contracts with Tango tradeoff_process reported</p>
       <canvas id="chartFY"></canvas>
     </div>
   </div>
@@ -358,6 +376,18 @@ const C = {
   bgText:     '#F5EDE0',
 };
 
+// Eval method palette — distinct colors per category
+const EM = {
+  'LPTA':                   { bg: '#2D6A4F', bgL: 'rgba(45,106,79,0.75)' },
+  'Best-Value Tradeoff':    { bg: '#D4A03C', bgL: 'rgba(212,160,60,0.75)' },
+  'Fair Opportunity':       { bg: '#4A90D9', bgL: 'rgba(74,144,217,0.75)' },
+  'Negotiated Proposal':    { bg: '#7B68AE', bgL: 'rgba(123,104,174,0.75)' },
+  'Simplified Acquisition': { bg: '#E07B53', bgL: 'rgba(224,123,83,0.75)' },
+  'Sole Source':            { bg: '#C0392B', bgL: 'rgba(192,57,43,0.75)' },
+  'Not Competed':           { bg: '#7A6E62', bgL: 'rgba(122,110,98,0.55)' },
+  'Unknown':                { bg: '#BBBBBB', bgL: 'rgba(187,187,187,0.55)' },
+};
+
 Chart.defaults.font.family = "'Source Sans 3', sans-serif";
 Chart.defaults.color = C.tick;
 
@@ -382,8 +412,9 @@ const COLUMNS = [
 
 // ── Load ──────────────────────────────────────────────────────────────────────
 async function loadAll() {
-  const files = ['summary','by_fy','by_agency','by_contract_type','by_set_aside',
-                 'top_vendors','by_winner_type','by_vendor_age','filters'];
+  const files = ['summary','by_eval_method','by_eval_method_fy','by_fy','by_agency',
+                 'by_contract_type','by_set_aside','top_vendors','by_winner_type',
+                 'by_vendor_age','filters'];
   const results = await Promise.all(
     files.map(f => fetch(`data/${f}.json`).then(r => r.json()).catch(() => null))
   );
@@ -438,6 +469,8 @@ function buildFilterOptions() {
 // ── Render ────────────────────────────────────────────────────────────────────
 function render() {
   renderStats();
+  renderEvalMethod();
+  renderEvalMethodFY();
   renderFYChart();
   renderCTChart();
   renderSAChart();
@@ -445,6 +478,125 @@ function render() {
   renderVendorAgeDist();
   renderAgencyChart();
   renderVendorTable();
+}
+
+function renderEvalMethod() {
+  const d = DATA.by_eval_method || [];
+  if (!d.length) return;
+  const labels = d.map(x => x.label);
+  const colors = d.map(x => (EM[x.method]||EM.Unknown).bg);
+  const colorsL = d.map(x => (EM[x.method]||EM.Unknown).bgL);
+
+  // By count
+  mkChart('chartEvalCount', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '% of contracts',
+        data: d.map(x => x.pct),
+        backgroundColor: colorsL,
+        borderColor: colors,
+        borderWidth: 1,
+      }],
+    },
+    options: {
+      indexAxis: 'y', responsive: true,
+      plugins: {
+        tooltip: { ...tt(), callbacks: {
+          label: ctx => {
+            const item = d[ctx.dataIndex];
+            return [`${item.pct}% of contracts`, `${item.count.toLocaleString()} contracts`];
+          }
+        }},
+        legend: { display: false },
+      },
+      scales: {
+        x: { max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      },
+    },
+  });
+
+  // By dollars
+  mkChart('chartEvalDollars', {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: '% of obligated $',
+        data: d.map(x => x.obligated_pct),
+        backgroundColor: colorsL,
+        borderColor: colors,
+        borderWidth: 1,
+      }],
+    },
+    options: {
+      indexAxis: 'y', responsive: true,
+      plugins: {
+        tooltip: { ...tt(), callbacks: {
+          label: ctx => {
+            const item = d[ctx.dataIndex];
+            return [`${item.obligated_pct}% of dollars`, `$${item.obligated_b}B obligated`, `Median contract: $${(item.median_k||0).toLocaleString()}K`];
+          }
+        }},
+        legend: { display: false },
+      },
+      scales: {
+        x: { max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
+        y: { grid: { display: false }, ticks: { font: { size: 11 } } },
+      },
+    },
+  });
+}
+
+function renderEvalMethodFY() {
+  const d = DATA.by_eval_method_fy || {};
+  const fys = Object.keys(d).map(Number).sort();
+  if (!fys.length) return;
+
+  // Get all methods present
+  const allMethods = [];
+  const seen = new Set();
+  for (const fy of fys) {
+    for (const m of Object.keys(d[fy])) {
+      if (!seen.has(m)) { seen.add(m); allMethods.push(m); }
+    }
+  }
+  // Sort by EVAL_METHOD_ORDER
+  const order = ['LPTA','Best-Value Tradeoff','Fair Opportunity','Negotiated Proposal','Simplified Acquisition','Sole Source','Not Competed','Unknown'];
+  allMethods.sort((a,b) => order.indexOf(a) - order.indexOf(b));
+
+  const datasets = allMethods.map(m => ({
+    label: m,
+    data: fys.map(fy => d[fy]?.[m]?.pct || 0),
+    backgroundColor: (EM[m]||EM.Unknown).bgL,
+    borderColor: (EM[m]||EM.Unknown).bg,
+    borderWidth: 1,
+    stack: 's',
+  }));
+
+  mkChart('chartEvalFY', {
+    type: 'bar',
+    data: { labels: fys.map(y => `FY${y}`), datasets },
+    options: {
+      responsive: true,
+      plugins: {
+        tooltip: { ...tt(), callbacks: {
+          label: ctx => {
+            const fy = fys[ctx.dataIndex];
+            const item = d[fy]?.[ctx.dataset.label];
+            return item ? `${ctx.dataset.label}: ${item.pct}% (${item.count.toLocaleString()})` : '';
+          }
+        }},
+        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+      },
+      scales: {
+        x: { stacked: true, grid: { color: C.grid } },
+        y: { stacked: true, max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
+      },
+    },
+  });
 }
 
 function renderStats() {

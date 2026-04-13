@@ -1,27 +1,44 @@
 [
-  {"agency": "DEPT OF THE AIR FORCE",                         "total": 4821, "lpta": 2748, "lpta_pct": 57.0},
-  {"agency": "DEPT OF THE ARMY",                              "total": 5103, "lpta": 2806, "lpta_pct": 54.9},
-  {"agency": "DEFENSE INFORMATION SYSTEMS AGENCY",            "total": 1842, "lpta": 967,  "lpta_pct": 52.5},
-  {"agency": "TRANSPORTATION SECURITY ADMINISTRATION",        "total": 612,  "lpta": 314,  "lpta_pct": 51.3},
-  {"agency": "VETERANS AFFAIRS, DEPARTMENT OF",               "total": 6214, "lpta": 3041, "lpta_pct": 48.9},
-  {"agency": "DEPT OF THE NAVY",                              "total": 3891, "lpta": 1868, "lpta_pct": 48.0},
-  {"agency": "US CUSTOMS AND BORDER PROTECTION",              "total": 891,  "lpta": 418,  "lpta_pct": 46.9},
-  {"agency": "FEDERAL EMERGENCY MANAGEMENT AGENCY",           "total": 743,  "lpta": 337,  "lpta_pct": 45.4},
-  {"agency": "SOCIAL SECURITY ADMINISTRATION",                "total": 1102, "lpta": 484,  "lpta_pct": 43.9},
-  {"agency": "INTERNAL REVENUE SERVICE",                      "total": 1834, "lpta": 788,  "lpta_pct": 42.9},
-  {"agency": "DEFENSE LOGISTICS AGENCY",                      "total": 921,  "lpta": 382,  "lpta_pct": 41.5},
-  {"agency": "NATIONAL INSTITUTES OF HEALTH",                 "total": 2341, "lpta": 938,  "lpta_pct": 40.1},
-  {"agency": "CENTERS FOR MEDICARE AND MEDICAID SERVICES",    "total": 1203, "lpta": 468,  "lpta_pct": 38.9},
-  {"agency": "FEDERAL AVIATION ADMINISTRATION",               "total": 1541, "lpta": 571,  "lpta_pct": 37.1},
-  {"agency": "GENERAL SERVICES ADMINISTRATION",               "total": 3821, "lpta": 1375, "lpta_pct": 36.0},
-  {"agency": "DEPARTMENT OF JUSTICE",                         "total": 892,  "lpta": 312,  "lpta_pct": 35.0},
-  {"agency": "STATE, DEPARTMENT OF",                          "total": 1124, "lpta": 371,  "lpta_pct": 33.0},
-  {"agency": "DEPARTMENT OF HOMELAND SECURITY",               "total": 2103, "lpta": 672,  "lpta_pct": 31.9},
-  {"agency": "NATIONAL AERONAUTICS AND SPACE ADMINISTRATION", "total": 1821, "lpta": 564,  "lpta_pct": 31.0},
-  {"agency": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",      "total": 2841, "lpta": 831,  "lpta_pct": 29.2},
-  {"agency": "TREASURY, DEPARTMENT OF THE",                   "total": 1203, "lpta": 337,  "lpta_pct": 28.0},
-  {"agency": "DEPARTMENT OF ENERGY",                          "total": 741,  "lpta": 193,  "lpta_pct": 26.0},
-  {"agency": "FEDERAL ACQUISITION SERVICE",                   "total": 4103, "lpta": 984,  "lpta_pct": 24.0},
-  {"agency": "OFFICE OF PERSONNEL MANAGEMENT",                "total": 421,  "lpta": 92,   "lpta_pct": 21.9},
-  {"agency": "ENVIRONMENTAL PROTECTION AGENCY",               "total": 312,  "lpta": 56,   "lpta_pct": 17.9}
+  {
+    "agency": "Department of the Treasury",
+    "total": 86,
+    "lpta": 11.0,
+    "lpta_pct": 12.8
+  },
+  {
+    "agency": "Department of Agriculture",
+    "total": 45,
+    "lpta": 4.0,
+    "lpta_pct": 8.9
+  },
+  {
+    "agency": "Department of Justice",
+    "total": 68,
+    "lpta": 5.0,
+    "lpta_pct": 7.4
+  },
+  {
+    "agency": "Department of Veterans Affairs",
+    "total": 126,
+    "lpta": 6.0,
+    "lpta_pct": 4.8
+  },
+  {
+    "agency": "Department of the Interior",
+    "total": 67,
+    "lpta": 3.0,
+    "lpta_pct": 4.5
+  },
+  {
+    "agency": "Department of Commerce",
+    "total": 48,
+    "lpta": 2.0,
+    "lpta_pct": 4.2
+  },
+  {
+    "agency": "General Services Administration",
+    "total": 77,
+    "lpta": 2.0,
+    "lpta_pct": 2.6
+  }
 ]

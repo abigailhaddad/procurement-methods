@@ -1,32 +1,136 @@
 {
   "fiscal_years": [
-    {"value": 2020, "label": "FY2020"},
-    {"value": 2021, "label": "FY2021"},
-    {"value": 2022, "label": "FY2022"},
-    {"value": 2023, "label": "FY2023"},
-    {"value": 2024, "label": "FY2024"},
-    {"value": 2025, "label": "FY2025"}
+    {
+      "value": 2026,
+      "label": "FY2026"
+    }
   ],
   "naics_codes": [
-    {"value": 541511, "label": "Custom Programming (541511)"},
-    {"value": 541512, "label": "Systems Design (541512)"}
+    {
+      "value": 541511,
+      "label": "Custom Programming (541511)"
+    },
+    {
+      "value": 541512,
+      "label": "Systems Design (541512)"
+    }
   ],
   "departments": [
-    {"value": "DEPT OF THE AIR FORCE", "label": "DEPT OF THE AIR FORCE"},
-    {"value": "DEPT OF THE ARMY", "label": "DEPT OF THE ARMY"},
-    {"value": "VETERANS AFFAIRS, DEPARTMENT OF", "label": "VETERANS AFFAIRS, DEPARTMENT OF"},
-    {"value": "NATIONAL INSTITUTES OF HEALTH", "label": "NATIONAL INSTITUTES OF HEALTH"},
-    {"value": "GENERAL SERVICES ADMINISTRATION", "label": "GENERAL SERVICES ADMINISTRATION"},
-    {"value": "INTERNAL REVENUE SERVICE", "label": "INTERNAL REVENUE SERVICE"}
+    {
+      "value": "Department of Agriculture",
+      "label": "Department of Agriculture"
+    },
+    {
+      "value": "Department of Commerce",
+      "label": "Department of Commerce"
+    },
+    {
+      "value": "Department of Justice",
+      "label": "Department of Justice"
+    },
+    {
+      "value": "Department of State",
+      "label": "Department of State"
+    },
+    {
+      "value": "Department of Veterans Affairs",
+      "label": "Department of Veterans Affairs"
+    },
+    {
+      "value": "Department of the Interior",
+      "label": "Department of the Interior"
+    },
+    {
+      "value": "Department of the Treasury",
+      "label": "Department of the Treasury"
+    },
+    {
+      "value": "Equal Employment Opportunity Commission",
+      "label": "Equal Employment Opportunity Commission"
+    },
+    {
+      "value": "Federal Communications Commission",
+      "label": "Federal Communications Commission"
+    },
+    {
+      "value": "Federal Trade Commission",
+      "label": "Federal Trade Commission"
+    },
+    {
+      "value": "General Services Administration",
+      "label": "General Services Administration"
+    },
+    {
+      "value": "Government Accountability Office",
+      "label": "Government Accountability Office"
+    },
+    {
+      "value": "International Trade Commission",
+      "label": "International Trade Commission"
+    },
+    {
+      "value": "Nuclear Regulatory Commission",
+      "label": "Nuclear Regulatory Commission"
+    },
+    {
+      "value": "Office of Personnel Management",
+      "label": "Office of Personnel Management"
+    },
+    {
+      "value": "Social Security Administration",
+      "label": "Social Security Administration"
+    }
   ],
   "tradeoff_codes": [
-    {"value": "LPTA", "label": "LPTA"},
-    {"value": "TO", "label": "Best-Value Tradeoff"},
-    {"value": "O", "label": "Other"}
+    {
+      "value": "LPTA",
+      "label": "LPTA"
+    },
+    {
+      "value": "O",
+      "label": "Other"
+    },
+    {
+      "value": "TO",
+      "label": "Best-Value Tradeoff"
+    }
   ],
   "contract_types": [
-    {"value": "J", "label": "Firm Fixed Price"},
-    {"value": "Y", "label": "Time & Materials"},
-    {"value": "Z", "label": "Labor Hours"}
+    {
+      "value": "1",
+      "label": "1"
+    },
+    {
+      "value": "B",
+      "label": "B"
+    },
+    {
+      "value": "J",
+      "label": "Firm Fixed Price"
+    },
+    {
+      "value": "K",
+      "label": "K"
+    },
+    {
+      "value": "L",
+      "label": "L"
+    },
+    {
+      "value": "R",
+      "label": "R"
+    },
+    {
+      "value": "U",
+      "label": "Cost Plus Fixed Fee"
+    },
+    {
+      "value": "Y",
+      "label": "Time & Materials"
+    },
+    {
+      "value": "Z",
+      "label": "Labor Hours"
+    }
   ]
 }

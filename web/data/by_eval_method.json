@@ -1,0 +1,56 @@
+[
+  {
+    "method": "LPTA",
+    "label": "LPTA",
+    "count": 37,
+    "pct": 0.6,
+    "obligated_b": 0.18,
+    "obligated_pct": 0.3,
+    "median_k": 382
+  },
+  {
+    "method": "Best-Value Tradeoff",
+    "label": "Best-Value Tradeoff",
+    "count": 193,
+    "pct": 3.0,
+    "obligated_b": 2.74,
+    "obligated_pct": 4.8,
+    "median_k": 2668
+  },
+  {
+    "method": "Fair Opportunity",
+    "label": "Fair Opportunity (IDIQ/GWAC)",
+    "count": 1592,
+    "pct": 25.1,
+    "obligated_b": 43.01,
+    "obligated_pct": 75.0,
+    "median_k": 2393
+  },
+  {
+    "method": "Negotiated Proposal",
+    "label": "Negotiated Proposal",
+    "count": 3757,
+    "pct": 59.2,
+    "obligated_b": 2.84,
+    "obligated_pct": 4.9,
+    "median_k": 0
+  },
+  {
+    "method": "Simplified Acquisition",
+    "label": "Simplified Acquisition",
+    "count": 347,
+    "pct": 5.5,
+    "obligated_b": 0.53,
+    "obligated_pct": 0.9,
+    "median_k": 69
+  },
+  {
+    "method": "Sole Source",
+    "label": "Sole Source",
+    "count": 423,
+    "pct": 6.7,
+    "obligated_b": 8.05,
+    "obligated_pct": 14.0,
+    "median_k": 814
+  }
+]
