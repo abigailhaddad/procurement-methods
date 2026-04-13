@@ -277,15 +277,22 @@
       <div class="method-step">
         <div class="method-icon">①</div>
         <div class="method-body">
-          <strong>Contract data — Tango API (FPDS/USASpending)</strong>
-          <p>IT services contracts from <a href="https://govcon.dev" target="_blank">govcon.dev</a> via the <code>tango-python</code> client.
+          <strong>Contract data — USASpending bulk archives</strong>
+          <p>Transaction-level contract records are downloaded from
+             <a href="https://www.usaspending.gov/download_center/award_data_archive" target="_blank">USASpending award data archives</a>
+             (one ZIP per agency per fiscal year).
              Filtered to <strong>NAICS 541511</strong> (Custom Computer Programming) and
-             <strong>541512</strong> (Computer Systems Design), FY2020–present.</p>
-          <p>Key fields collected per contract: obligation amount, award date, NAICS code,
-             evaluation methodology (<code>tradeoff_process</code>), contract type
-             (<code>competition.contract_type</code>), set-aside code, recipient UEI + name,
-             and awarding office/department.</p>
-          <p class="method-note">Source: <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/fetch.py" target="_blank"><code>fetch.py</code></a></p>
+             <strong>541512</strong> (Computer Systems Design), FY2022–present.</p>
+          <p>These ZIPs contain ~75 fields per transaction, including: obligation amounts,
+             award dates, recipient UEI + name, awarding agency/office, competition method
+             (<code>extent_competed_code</code>, <code>solicitation_procedures_code</code>),
+             contract pricing type, set-aside codes, and small business indicators.</p>
+          <p>Transactions are aggregated to one row per contract (<code>contract_award_unique_key</code>).
+             For each contract we take: the latest <code>total_dollars_obligated</code> (which is
+             cumulative in USASpending), the latest values for categorical fields, and the
+             maximum action date.</p>
+          <p class="method-note">Source: <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/fetch_bulk.py" target="_blank"><code>fetch_bulk.py</code></a>
+             · <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/build_contracts.py" target="_blank"><code>build_contracts.py</code></a></p>
         </div>
       </div>
 
@@ -293,6 +300,23 @@
 
       <div class="method-step">
         <div class="method-icon">②</div>
+        <div class="method-body">
+          <strong>LPTA/tradeoff codes — Tango API (FPDS)</strong>
+          <p>USASpending does not publish whether a contract used LPTA or best-value tradeoff
+             evaluation. That field (<code>source_selection_process</code>, a.k.a.
+             <code>tradeoff_process</code>) is only in FPDS and is accessed via the
+             <a href="https://govcon.dev" target="_blank">Tango API</a>.</p>
+          <p>We pull only <code>key</code> + <code>tradeoff_process</code> to minimize API calls,
+             then join to USASpending data on <code>contract_award_unique_key</code>.
+             This field is contractor-reported and often blank (~40–60% of awards).</p>
+          <p class="method-note">Source: <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/fetch_tradeoff.py" target="_blank"><code>fetch_tradeoff.py</code></a></p>
+        </div>
+      </div>
+
+      <div class="method-arrow">▼</div>
+
+      <div class="method-step">
+        <div class="method-icon">③</div>
         <div class="method-body">
           <strong>Vendor data — SAM.gov monthly bulk extract</strong>
           <p>The SAM.gov public entity extract (~1–3 GB) is downloaded once and cached.
@@ -308,27 +332,88 @@
       <div class="method-arrow">▼</div>
 
       <div class="method-step">
-        <div class="method-icon">③</div>
+        <div class="method-icon">④</div>
         <div class="method-body">
-          <strong>Derived variables</strong>
+          <strong>Evaluation method classification</strong>
+          <p>Each contract is classified into one of these categories, using two data sources.
+             Where a Tango tradeoff code exists, it takes priority (it's the most specific).
+             For the remaining contracts, we classify using USASpending competition fields.</p>
+          <table class="vendor-table" style="margin: 0.75rem 0;">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Rule</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="pill pill-green">LPTA</span></td>
+                <td><code>tradeoff_process.code</code> = "LPTA"</td>
+                <td>Tango API (FPDS)</td>
+              </tr>
+              <tr>
+                <td><span class="pill pill-gold">Best-Value Tradeoff</span></td>
+                <td><code>tradeoff_process.code</code> = "TO"</td>
+                <td>Tango API (FPDS)</td>
+              </tr>
+              <tr>
+                <td><span class="pill" style="background:#4A90D9;color:#fff;">Fair Opportunity</span></td>
+                <td><code>solicitation_procedures_code</code> = "MAFO"<br>
+                    <span style="font-size:0.75rem;color:var(--color-text-muted);">Task orders off IDIQ/GWAC multi-award vehicles</span></td>
+                <td>USASpending</td>
+              </tr>
+              <tr>
+                <td><span class="pill" style="background:#7B68AE;color:#fff;">Negotiated Proposal</span></td>
+                <td><code>extent_competed</code> in (A, D) AND <code>solicitation_procedures</code> = "NP"<br>
+                    <span style="font-size:0.75rem;color:var(--color-text-muted);">Full and open competition via negotiated proposals</span></td>
+                <td>USASpending</td>
+              </tr>
+              <tr>
+                <td><span class="pill" style="background:#E07B53;color:#fff;">Simplified Acquisition</span></td>
+                <td><code>extent_competed</code> in (F, G)<br>
+                    <span style="font-size:0.75rem;color:var(--color-text-muted);">F = competed under SAP; G = not competed under SAP (below threshold)</span></td>
+                <td>USASpending</td>
+              </tr>
+              <tr>
+                <td><span class="pill" style="background:#C0392B;color:#fff;">Sole Source</span></td>
+                <td><code>solicitation_procedures</code> = "SSS"<br>
+                    <span style="font-size:0.75rem;color:var(--color-text-muted);">Only one source — FAR 6.302 justifications</span></td>
+                <td>USASpending</td>
+              </tr>
+              <tr>
+                <td><span class="pill pill-muted">Not Competed</span></td>
+                <td><code>extent_competed</code> in (B, C), not sole source<br>
+                    <span style="font-size:0.75rem;color:var(--color-text-muted);">B = not available for competition; C = not competed</span></td>
+                <td>USASpending</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="method-note">Source: <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/build_contracts.py" target="_blank"><code>build_contracts.py</code> — <code>classify_eval_method()</code></a></p>
+        </div>
+      </div>
+
+      <div class="method-arrow">▼</div>
+
+      <div class="method-step">
+        <div class="method-icon">⑤</div>
+        <div class="method-body">
+          <strong>Other derived variables</strong>
           <ul class="method-vars">
-            <li><strong>Evaluation method</strong> — <code>tradeoff_process.code</code>:
-              <span class="pill pill-green">LPTA</span> Lowest Price Technically Acceptable ·
-              <span class="pill pill-gold">TO</span> Best-Value Tradeoff ·
-              <span class="pill pill-muted">O</span> Other (incl. Brooks Act QBS) ·
-              <em>null</em> = not reported in FPDS</li>
-            <li><strong>Contract structure</strong> — <code>competition.contract_type.code</code>:
-              J = Firm Fixed Price (deliverable) · Y = Time &amp; Materials · Z = Labor Hours
-              (T&amp;M and Labor Hours are treated as staff augmentation)</li>
-            <li><strong>Small business flag</strong> — set-aside code in
-              {SBA, 8A, 8AN, SDVOSBC, WOSB, HZC, …} or non-empty <code>SBA_BUSINESS_TYPES</code>
-              from SAM (SAM-enriched charts only)</li>
-            <li><strong>Vendor age</strong> — years between <code>ENTITY_START_DATE</code> and
-              award date (SAM enriched)</li>
+            <li><strong>Fiscal year</strong> — October–September. A contract awarded in
+              October 2024 is FY2025. Computed from <code>award_date</code>.</li>
+            <li><strong>Contract structure</strong> — <code>type_of_contract_pricing_code</code>:
+              J = Firm Fixed Price (deliverable) · Y = Time &amp; Materials · Z = Labor Hours.
+              T&amp;M and Labor Hours are grouped as "staff augmentation."</li>
+            <li><strong>Small business flag</strong> — <code>type_of_set_aside_code</code> in
+              {SBA, 8A, 8AN, SDVOSBC, WOSB, HZC, HZS, SBP, ESB, ISBEE} or, when SAM data
+              is available, non-empty <code>SBA_BUSINESS_TYPES</code>.</li>
+            <li><strong>Vendor age</strong> — years between SAM <code>ENTITY_START_DATE</code> and
+              contract award date. Requires SAM enrichment.</li>
             <li><strong>New entrant</strong> — award date within 12 months of
-              <code>sam_registration_date</code> (SAM enriched)</li>
+              <code>sam_registration_date</code>. Requires SAM enrichment.</li>
             <li><strong>Market concentration</strong> — share of contracts captured by the
-              top 10 vendors by UEI, within each eval method</li>
+              top 10 vendors (by UEI), calculated within each evaluation method.</li>
           </ul>
           <p class="method-note">Source: <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/analyze.py" target="_blank"><code>analyze.py</code></a></p>
         </div>
@@ -337,14 +422,27 @@
       <div class="method-arrow">▼</div>
 
       <div class="method-step">
-        <div class="method-icon">④</div>
+        <div class="method-icon">⑥</div>
         <div class="method-body">
-          <strong>Caveats</strong>
+          <strong>Caveats and limitations</strong>
           <ul class="method-vars">
-            <li>FPDS <code>tradeoff_process</code> is contractor-reported and often blank (~40–60% of awards). Charts that use this field show only contracts where a method was reported.</li>
-            <li>Fiscal year runs October–September. FY2025 data is partial until September 2025.</li>
-            <li>SAM employee counts are self-reported and not always current; some entities omit the field entirely.</li>
-            <li>This analysis covers IT services only (NAICS 541511 + 541512). Results may not generalize to other procurement categories.</li>
+            <li><strong>LPTA/tradeoff coverage is partial.</strong> FPDS <code>tradeoff_process</code>
+              is contractor-reported and blank for ~40–60% of awards. Charts labeled
+              "LPTA vs. Best-Value Tradeoff" show only contracts where this field was reported.
+              The "How Contracts Are Evaluated" charts use the full classification (all contracts).</li>
+            <li><strong>Transaction aggregation.</strong> USASpending data is transaction-level
+              (one row per modification). We collapse to one row per contract using the most
+              recent values. If a contract's competition method changed across mods, only
+              the latest is reflected.</li>
+            <li><strong>"Negotiated Proposal" is broad.</strong> This category captures full-and-open
+              competitions that aren't LPTA, tradeoff, or fair opportunity. It likely includes
+              a mix of evaluation approaches we can't further distinguish from available data.</li>
+            <li><strong>SAM data is point-in-time.</strong> Employee counts and certifications
+              are self-reported and may not match the vendor's status at the time of award.</li>
+            <li><strong>Scope.</strong> NAICS 541511 (Custom Programming) + 541512 (Systems Design)
+              only. Results may not generalize to other procurement categories.</li>
+            <li><strong>Data freshness.</strong> USASpending archives are updated monthly.
+              Current FY data is incomplete until year-end.</li>
           </ul>
         </div>
       </div>

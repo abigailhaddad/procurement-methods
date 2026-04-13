@@ -25,18 +25,57 @@ NAICS_KEEP = {"541511", "541512"}
 
 def classify_eval_method(df: pd.DataFrame) -> pd.Series:
     """
-    Classify each contract into a granular evaluation method using both
-    the Tango tradeoff_code and USASpending competition fields.
+    Classify each contract into a granular evaluation method.
 
-    Categories (in priority order):
-      - LPTA                    — Tango tradeoff_code = LPTA
-      - Best-Value Tradeoff     — Tango tradeoff_code = TO
-      - Fair Opportunity        — solicitation_procedures = MAFO (IDIQ/GWAC task orders)
-      - Negotiated Proposal     — full/open competition (A/D), solicitation = NP
-      - Simplified Acquisition  — competed under SAP (extent F) or not competed under SAP (G)
-      - Sole Source             — solicitation = SSS (only one source)
-      - Not Competed            — extent = B or C, not sole source
-      - Unknown                 — everything else
+    USASpending does not publish LPTA vs. best-value tradeoff — that field
+    (tradeoff_process) is only in FPDS, accessible via the Tango API. But
+    USASpending does publish how each contract was competed (extent_competed_code,
+    solicitation_procedures_code), which lets us classify the ~90% of contracts
+    that don't have a Tango tradeoff code.
+
+    Two data sources, combined:
+      1. Tango API tradeoff_process → LPTA or Best-Value Tradeoff (highest priority)
+      2. USASpending competition fields → everything else
+
+    Categories (applied in priority order — later rules override earlier):
+
+      LPTA                   tradeoff_code = "LPTA"
+                             Source: Tango API (FPDS tradeoff_process)
+
+      Best-Value Tradeoff    tradeoff_code = "TO"
+                             Source: Tango API (FPDS tradeoff_process)
+
+      Fair Opportunity       solicitation_procedures_code = "MAFO"
+                             Task orders off IDIQ/GWAC multi-award vehicles.
+                             These are competed among pre-qualified vendors but
+                             don't use formal LPTA/tradeoff evaluation.
+
+      Negotiated Proposal    extent_competed in (A, D) AND solicitation = "NP"
+                             Full and open competition using negotiated proposals.
+                             A = full and open; D = full and open after exclusion
+                             of sources.
+
+      Simplified Acquisition extent_competed in (F, G)
+                             F = competed under SAP (simplified acquisition);
+                             G = not competed under SAP (below threshold).
+
+      Sole Source            solicitation_procedures_code = "SSS"
+                             Only one source — various FAR 6.302 justifications.
+
+      Not Competed           extent_competed in (B, C) AND solicitation != "SSS"
+                             B = not available for competition;
+                             C = not competed (other reasons).
+
+      Unknown                None of the above matched.
+
+    The priority order matters: a contract with BOTH tradeoff_code="TO" and
+    solicitation="MAFO" is classified as "Best-Value Tradeoff" because Tango
+    is the more specific source.
+
+    Reference:
+      extent_competed_code: FAR Part 6 / FPDS data dictionary
+      solicitation_procedures_code: FPDS data dictionary
+      tradeoff_process: FPDS source_selection_process via Tango API
     """
     method = pd.Series("Unknown", index=df.index)
 
@@ -85,10 +124,20 @@ def main():
     bulk["action_date"] = pd.to_datetime(bulk["action_date"], errors="coerce")
     bulk = bulk.sort_values("action_date")
 
-    # For numeric fields, sum obligations; for others, take the latest value
+    # USASpending bulk data is transaction-level: one row per modification.
+    # We aggregate to one row per contract_award_unique_key.
+    #
+    # total_dollars_obligated is CUMULATIVE in USASpending — the latest
+    # transaction carries the running total, so we take "last" (after sorting
+    # by action_date). federal_action_obligation is the per-transaction delta,
+    # so we sum it as a fallback when total_dollars_obligated is missing.
+    #
+    # For categorical fields (set-aside, pricing, competition), we take the
+    # latest value. Modifications can change these, but the most recent
+    # reflects the contract's current state.
     agg = bulk.groupby("contract_award_unique_key").agg(
         award_date=("action_date", "max"),
-        obligated=("total_dollars_obligated", "last"),  # cumulative in USASpending
+        obligated=("total_dollars_obligated", "last"),  # cumulative — take latest
         federal_action_obligation=("federal_action_obligation", "sum"),
         naics_code=("naics_code", "last"),
         set_aside=("type_of_set_aside_code", "last"),
