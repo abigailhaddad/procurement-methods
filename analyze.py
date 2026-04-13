@@ -104,22 +104,26 @@ def load_data() -> pd.DataFrame:
         sam["sam_registration_date"] = pd.to_datetime(sam["sam_registration_date"], errors="coerce")
         sam["entity_start_date"]     = pd.to_datetime(sam["entity_start_date"], errors="coerce")
 
-        # Normalize employee count to numeric (SAM reports as integer string or range like "10")
-        def parse_employees(val):
-            try:
-                return int(str(val).strip().replace(",", ""))
-            except (ValueError, TypeError):
-                return None
-        sam["num_employees"] = sam["number_of_employees"].apply(parse_employees)
+        # Employee count and SBA types are optional — not all SAM extracts have them
+        if "number_of_employees" in sam.columns:
+            sam["num_employees"] = pd.to_numeric(
+                sam["number_of_employees"].astype(str).str.strip().str.replace(",", ""),
+                errors="coerce"
+            )
+        else:
+            sam["num_employees"] = None
 
-        # Is this entity SAM-certified small biz (from SBA_BUSINESS_TYPES)?
-        sam["is_sba_small"] = sam["sba_business_types"].fillna("").str.len() > 0
+        if "sba_business_types" in sam.columns:
+            sam["is_sba_small"] = sam["sba_business_types"].fillna("").str.len() > 0
+        else:
+            sam["is_sba_small"] = None
 
-        df = df.merge(
-            sam[["uei","sam_registration_date","entity_start_date","city","state",
-                 "num_employees","is_sba_small","sba_business_types"]],
-            left_on="recipient_uei", right_on="uei", how="left"
-        )
+        merge_cols = ["uei", "sam_registration_date", "entity_start_date"]
+        for col in ["city", "state", "num_employees", "is_sba_small", "sba_business_types"]:
+            if col in sam.columns:
+                merge_cols.append(col)
+
+        df = df.merge(sam[merge_cols], left_on="recipient_uei", right_on="uei", how="left")
 
         # Vendor age at time of award (years)
         df["vendor_age_years"] = (df["award_date"] - df["entity_start_date"]).dt.days / 365.25
@@ -167,6 +171,8 @@ def summary_stats(df: pd.DataFrame) -> dict:
         "ffp_pct":               round(ffp   / has_ct * 100, 1) if has_ct else None,
         "fy_min":                int(df["fiscal_year"].min()) if df["fiscal_year"].notna().any() else None,
         "fy_max":                int(df["fiscal_year"].max()) if df["fiscal_year"].notna().any() else None,
+        "unique_vendors":        int(df["recipient_uei"].nunique()) if "recipient_uei" in df.columns else None,
+        "unique_agencies":       int(df["department"].nunique()) if "department" in df.columns else None,
     }
 
 

@@ -1,28 +1,152 @@
 {
-  "2026": {
+  "2022": {
     "LPTA": {
-      "count": 37,
-      "pct": 0.6
+      "count": 225,
+      "pct": 2.6
     },
     "Best-Value Tradeoff": {
-      "count": 193,
-      "pct": 3.0
+      "count": 118,
+      "pct": 1.4
     },
     "Fair Opportunity": {
-      "count": 1592,
-      "pct": 25.1
+      "count": 3631,
+      "pct": 42.7
     },
     "Negotiated Proposal": {
-      "count": 3757,
-      "pct": 59.2
+      "count": 1924,
+      "pct": 22.6
     },
     "Simplified Acquisition": {
-      "count": 347,
-      "pct": 5.5
+      "count": 1018,
+      "pct": 12.0
     },
     "Sole Source": {
-      "count": 423,
-      "pct": 6.7
+      "count": 1536,
+      "pct": 18.1
+    },
+    "Not Competed": {
+      "count": 48,
+      "pct": 0.6
+    }
+  },
+  "2023": {
+    "LPTA": {
+      "count": 334,
+      "pct": 3.5
+    },
+    "Best-Value Tradeoff": {
+      "count": 246,
+      "pct": 2.6
+    },
+    "Fair Opportunity": {
+      "count": 3636,
+      "pct": 38.6
+    },
+    "Negotiated Proposal": {
+      "count": 2614,
+      "pct": 27.8
+    },
+    "Simplified Acquisition": {
+      "count": 1067,
+      "pct": 11.3
+    },
+    "Sole Source": {
+      "count": 1512,
+      "pct": 16.1
+    },
+    "Not Competed": {
+      "count": 3,
+      "pct": 0.0
+    }
+  },
+  "2024": {
+    "LPTA": {
+      "count": 297,
+      "pct": 2.1
+    },
+    "Best-Value Tradeoff": {
+      "count": 417,
+      "pct": 2.9
+    },
+    "Fair Opportunity": {
+      "count": 3576,
+      "pct": 24.8
+    },
+    "Negotiated Proposal": {
+      "count": 7380,
+      "pct": 51.2
+    },
+    "Simplified Acquisition": {
+      "count": 1087,
+      "pct": 7.5
+    },
+    "Sole Source": {
+      "count": 1637,
+      "pct": 11.4
+    },
+    "Not Competed": {
+      "count": 10,
+      "pct": 0.1
+    }
+  },
+  "2025": {
+    "LPTA": {
+      "count": 268,
+      "pct": 1.3
+    },
+    "Best-Value Tradeoff": {
+      "count": 773,
+      "pct": 3.8
+    },
+    "Fair Opportunity": {
+      "count": 5638,
+      "pct": 27.4
+    },
+    "Negotiated Proposal": {
+      "count": 9927,
+      "pct": 48.2
+    },
+    "Simplified Acquisition": {
+      "count": 1587,
+      "pct": 7.7
+    },
+    "Sole Source": {
+      "count": 2401,
+      "pct": 11.7
+    },
+    "Not Competed": {
+      "count": 4,
+      "pct": 0.0
+    }
+  },
+  "2026": {
+    "LPTA": {
+      "count": 89,
+      "pct": 0.8
+    },
+    "Best-Value Tradeoff": {
+      "count": 443,
+      "pct": 3.9
+    },
+    "Fair Opportunity": {
+      "count": 3277,
+      "pct": 28.8
+    },
+    "Negotiated Proposal": {
+      "count": 5909,
+      "pct": 51.9
+    },
+    "Simplified Acquisition": {
+      "count": 620,
+      "pct": 5.4
+    },
+    "Sole Source": {
+      "count": 1050,
+      "pct": 9.2
+    },
+    "Not Competed": {
+      "count": 1,
+      "pct": 0.0
     }
   }
 }

@@ -150,7 +150,21 @@ def extract_row(row: dict) -> dict:
     }
 
 
+# SAM Public V2 monthly .dat file is pipe-delimited with NO header row.
+# Field positions confirmed by matching known UEIs against the extract.
+# See: https://open.gsa.gov/api/sam-entity-management/ for schema reference.
+SAM_FIELD_POSITIONS = {
+    0:  "uei",                   # UEI SAM (12-char unique entity identifier)
+    7:  "sam_registration_date", # YYYYMMDD
+    11: "legal_business_name",
+    17: "city",
+    18: "state",
+    24: "entity_start_date",     # YYYYMMDD — entity incorporation / start date
+}
+
+
 def parse_extract(zip_path: Path, target_ueis: set[str]) -> list[dict]:
+    """Parse SAM V2 pipe-delimited .dat file (no header row) using positional indices."""
     print("Parsing extract (scanning for matching UEIs)...")
     matches = []
 
@@ -160,33 +174,34 @@ def parse_extract(zip_path: Path, target_ueis: set[str]) -> list[dict]:
         if not data_files:
             data_files = [n for n in zf.namelist() if not n.endswith("/")]
         print(f"  Files in ZIP: {data_files}")
-        dat_file = data_files[0]
 
-        with zf.open(dat_file) as raw:
-            wrapper = io.TextIOWrapper(raw, encoding="latin-1", newline="", errors="replace")
-            reader  = csv.DictReader(wrapper, delimiter="|")
+        for dat_file in data_files:
+            with zf.open(dat_file) as raw:
+                scanned = 0
+                for line in io.TextIOWrapper(raw, encoding="utf-8-sig", errors="replace"):
+                    line = line.rstrip("\n\r")
+                    if not line or len(line) < 12:
+                        continue
+                    fields = line.split("|")
+                    uei = fields[0].strip() if fields else ""
+                    # Skip non-UEI rows (BOF/HDR/EOF records, spaces in field 0)
+                    if " " in uei or len(uei) != 12:
+                        continue
+                    scanned += 1
+                    if scanned % 500_000 == 0:
+                        print(f"  ...scanned {scanned:,} rows, {len(matches):,} matches so far")
+                    if uei not in target_ueis:
+                        continue
 
-            # Print column names on first run so we can verify
-            if reader.fieldnames:
-                emp_cols = [c for c in reader.fieldnames if "EMPLOYEE" in c.upper()]
-                sba_cols = [c for c in reader.fieldnames if "SBA" in c.upper()]
-                print(f"  Employee-related columns: {emp_cols}")
-                print(f"  SBA-related columns: {sba_cols}")
-            else:
-                print("  WARNING: No column headers found in extract file!")
+                    out = {}
+                    for pos, name in SAM_FIELD_POSITIONS.items():
+                        val = fields[pos].strip() if pos < len(fields) else ""
+                        if name.endswith("_date") and len(val) == 8 and val.isdigit():
+                            val = f"{val[:4]}-{val[4:6]}-{val[6:8]}"
+                        out[name] = val
+                    matches.append(out)
 
-            for i, row in enumerate(reader):
-                if i % 500_000 == 0 and i > 0:
-                    print(f"  ...scanned {i:,} rows, {len(matches):,} matches so far")
-
-                uei = (row.get("UNIQUE_ENTITY_ID") or row.get("UEI_SAM") or "").strip()
-                if not uei or uei not in target_ueis:
-                    continue
-
-                matches.append(extract_row(row))
-                if len(matches) == len(target_ueis):
-                    print(f"  Found all {len(target_ueis)} UEIs — stopping early at row {i:,}")
-                    break
+                print(f"  Scanned {scanned:,} rows, matched {len(matches):,} UEIs")
 
     print(f"Found {len(matches):,} matching entities")
     return matches
@@ -215,13 +230,8 @@ def main():
     print(f"\nSaved {len(df):,} entities → {OUTPUT_CSV}")
     print(f"Coverage: {coverage:.1f}% of UEIs in contracts_raw.csv")
 
-    # Quick stats
-    has_emp = (df["number_of_employees"] != "").sum()
-    has_sba = (df["sba_business_types"] != "").sum()
-    print(f"  Has employee count: {has_emp:,} ({has_emp/len(df)*100:.0f}%)")
-    print(f"  Has SBA types:      {has_sba:,} ({has_sba/len(df)*100:.0f}%)")
-    if has_emp:
-        print(f"  Employee count sample: {df[df['number_of_employees']!='']['number_of_employees'].head(5).tolist()}")
+    has_start = (df["entity_start_date"] != "").sum()
+    print(f"  Has entity_start_date: {has_start:,} ({has_start/len(df)*100:.0f}%)")
 
 
 if __name__ == "__main__":

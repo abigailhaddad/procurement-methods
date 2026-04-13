@@ -1,11 +1,19 @@
 [
   {
     "name": "BOOZ ALLEN HAMILTON INC",
-    "total_contracts": 9,
-    "total_obligated_m": 569.4,
-    "lpta_contracts": 1,
-    "to_contracts": 8,
-    "lpta_share_pct": 11.1
+    "total_contracts": 91,
+    "total_obligated_m": 1114.3,
+    "lpta_contracts": 5,
+    "to_contracts": 86,
+    "lpta_share_pct": 5.5
+  },
+  {
+    "name": "GENERAL DYNAMICS INFORMATION TECHNOLOGY, INC.",
+    "total_contracts": 20,
+    "total_obligated_m": 345.5,
+    "lpta_contracts": 2,
+    "to_contracts": 18,
+    "lpta_share_pct": 10.0
   },
   {
     "name": "SPREZZATURA MANAGEMENT CONSULTING, LLC",
@@ -16,147 +24,139 @@
     "lpta_share_pct": 0.0
   },
   {
+    "name": "COGNOSANTE MVH LLC",
+    "total_contracts": 4,
+    "total_obligated_m": 322.1,
+    "lpta_contracts": 0,
+    "to_contracts": 4,
+    "lpta_share_pct": 0.0
+  },
+  {
     "name": "L3HARRIS TECHNOLOGIES, INC.",
+    "total_contracts": 5,
+    "total_obligated_m": 292.7,
+    "lpta_contracts": 0,
+    "to_contracts": 5,
+    "lpta_share_pct": 0.0
+  },
+  {
+    "name": "SOFTRAMS LLC",
+    "total_contracts": 8,
+    "total_obligated_m": 281.5,
+    "lpta_contracts": 1,
+    "to_contracts": 7,
+    "lpta_share_pct": 12.5
+  },
+  {
+    "name": "PERATON INC.",
+    "total_contracts": 10,
+    "total_obligated_m": 273.5,
+    "lpta_contracts": 1,
+    "to_contracts": 9,
+    "lpta_share_pct": 10.0
+  },
+  {
+    "name": "SPATIAL FRONT INC",
+    "total_contracts": 68,
+    "total_obligated_m": 257.5,
+    "lpta_contracts": 42,
+    "to_contracts": 26,
+    "lpta_share_pct": 61.8
+  },
+  {
+    "name": "INTERNATIONAL BUSINESS MACHINES CORPORATION",
+    "total_contracts": 33,
+    "total_obligated_m": 231.2,
+    "lpta_contracts": 7,
+    "to_contracts": 26,
+    "lpta_share_pct": 21.2
+  },
+  {
+    "name": "MAVERIS LLC",
     "total_contracts": 3,
-    "total_obligated_m": 285.2,
+    "total_obligated_m": 208.2,
     "lpta_contracts": 0,
     "to_contracts": 3,
+    "lpta_share_pct": 0.0
+  },
+  {
+    "name": "ECS FEDERAL, LLC",
+    "total_contracts": 15,
+    "total_obligated_m": 182.3,
+    "lpta_contracts": 3,
+    "to_contracts": 12,
+    "lpta_share_pct": 20.0
+  },
+  {
+    "name": "ODDBALL, INC.",
+    "total_contracts": 7,
+    "total_obligated_m": 169.7,
+    "lpta_contracts": 0,
+    "to_contracts": 7,
+    "lpta_share_pct": 0.0
+  },
+  {
+    "name": "NAVA PBC",
+    "total_contracts": 11,
+    "total_obligated_m": 167.5,
+    "lpta_contracts": 0,
+    "to_contracts": 11,
     "lpta_share_pct": 0.0
   },
   {
     "name": "DYNAMO TECHNOLOGIES, LLC",
-    "total_contracts": 5,
-    "total_obligated_m": 141.9,
+    "total_contracts": 12,
+    "total_obligated_m": 162.5,
     "lpta_contracts": 1,
-    "to_contracts": 4,
-    "lpta_share_pct": 20.0
+    "to_contracts": 11,
+    "lpta_share_pct": 8.3
   },
   {
-    "name": "GUIDEHOUSE INC.",
-    "total_contracts": 1,
-    "total_obligated_m": 119.1,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "GENERAL DYNAMICS INFORMATION TECHNOLOGY, INC.",
+    "name": "CLARITY INNOVATIONS LLC",
     "total_contracts": 2,
-    "total_obligated_m": 101.9,
+    "total_obligated_m": 154.8,
     "lpta_contracts": 0,
     "to_contracts": 2,
     "lpta_share_pct": 0.0
+  },
+  {
+    "name": "INDEX ANALYTICS LLC",
+    "total_contracts": 11,
+    "total_obligated_m": 153.4,
+    "lpta_contracts": 0,
+    "to_contracts": 11,
+    "lpta_share_pct": 0.0
+  },
+  {
+    "name": "RAFT LLC",
+    "total_contracts": 16,
+    "total_obligated_m": 148.9,
+    "lpta_contracts": 1,
+    "to_contracts": 15,
+    "lpta_share_pct": 6.2
+  },
+  {
+    "name": "REI SYSTEMS, INC.",
+    "total_contracts": 13,
+    "total_obligated_m": 143.4,
+    "lpta_contracts": 0,
+    "to_contracts": 13,
+    "lpta_share_pct": 0.0
+  },
+  {
+    "name": "OMNI FED LLC",
+    "total_contracts": 12,
+    "total_obligated_m": 136.1,
+    "lpta_contracts": 1,
+    "to_contracts": 11,
+    "lpta_share_pct": 8.3
   },
   {
     "name": "PERATON TECHNOLOGY SERVICES INC.",
-    "total_contracts": 6,
-    "total_obligated_m": 101.2,
+    "total_contracts": 17,
+    "total_obligated_m": 126.6,
     "lpta_contracts": 0,
-    "to_contracts": 6,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "J.R. REINGOLD & ASSOCIATES, INC.",
-    "total_contracts": 1,
-    "total_obligated_m": 79.3,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "VETERANS EZ INFO INC.",
-    "total_contracts": 1,
-    "total_obligated_m": 62.0,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "SATSYIL CORP",
-    "total_contracts": 1,
-    "total_obligated_m": 61.6,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "PLANNED SYSTEMS INTERNATIONAL INC",
-    "total_contracts": 1,
-    "total_obligated_m": 58.3,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "FUSION TECHNOLOGY LLC",
-    "total_contracts": 1,
-    "total_obligated_m": 48.6,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "CHENEGA PROFESSIONAL & TECHNICAL SERVICES LLC",
-    "total_contracts": 1,
-    "total_obligated_m": 47.8,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "THE ONE 23 GROUP INC.",
-    "total_contracts": 1,
-    "total_obligated_m": 35.6,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "DIGITAL INFUZION, LLC",
-    "total_contracts": 1,
-    "total_obligated_m": 34.1,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "KEVADIYA INC.",
-    "total_contracts": 1,
-    "total_obligated_m": 33.3,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "AGILE SIX APPLICATIONS, INC",
-    "total_contracts": 1,
-    "total_obligated_m": 31.5,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "FLEXION INC",
-    "total_contracts": 2,
-    "total_obligated_m": 30.1,
-    "lpta_contracts": 0,
-    "to_contracts": 2,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "SPATIAL FRONT INC",
-    "total_contracts": 3,
-    "total_obligated_m": 30.0,
-    "lpta_contracts": 0,
-    "to_contracts": 3,
-    "lpta_share_pct": 0.0
-  },
-  {
-    "name": "3RD EYE TECHNOLOGIES INC.",
-    "total_contracts": 1,
-    "total_obligated_m": 29.8,
-    "lpta_contracts": 0,
-    "to_contracts": 1,
+    "to_contracts": 17,
     "lpta_share_pct": 0.0
   }
 ]

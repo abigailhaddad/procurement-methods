@@ -1,6 +1,22 @@
 {
   "fiscal_years": [
     {
+      "value": 2022,
+      "label": "FY2022"
+    },
+    {
+      "value": 2023,
+      "label": "FY2023"
+    },
+    {
+      "value": 2024,
+      "label": "FY2024"
+    },
+    {
+      "value": 2025,
+      "label": "FY2025"
+    },
+    {
       "value": 2026,
       "label": "FY2026"
     }
@@ -17,6 +33,38 @@
   ],
   "departments": [
     {
+      "value": "Agency for International Development",
+      "label": "Agency for International Development"
+    },
+    {
+      "value": "Committee for Purchase from People Who Are Blind or Severely Disabled",
+      "label": "Committee for Purchase from People Who Are Blind or Severely Disabled"
+    },
+    {
+      "value": "Commodity Futures Trading Commission",
+      "label": "Commodity Futures Trading Commission"
+    },
+    {
+      "value": "Consumer Financial Protection Bureau",
+      "label": "Consumer Financial Protection Bureau"
+    },
+    {
+      "value": "Consumer Product Safety Commission",
+      "label": "Consumer Product Safety Commission"
+    },
+    {
+      "value": "Corporation for National and Community Service",
+      "label": "Corporation for National and Community Service"
+    },
+    {
+      "value": "Council of the Inspectors General on Integrity and Efficiency",
+      "label": "Council of the Inspectors General on Integrity and Efficiency"
+    },
+    {
+      "value": "Defense Nuclear Facilities Safety Board",
+      "label": "Defense Nuclear Facilities Safety Board"
+    },
+    {
       "value": "Department of Agriculture",
       "label": "Department of Agriculture"
     },
@@ -25,12 +73,40 @@
       "label": "Department of Commerce"
     },
     {
+      "value": "Department of Defense",
+      "label": "Department of Defense"
+    },
+    {
+      "value": "Department of Education",
+      "label": "Department of Education"
+    },
+    {
+      "value": "Department of Energy",
+      "label": "Department of Energy"
+    },
+    {
+      "value": "Department of Health and Human Services",
+      "label": "Department of Health and Human Services"
+    },
+    {
+      "value": "Department of Homeland Security",
+      "label": "Department of Homeland Security"
+    },
+    {
+      "value": "Department of Housing and Urban Development",
+      "label": "Department of Housing and Urban Development"
+    },
+    {
       "value": "Department of Justice",
       "label": "Department of Justice"
     },
     {
       "value": "Department of State",
       "label": "Department of State"
+    },
+    {
+      "value": "Department of Transportation",
+      "label": "Department of Transportation"
     },
     {
       "value": "Department of Veterans Affairs",
@@ -45,12 +121,44 @@
       "label": "Department of the Treasury"
     },
     {
+      "value": "District of Columbia Courts",
+      "label": "District of Columbia Courts"
+    },
+    {
+      "value": "Environmental Protection Agency",
+      "label": "Environmental Protection Agency"
+    },
+    {
       "value": "Equal Employment Opportunity Commission",
       "label": "Equal Employment Opportunity Commission"
     },
     {
+      "value": "Export-Import Bank of the United States",
+      "label": "Export-Import Bank of the United States"
+    },
+    {
       "value": "Federal Communications Commission",
       "label": "Federal Communications Commission"
+    },
+    {
+      "value": "Federal Election Commission",
+      "label": "Federal Election Commission"
+    },
+    {
+      "value": "Federal Labor Relations Authority",
+      "label": "Federal Labor Relations Authority"
+    },
+    {
+      "value": "Federal Maritime Commission",
+      "label": "Federal Maritime Commission"
+    },
+    {
+      "value": "Federal Mediation and Conciliation Service",
+      "label": "Federal Mediation and Conciliation Service"
+    },
+    {
+      "value": "Federal Mine Safety and Health Review Commission",
+      "label": "Federal Mine Safety and Health Review Commission"
     },
     {
       "value": "Federal Trade Commission",
@@ -65,20 +173,92 @@
       "label": "Government Accountability Office"
     },
     {
+      "value": "Institute of Museum and Library Services",
+      "label": "Institute of Museum and Library Services"
+    },
+    {
       "value": "International Trade Commission",
       "label": "International Trade Commission"
+    },
+    {
+      "value": "Merit Systems Protection Board",
+      "label": "Merit Systems Protection Board"
+    },
+    {
+      "value": "Millennium Challenge Corporation",
+      "label": "Millennium Challenge Corporation"
+    },
+    {
+      "value": "Morris K. Udall and Stewart L. Udall Foundation",
+      "label": "Morris K. Udall and Stewart L. Udall Foundation"
+    },
+    {
+      "value": "National Aeronautics and Space Administration",
+      "label": "National Aeronautics and Space Administration"
+    },
+    {
+      "value": "National Archives and Records Administration",
+      "label": "National Archives and Records Administration"
+    },
+    {
+      "value": "National Endowment for the Arts",
+      "label": "National Endowment for the Arts"
+    },
+    {
+      "value": "National Labor Relations Board",
+      "label": "National Labor Relations Board"
+    },
+    {
+      "value": "National Science Foundation",
+      "label": "National Science Foundation"
+    },
+    {
+      "value": "National Transportation Safety Board",
+      "label": "National Transportation Safety Board"
     },
     {
       "value": "Nuclear Regulatory Commission",
       "label": "Nuclear Regulatory Commission"
     },
     {
+      "value": "Occupational Safety and Health Review Commission",
+      "label": "Occupational Safety and Health Review Commission"
+    },
+    {
       "value": "Office of Personnel Management",
       "label": "Office of Personnel Management"
     },
     {
+      "value": "Railroad Retirement Board",
+      "label": "Railroad Retirement Board"
+    },
+    {
+      "value": "Securities and Exchange Commission",
+      "label": "Securities and Exchange Commission"
+    },
+    {
+      "value": "Selective Service System",
+      "label": "Selective Service System"
+    },
+    {
+      "value": "Small Business Administration",
+      "label": "Small Business Administration"
+    },
+    {
       "value": "Social Security Administration",
       "label": "Social Security Administration"
+    },
+    {
+      "value": "U.S. Agency for Global Media",
+      "label": "U.S. Agency for Global Media"
+    },
+    {
+      "value": "U.S. International Development Finance Corporation",
+      "label": "U.S. International Development Finance Corporation"
+    },
+    {
+      "value": "United States Chemical Safety Board",
+      "label": "United States Chemical Safety Board"
     }
   ],
   "tradeoff_codes": [
@@ -101,6 +281,18 @@
       "label": "1"
     },
     {
+      "value": "2",
+      "label": "2"
+    },
+    {
+      "value": "3",
+      "label": "3"
+    },
+    {
+      "value": "A",
+      "label": "BPA Call"
+    },
+    {
       "value": "B",
       "label": "B"
     },
@@ -117,12 +309,28 @@
       "label": "L"
     },
     {
+      "value": "M",
+      "label": "M"
+    },
+    {
       "value": "R",
       "label": "R"
     },
     {
+      "value": "S",
+      "label": "Cost No Fee"
+    },
+    {
+      "value": "T",
+      "label": "T"
+    },
+    {
       "value": "U",
       "label": "Cost Plus Fixed Fee"
+    },
+    {
+      "value": "V",
+      "label": "Cost Plus Award Fee"
     },
     {
       "value": "Y",

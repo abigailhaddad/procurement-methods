@@ -1,1 +1,52 @@
-[]
+[
+  {
+    "age_bin": "<2 yrs",
+    "total": 78,
+    "LPTA_pct": 6.4,
+    "LPTA_count": 5,
+    "O_pct": 75.6,
+    "O_count": 59,
+    "TO_pct": 17.9,
+    "TO_count": 14
+  },
+  {
+    "age_bin": "2\u20135 yrs",
+    "total": 263,
+    "LPTA_pct": 14.8,
+    "LPTA_count": 39,
+    "O_pct": 70.7,
+    "O_count": 186,
+    "TO_pct": 14.4,
+    "TO_count": 38
+  },
+  {
+    "age_bin": "5\u201310 yrs",
+    "total": 1289,
+    "LPTA_pct": 16.3,
+    "LPTA_count": 210,
+    "O_pct": 65.2,
+    "O_count": 840,
+    "TO_pct": 18.5,
+    "TO_count": 239
+  },
+  {
+    "age_bin": "10\u201320 yrs",
+    "total": 2943,
+    "LPTA_pct": 15.2,
+    "LPTA_count": 446,
+    "O_pct": 58.8,
+    "O_count": 1731,
+    "TO_pct": 26.0,
+    "TO_count": 766
+  },
+  {
+    "age_bin": "20+ yrs",
+    "total": 3777,
+    "LPTA_pct": 12.4,
+    "LPTA_count": 470,
+    "O_pct": 63.1,
+    "O_count": 2384,
+    "TO_pct": 24.4,
+    "TO_count": 923
+  }
+]
