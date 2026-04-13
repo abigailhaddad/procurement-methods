@@ -397,6 +397,28 @@ def top_vendors(df: pd.DataFrame, n: int = 20) -> list:
     ]
 
 
+PROTESTS_CSV = Path("data/protests_matched.csv")
+
+
+def protest_summary() -> dict | None:
+    """Load protest data and build summary for dashboard."""
+    if not PROTESTS_CSV.exists():
+        return None
+    protests = pd.read_csv(PROTESTS_CSV)
+    if protests.empty:
+        return None
+    return {
+        "solicitations_protested": int(len(protests)),
+        "total_protests":          int(protests["protest_count"].sum()),
+        "sustained":               int(protests["sustained_count"].sum()),
+        "denied":                  int(protests["denied_count"].sum()),
+        "dismissed":               int(protests["dismissed_count"].sum()),
+        "withdrawn":               int(protests["withdrawn_count"].sum()),
+        "pending":                 int(protests.get("pending_count", pd.Series([0])).sum()),
+        "protests": protests.sort_values("protest_count", ascending=False).head(20).to_dict("records"),
+    }
+
+
 def filter_options(df: pd.DataFrame) -> dict:
     def clean(series, label_map=None):
         vals = sorted(series.dropna().unique().tolist())
@@ -446,6 +468,15 @@ def main():
         "top_vendors.json":        top_vendors(df),
         "filters.json":            filter_options(df),
     }
+
+    # Protest data (optional — only if fetch_protests.py has been run)
+    protest_data = protest_summary()
+    if protest_data:
+        outputs["protests.json"] = protest_data
+        print(f"  Protests: {protest_data['total_protests']} on {protest_data['solicitations_protested']} solicitations "
+              f"({protest_data['sustained']} sustained)")
+    else:
+        print("  No protest data — run fetch_protests.py to add GAO protest analysis")
 
     for fname, data in outputs.items():
         path = WEB_DATA_DIR / fname

@@ -111,14 +111,23 @@
   <h2 class="section-header">What we're looking at</h2>
 
   <p class="narrative">
-    This dataset covers federal contracts for custom software development and
-    systems design &mdash; NAICS codes
-    <strong>541511</strong> and <strong>541512</strong> &mdash; from
+    This dataset covers a slice of federal IT procurement: specifically
+    <strong>NAICS 541511</strong> (Custom Computer Programming) and
+    <strong>541512</strong> (Computer Systems Design) from
     <span id="fyRange">FY2022 through FY2026</span>.
+    These are two codes within the broader 5415 "Computer Systems Design and
+    Related Services" family, which also includes 541513 (Computer Facilities
+    Management), 541519 (Other Computer Related Services), and others.
+    We chose 541511 + 541512 because they're the most specific to software
+    development and systems integration work &mdash; the kind of contracts where
+    evaluation methodology matters most for outcomes.
+  </p>
+  <p class="narrative">
     The contract records come from
     <a href="https://www.usaspending.gov" target="_blank">USASpending</a> bulk
     award archives. All
-    <a href="https://github.com/abigailhaddad/procurement-methods" target="_blank">code is on GitHub</a>.
+    <a href="https://github.com/abigailhaddad/procurement-methods" target="_blank">code is on GitHub</a>
+    and the pipeline is designed to be extended to other NAICS codes.
   </p>
 
   <div class="stats-row">
@@ -229,6 +238,41 @@
       LPTA and Tradeoff columns reflect only contracts with FPDS tradeoff codes.
       Most large contracts flow through fair opportunity (IDIQ/GWAC task orders).
     </p>
+  </div>
+
+  <!-- ─── PROTESTS ───────────────────────────────────────────────────── -->
+  <div id="protestSection" style="display:none;">
+    <h2 class="section-header">Do these contracts get protested?</h2>
+
+    <p class="narrative">
+      We matched GAO bid protest filings against the solicitation IDs in our IT
+      contract dataset. This shows which contract awards were formally challenged
+      and what happened.
+    </p>
+
+    <div class="stats-row" id="protestStats"></div>
+
+    <div class="chart-card" id="protestTableCard" style="display:none;">
+      <h3>Protested IT solicitations</h3>
+      <div class="table-scroll-wrapper" style="margin-top:0.75rem;">
+        <table class="vendor-table">
+          <thead>
+            <tr>
+              <th>Solicitation</th>
+              <th>Agency</th>
+              <th class="num">Protests</th>
+              <th>Outcomes</th>
+              <th>Link</th>
+            </tr>
+          </thead>
+          <tbody id="protestBody"></tbody>
+        </table>
+      </div>
+      <p class="chart-note" style="margin-top:0.75rem;">
+        Protest data from GAO via the Tango API. Only covers protests filed since
+        Jan 2025 &mdash; run <code>fetch_protests.py</code> to expand the date range.
+      </p>
+    </div>
   </div>
 
   <!-- ─── WHAT'S IN THE DATA ──────────────────────────────────────── -->
@@ -506,7 +550,7 @@ function mkChart(id, config) {
 
 async function loadAll() {
   const files = ['summary','by_eval_method','by_eval_method_fy','by_agency','top_vendors',
-                 'by_vendor_age','filters'];
+                 'by_vendor_age','protests','filters'];
   const results = await Promise.all(
     files.map(f => fetch(`data/${f}.json`).then(r => r.json()).catch(() => null))
   );
@@ -523,6 +567,7 @@ function render() {
   renderFYNarrative();
   renderVendorAge();
   renderAgency();
+  renderProtests();
   renderVendorTable();
   renderGaps();
 }
@@ -757,6 +802,45 @@ function renderVendorTable() {
     <td class="num">${v.to_contracts.toLocaleString()}</td>
     <td><span class="bar-inline" style="width:${Math.round(v.lpta_share_pct)}px;background:${EM.LPTA.bg};"></span>${v.lpta_share_pct}%</td>
   </tr>`).join('');
+}
+
+function renderProtests() {
+  const d = DATA.protests;
+  if (!d || !d.total_protests) return;
+  document.getElementById('protestSection').style.display = '';
+
+  // Stat cards
+  document.getElementById('protestStats').innerHTML = `
+    <div class="stat-card"><h3>Solicitations Protested</h3>
+      <div class="stat-value">${d.solicitations_protested}</div>
+      <div class="stat-sub">of ${DATA.summary?.total_contracts?.toLocaleString() || '?'} IT contracts</div></div>
+    <div class="stat-card"><h3>Total Protests</h3>
+      <div class="stat-value">${d.total_protests}</div>
+      <div class="stat-sub">filed with GAO</div></div>
+    <div class="stat-card"><h3>Sustained</h3>
+      <div class="stat-value">${d.sustained}</div>
+      <div class="stat-sub">protest upheld by GAO</div></div>
+    <div class="stat-card"><h3>Denied</h3>
+      <div class="stat-value">${d.denied}</div>
+      <div class="stat-sub">protest rejected</div></div>
+  `;
+
+  // Table
+  if (d.protests && d.protests.length) {
+    document.getElementById('protestTableCard').style.display = '';
+    document.getElementById('protestBody').innerHTML = d.protests.map(p => {
+      const urls = (p.docket_urls || '').split('; ').filter(Boolean);
+      const link = urls.length ? `<a href="${urls[0]}" target="_blank" style="color:var(--color-accent);">GAO docket</a>` : '';
+      const sustained = p.sustained_count > 0 ? ' style="background:#fde2e2;"' : '';
+      return `<tr${sustained}>
+        <td style="font-family:var(--font-mono,monospace);font-size:0.8rem;">${p.solicitation_identifier}</td>
+        <td>${p.agencies || ''}</td>
+        <td class="num">${p.protest_count}</td>
+        <td>${p.outcomes || ''}</td>
+        <td>${link}</td>
+      </tr>`;
+    }).join('');
+  }
 }
 
 function renderGaps() {
