@@ -8,6 +8,18 @@
   "pending": 1,
   "protests": [
     {
+      "solicitation_identifier": "12314425Q0031",
+      "protest_count": 1,
+      "sustained_count": 1,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of Agriculture",
+      "outcomes": "Sustained",
+      "docket_urls": "https://www.gao.gov/docket/b-423392.3"
+    },
+    {
       "solicitation_identifier": "HS002124R0049",
       "protest_count": 1,
       "sustained_count": 0,
@@ -32,55 +44,7 @@
       "docket_urls": "https://www.gao.gov/docket/b-423280.2"
     },
     {
-      "solicitation_identifier": "15F06725Q0000156",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 0,
-      "withdrawn_count": 0,
-      "dismissed_count": 1,
-      "pending_count": 0,
-      "agencies": "Department of Justice",
-      "outcomes": "Dismissed",
-      "docket_urls": "https://www.gao.gov/docket/b-424042.2"
-    },
-    {
-      "solicitation_identifier": "70SBUR25R00000009",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 1,
-      "withdrawn_count": 0,
-      "dismissed_count": 0,
-      "pending_count": 0,
-      "agencies": "Department of Homeland Security",
-      "outcomes": "Denied",
-      "docket_urls": "https://www.gao.gov/docket/b-423943.2"
-    },
-    {
-      "solicitation_identifier": "70SBUR24Q00000105",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 1,
-      "withdrawn_count": 0,
-      "dismissed_count": 0,
-      "pending_count": 0,
-      "agencies": "Department of Homeland Security",
-      "outcomes": "Denied",
-      "docket_urls": "https://www.gao.gov/docket/b-423837.3"
-    },
-    {
-      "solicitation_identifier": "89233123RNA000168",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 0,
-      "withdrawn_count": 1,
-      "dismissed_count": 0,
-      "pending_count": 0,
-      "agencies": "Department of Energy",
-      "outcomes": "Withdrawn",
-      "docket_urls": "https://www.gao.gov/docket/b-422616.2"
-    },
-    {
-      "solicitation_identifier": "70FA3123Q00000045",
+      "solicitation_identifier": "70CTD024Q00000016",
       "protest_count": 1,
       "sustained_count": 0,
       "denied_count": 0,
@@ -89,70 +53,10 @@
       "pending_count": 0,
       "agencies": "Department of Homeland Security",
       "outcomes": "Withdrawn",
-      "docket_urls": "https://www.gao.gov/docket/b-422384.6"
+      "docket_urls": "https://www.gao.gov/docket/b-423371.1"
     },
     {
-      "solicitation_identifier": "140D0425Q0326",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 0,
-      "withdrawn_count": 1,
-      "dismissed_count": 0,
-      "pending_count": 0,
-      "agencies": "Department of the Interior",
-      "outcomes": "Withdrawn",
-      "docket_urls": "https://www.gao.gov/docket/b-423899.1"
-    },
-    {
-      "solicitation_identifier": "HTC71124RD001",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 1,
-      "withdrawn_count": 0,
-      "dismissed_count": 0,
-      "pending_count": 0,
-      "agencies": "Department of the Air Force",
-      "outcomes": "Denied",
-      "docket_urls": "https://www.gao.gov/docket/b-423859.1"
-    },
-    {
-      "solicitation_identifier": "HQ003425QE071",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 0,
-      "withdrawn_count": 0,
-      "dismissed_count": 1,
-      "pending_count": 0,
-      "agencies": "Department of Defense",
-      "outcomes": "Dismissed",
-      "docket_urls": "https://www.gao.gov/docket/b-423706.2"
-    },
-    {
-      "solicitation_identifier": "70SBUR24Q00000106",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 0,
-      "withdrawn_count": 0,
-      "dismissed_count": 1,
-      "pending_count": 0,
-      "agencies": "Department of Homeland Security",
-      "outcomes": "Dismissed",
-      "docket_urls": "https://www.gao.gov/docket/b-423829.1"
-    },
-    {
-      "solicitation_identifier": "70B03C25Q00000234",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 0,
-      "withdrawn_count": 0,
-      "dismissed_count": 1,
-      "pending_count": 0,
-      "agencies": "Department of Homeland Security",
-      "outcomes": "Dismissed",
-      "docket_urls": "https://www.gao.gov/docket/b-423808.1"
-    },
-    {
-      "solicitation_identifier": "75F40124Q00448",
+      "solicitation_identifier": "75D301-25-R-73224",
       "protest_count": 1,
       "sustained_count": 0,
       "denied_count": 0,
@@ -161,10 +65,82 @@
       "pending_count": 0,
       "agencies": "Department of Health and Human Services",
       "outcomes": "Dismissed",
-      "docket_urls": "https://www.gao.gov/docket/b-423330.7"
+      "docket_urls": "https://www.gao.gov/docket/b-423343.3"
     },
     {
-      "solicitation_identifier": "47QFDA25R0002",
+      "solicitation_identifier": "1305M425Q0029",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of Commerce",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423427.1"
+    },
+    {
+      "solicitation_identifier": "70RTAC24Q00000089",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of Homeland Security",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423083.4"
+    },
+    {
+      "solicitation_identifier": "1305M324Q0286",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 1,
+      "withdrawn_count": 0,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of Commerce",
+      "outcomes": "Denied",
+      "docket_urls": "https://www.gao.gov/docket/b-422910.2"
+    },
+    {
+      "solicitation_identifier": "70Z0G325QESD30001",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of Homeland Security",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423465.2"
+    },
+    {
+      "solicitation_identifier": "1305M324Q0367",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 1,
+      "withdrawn_count": 0,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of Commerce",
+      "outcomes": "Denied",
+      "docket_urls": "https://www.gao.gov/docket/b-423027.3"
+    },
+    {
+      "solicitation_identifier": "36C10B24R0020",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 1,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of Veterans Affairs",
+      "outcomes": "Withdrawn",
+      "docket_urls": "https://www.gao.gov/docket/b-422710.4"
+    },
+    {
+      "solicitation_identifier": "47QSMD20R0001",
       "protest_count": 1,
       "sustained_count": 0,
       "denied_count": 0,
@@ -173,22 +149,22 @@
       "pending_count": 0,
       "agencies": "Independent Government Entities",
       "outcomes": "Withdrawn",
-      "docket_urls": "https://www.gao.gov/docket/b-423743.2"
+      "docket_urls": "https://www.gao.gov/docket/b-420784.3"
     },
     {
-      "solicitation_identifier": "47QFCA25R0006",
+      "solicitation_identifier": "70RCSJ23Q00000005",
       "protest_count": 1,
       "sustained_count": 0,
-      "denied_count": 1,
+      "denied_count": 0,
       "withdrawn_count": 0,
-      "dismissed_count": 0,
+      "dismissed_count": 1,
       "pending_count": 0,
-      "agencies": "Independent Government Entities",
-      "outcomes": "Denied",
-      "docket_urls": "https://www.gao.gov/docket/b-423639.3"
+      "agencies": "Department of Homeland Security",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423580.1"
     },
     {
-      "solicitation_identifier": "C-120673-SB",
+      "solicitation_identifier": "75F40124Q00253",
       "protest_count": 1,
       "sustained_count": 0,
       "denied_count": 0,
@@ -197,31 +173,7 @@
       "pending_count": 0,
       "agencies": "Department of Health and Human Services",
       "outcomes": "Dismissed",
-      "docket_urls": "https://www.gao.gov/docket/b-423719.3"
-    },
-    {
-      "solicitation_identifier": "19AQMM25Q0002",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 0,
-      "withdrawn_count": 0,
-      "dismissed_count": 1,
-      "pending_count": 0,
-      "agencies": "Department of State",
-      "outcomes": "Dismissed",
-      "docket_urls": "https://www.gao.gov/docket/b-423745.1"
-    },
-    {
-      "solicitation_identifier": "19AQMM23R0042",
-      "protest_count": 1,
-      "sustained_count": 0,
-      "denied_count": 0,
-      "withdrawn_count": 0,
-      "dismissed_count": 1,
-      "pending_count": 0,
-      "agencies": "Department of State",
-      "outcomes": "Dismissed",
-      "docket_urls": "https://www.gao.gov/docket/b-423589.7"
+      "docket_urls": "https://www.gao.gov/docket/b-423655.1"
     },
     {
       "solicitation_identifier": "HT001124R0041",
@@ -236,7 +188,31 @@
       "docket_urls": "https://www.gao.gov/docket/b-423299.2"
     },
     {
-      "solicitation_identifier": "75F40124Q00253",
+      "solicitation_identifier": "19AQMM23R0042",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of State",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423589.7"
+    },
+    {
+      "solicitation_identifier": "19AQMM25Q0002",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of State",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423745.1"
+    },
+    {
+      "solicitation_identifier": "C-120673-SB",
       "protest_count": 1,
       "sustained_count": 0,
       "denied_count": 0,
@@ -245,7 +221,175 @@
       "pending_count": 0,
       "agencies": "Department of Health and Human Services",
       "outcomes": "Dismissed",
-      "docket_urls": "https://www.gao.gov/docket/b-423655.1"
+      "docket_urls": "https://www.gao.gov/docket/b-423719.3"
+    },
+    {
+      "solicitation_identifier": "47QFCA25R0006",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 1,
+      "withdrawn_count": 0,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Independent Government Entities",
+      "outcomes": "Denied",
+      "docket_urls": "https://www.gao.gov/docket/b-423639.3"
+    },
+    {
+      "solicitation_identifier": "47QFDA25R0002",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 1,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Independent Government Entities",
+      "outcomes": "Withdrawn",
+      "docket_urls": "https://www.gao.gov/docket/b-423743.2"
+    },
+    {
+      "solicitation_identifier": "75F40124Q00448",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of Health and Human Services",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423330.7"
+    },
+    {
+      "solicitation_identifier": "70B03C25Q00000234",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of Homeland Security",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423808.1"
+    },
+    {
+      "solicitation_identifier": "70SBUR24Q00000106",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of Homeland Security",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423829.1"
+    },
+    {
+      "solicitation_identifier": "HQ003425QE071",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of Defense",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-423706.2"
+    },
+    {
+      "solicitation_identifier": "HTC71124RD001",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 1,
+      "withdrawn_count": 0,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of the Air Force",
+      "outcomes": "Denied",
+      "docket_urls": "https://www.gao.gov/docket/b-423859.1"
+    },
+    {
+      "solicitation_identifier": "140D0425Q0326",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 1,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of the Interior",
+      "outcomes": "Withdrawn",
+      "docket_urls": "https://www.gao.gov/docket/b-423899.1"
+    },
+    {
+      "solicitation_identifier": "70FA3123Q00000045",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 1,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of Homeland Security",
+      "outcomes": "Withdrawn",
+      "docket_urls": "https://www.gao.gov/docket/b-422384.6"
+    },
+    {
+      "solicitation_identifier": "89233123RNA000168",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 1,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of Energy",
+      "outcomes": "Withdrawn",
+      "docket_urls": "https://www.gao.gov/docket/b-422616.2"
+    },
+    {
+      "solicitation_identifier": "70SBUR24Q00000105",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 1,
+      "withdrawn_count": 0,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of Homeland Security",
+      "outcomes": "Denied",
+      "docket_urls": "https://www.gao.gov/docket/b-423837.3"
+    },
+    {
+      "solicitation_identifier": "70SBUR25R00000009",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 1,
+      "withdrawn_count": 0,
+      "dismissed_count": 0,
+      "pending_count": 0,
+      "agencies": "Department of Homeland Security",
+      "outcomes": "Denied",
+      "docket_urls": "https://www.gao.gov/docket/b-423943.2"
+    },
+    {
+      "solicitation_identifier": "15F06725Q0000156",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 1,
+      "pending_count": 0,
+      "agencies": "Department of Justice",
+      "outcomes": "Dismissed",
+      "docket_urls": "https://www.gao.gov/docket/b-424042.2"
+    },
+    {
+      "solicitation_identifier": "47QFCA25R0014",
+      "protest_count": 1,
+      "sustained_count": 0,
+      "denied_count": 0,
+      "withdrawn_count": 0,
+      "dismissed_count": 0,
+      "pending_count": 1,
+      "agencies": "Independent Government Entities",
+      "outcomes": "Pending",
+      "docket_urls": "https://www.gao.gov/docket/b-424255.2"
     }
   ]
 }

@@ -415,7 +415,7 @@ def protest_summary() -> dict | None:
         "dismissed":               int(protests["dismissed_count"].sum()),
         "withdrawn":               int(protests["withdrawn_count"].sum()),
         "pending":                 int(protests.get("pending_count", pd.Series([0])).sum()),
-        "protests": protests.sort_values("protest_count", ascending=False).head(20).to_dict("records"),
+        "protests": protests.sort_values(["sustained_count", "protest_count"], ascending=False).to_dict("records"),
     }
 
 
