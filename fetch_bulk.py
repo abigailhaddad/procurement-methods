@@ -79,12 +79,14 @@ KEEP_COLUMNS = [
     "base_and_exercised_options_value",
     "current_total_value_of_award",
     "base_and_all_options_value",
+    "potential_total_value_of_award",
 
     # Dates
     "action_date",
     "action_date_fiscal_year",
     "period_of_performance_start_date",
     "period_of_performance_current_end_date",
+    "period_of_performance_potential_end_date",
     "solicitation_date",
 
     # Agency
@@ -134,9 +136,17 @@ KEEP_COLUMNS = [
     "clinger_cohen_act_planning_code",
     "clinger_cohen_act_planning",
 
+    # Parent IDV / vehicle info
+    "parent_award_agency_name",
+    "parent_award_type_code",
+    "parent_award_type",
+    "type_of_idc_code",
+    "type_of_idc",
+
     # What they were buying
     "award_type_code",
     "award_type",
+    "award_description",
     "idv_type_code",
     "idv_type",
     "multiple_or_single_award_idv_code",
@@ -154,7 +164,16 @@ KEEP_COLUMNS = [
     "transaction_description",
     "prime_award_base_transaction_description",
 
+    # Modification reason (termination tracking)
+    "action_type_code",
+    "action_type_description",
+
+    # Place of performance
+    "primary_place_of_performance_state_code",
+    "primary_place_of_performance_country_code",
+
     # Contract characteristics
+    "number_of_actions",
     "solicitation_identifier",
     "national_interest_action_code",
     "national_interest_action",

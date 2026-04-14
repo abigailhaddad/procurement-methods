@@ -397,6 +397,46 @@ def top_vendors(df: pd.DataFrame, n: int = 20) -> list:
     ]
 
 
+def by_termination(df: pd.DataFrame) -> dict:
+    """Termination rates by eval method — the LPTA quality signal."""
+    if "was_terminated" not in df.columns or df["was_terminated"].isna().all():
+        return {}
+
+    result = {}
+
+    # Overall stats
+    total = len(df)
+    terminated = df["was_terminated"].sum()
+    result["overall"] = {
+        "total": int(total),
+        "terminated": int(terminated),
+        "terminated_pct": round(terminated / total * 100, 2) if total else 0,
+    }
+
+    # By eval method
+    by_method = []
+    for method in EVAL_METHOD_ORDER:
+        sub = df[df["eval_method"] == method]
+        if len(sub) < 10:
+            continue
+        t = sub["was_terminated"].sum()
+        conv = (sub["termination_type"] == "Convenience").sum() if "termination_type" in sub.columns else 0
+        defcause = (sub["termination_type"] == "Default/Cause").sum() if "termination_type" in sub.columns else 0
+        by_method.append({
+            "method": method,
+            "label": EVAL_METHOD_LABELS.get(method, method),
+            "total": int(len(sub)),
+            "terminated": int(t),
+            "terminated_pct": round(t / len(sub) * 100, 2),
+            "convenience": int(conv),
+            "default_cause": int(defcause),
+            "default_cause_pct": round(defcause / len(sub) * 100, 2) if len(sub) else 0,
+        })
+    result["by_eval_method"] = by_method
+
+    return result
+
+
 PROTESTS_CSV = Path("data/protests_matched.csv")
 
 
@@ -467,6 +507,7 @@ def main():
         "by_vendor_age.json":      by_vendor_age(df),
         "top_vendors.json":        top_vendors(df),
         "filters.json":            filter_options(df),
+        "by_termination.json":     by_termination(df),
     }
 
     # Protest data (optional — only if fetch_protests.py has been run)

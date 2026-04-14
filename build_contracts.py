@@ -124,6 +124,21 @@ def main():
     bulk["action_date"] = pd.to_datetime(bulk["action_date"], errors="coerce")
     bulk = bulk.sort_values("action_date")
 
+    # ---- Flag termination modifications ----
+    # FPDS reason-for-modification codes:
+    #   E = Terminate for Default, F = Terminate for Convenience, X = Terminate for Cause
+    # A contract may have a termination mod among its transactions. We capture
+    # the most severe termination type per contract before aggregating.
+    TERMINATION_CODES = {"E": "Terminate for Default", "F": "Terminate for Convenience", "X": "Terminate for Cause"}
+    if "action_type_code" in bulk.columns:
+        bulk["_is_termination"] = bulk["action_type_code"].isin(TERMINATION_CODES)
+        # Severity: cause/default > convenience (for "worst" termination per contract)
+        severity = {"X": 2, "E": 2, "F": 1}
+        bulk["_term_severity"] = bulk["action_type_code"].map(severity).fillna(0).astype(int)
+    else:
+        bulk["_is_termination"] = False
+        bulk["_term_severity"] = 0
+
     # USASpending bulk data is transaction-level: one row per modification.
     # We aggregate to one row per contract_award_unique_key.
     #
@@ -151,7 +166,25 @@ def main():
         other_than_full_and_open=("other_than_full_and_open_competition_code", "last"),
         number_of_offers=("number_of_offers_received", "last"),
         business_size=("contracting_officers_determination_of_business_size_code", "last"),
+        potential_value=("potential_total_value_of_award", "last"),
+        pop_start=("period_of_performance_start_date", "first"),
+        pop_end=("period_of_performance_current_end_date", "last"),
+        pop_potential_end=("period_of_performance_potential_end_date", "last"),
+        parent_award_agency=("parent_award_agency_name", "last"),
+        parent_award_type=("parent_award_type_code", "last"),
+        idc_type=("type_of_idc_code", "last"),
+        place_state=("primary_place_of_performance_state_code", "last"),
+        place_country=("primary_place_of_performance_country_code", "last"),
+        number_of_actions=("number_of_actions", "last"),
+        award_description=("award_description", "last"),
+        was_terminated=("_is_termination", "any"),
+        _max_term_severity=("_term_severity", "max"),
     ).reset_index()
+
+    # Map severity back to termination type
+    term_map = {0: None, 1: "Convenience", 2: "Default/Cause"}
+    agg["termination_type"] = agg["_max_term_severity"].map(term_map)
+    agg = agg.drop(columns=["_max_term_severity"])
 
     # Use total_dollars_obligated where available, fall back to summed actions
     agg["obligated"] = pd.to_numeric(agg["obligated"], errors="coerce")
@@ -203,11 +236,16 @@ def main():
 
     # ---- Write output ----
     out_cols = [
-        "key", "obligated", "award_date", "naics_code", "set_aside",
-        "tradeoff_code", "eval_method", "contract_type",
+        "key", "obligated", "potential_value", "award_date", "naics_code",
+        "set_aside", "tradeoff_code", "eval_method", "contract_type",
         "extent_competed", "solicitation_procedures",
         "recipient_uei", "recipient_name",
         "department", "agency",
+        "pop_start", "pop_end", "pop_potential_end",
+        "parent_award_agency", "parent_award_type", "idc_type",
+        "place_state", "place_country",
+        "number_of_actions", "award_description",
+        "was_terminated", "termination_type",
     ]
     out = agg[out_cols].copy()
     out.to_csv(OUTPUT_CSV, index=False)
@@ -216,6 +254,12 @@ def main():
     # ---- Summary ----
     print(f"\n--- Summary ---")
     print(f"Total contracts:     {len(out):,}")
+    terminated = out["was_terminated"].sum()
+    print(f"Terminated:          {terminated:,} ({terminated/len(out)*100:.1f}%)")
+    if terminated > 0:
+        for tt, n in out["termination_type"].value_counts().items():
+            if tt:
+                print(f"  {tt:25s}  {n:>6,}")
     print(f"With tradeoff code:  {out['tradeoff_code'].notna().sum():,}")
     tc = out["tradeoff_code"].value_counts()
     for code, n in tc.items():
