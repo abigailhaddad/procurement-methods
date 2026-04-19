@@ -13,34 +13,57 @@ corruption, or political donations.
 Independent daily pipeline that extracts text from RFP attachments for 541xxx
 opportunities on SAM.gov. Self-contained, doesn't feed the dashboard.
 
-- **Discovery (free):** streams `ContractOpportunitiesFullCSV.csv`, filters to
-  NAICS prefix `541` and RFP-adjacent notice types (Solicitation, Combined
-  Synopsis/Solicitation, Sources Sought, Presolicitation, Special Notice,
-  Justification, Fair Opportunity). Award Notice is skipped.
-- **Fetch (quota-bound):** for each queued noticeId, calls SAM's
-  `opportunities/v2/search?noticeid=…&postedFrom=…&postedTo=…` to get
-  attachment `resourceLinks` (1 API call; uses the month around the CSV's
-  PostedDate as the window).
-- **Extract:** downloads each attachment (free), extracts text from `.pdf` via
-  pypdf and `.docx` via python-docx, hashes the bytes, writes
-  `data/rfp_text/bundles/{noticeId}.json` = CSV metadata + API metadata +
-  per-attachment text.
-- **Budget:** hard cap via `--max-calls` (default 950, leaves headroom under
-  SAM's 1,000/day free-tier quota). Overflow stays in the queue for tomorrow.
-- **State on R2:** prefix `it_rfps/` — `state/processed.json`, `state/queue.json`,
-  `state/quota.json` (last run's stats), `bundles/{noticeId}.json`.
-- **Daily cron:** `.github/workflows/rfp_text.yml` runs at 09:00 UTC.
-- **Deps:** `pypdf`, `python-docx`, `boto3`, `requests`.
+**Bulk-search mode.** One call to `opportunities/v2/search` returns up to 1,000
+opportunities *with their resourceLinks attached*, so a full daily / weekly
+catch typically needs just a handful of API calls — not one-per-opp like the
+original design.
+
+Flow:
+
+1. Load state from R2: `processed.json` (noticeIds bundled) +
+   `last_fetched_date.json` (cursor).
+2. Set the posted-date window: from `last_fetched_date - 1 day` to today.
+   First run falls back to `--start-date` or 180 days back.
+3. Paginate `opportunities/v2/search?postedFrom=&postedTo=&limit=1000&offset=`
+   until a short page. Each page = 1 API call.
+4. For every opp in the window:
+   - Skip if NAICS prefix doesn't match (default: `541`).
+   - Skip if notice type isn't in the RFP-adjacent set.
+   - Skip if noticeId already in `processed`.
+   - Download each `resourceLink` (free S3), extract text via pypdf /
+     python-docx / openpyxl, run the regex label classifier, write
+     `bundles/{noticeId}.json`.
+5. On clean drain, advance `last_fetched_date = today`. On 429, keep the old
+   cursor so we re-try the same window tomorrow.
+6. Push state + bundles to R2 (prefix `it_rfps/`).
+
+**Labels (regex-only for now):**
+Every bundle carries `labels.{mentions_rtm, shall_count, has_agile_vocab,
+has_user_vocab}` computed from `attachments[].text + metadata.description`.
+
+**Notice types kept** (Award Notice deliberately skipped — metadata is enough):
+Solicitation, Combined Synopsis/Solicitation, Sources Sought, Presolicitation,
+Special Notice, Justification, Fair Opportunity / Limited Sources Justification.
+
+**State on R2:** prefix `it_rfps/` — `state/processed.json`,
+`state/last_fetched_date.json`, `state/quota.json` (last run's stats),
+`bundles/{noticeId}.json`.
+
+**Daily cron:** `.github/workflows/rfp_text.yml` at 09:00 UTC.
+
+**Deps:** `pypdf`, `python-docx`, `openpyxl`, `boto3`, `requests`.
 
 Run locally:
 ```bash
-python3 rfp_text_pipeline.py --dry-run                # discover + enqueue, no API
-python3 rfp_text_pipeline.py --max-calls 3            # smoke test
-python3 rfp_text_pipeline.py                           # full 950-call run
+python3 rfp_text_pipeline.py --dry-run                   # probe first page only
+python3 rfp_text_pipeline.py --start-date 2025-10-01     # bootstrap a 6mo window
+python3 rfp_text_pipeline.py                              # daily incremental
+python3 rfp_text_pipeline.py --max-api-calls 5            # bound a single run
 ```
 
-Extraction coverage on a sample run: ~76% of attachments (.pdf + .docx).
-Misses are .xlsx pricing sheets and image-only PDFs (no OCR yet).
+Extraction coverage on sample bundles: ~76% of attachments via
+pypdf/python-docx/openpyxl. XLSX preserves CLIN-level pricing. Misses are
+image-only PDFs (no OCR yet).
 
 ## Data pipeline (run in order)
 

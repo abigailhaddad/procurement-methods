@@ -1,31 +1,30 @@
 """
 rfp_text_pipeline.py — Daily pull of RFP attachment text for 541xxx opportunities.
 
-Runs once a day (or ad-hoc). Flow:
+Bulk-search mode. One API call returns up to 1,000 opportunities with their
+resourceLinks attached — so the full daily catch of 541xxx notices typically
+needs just a handful of calls, not one-per-opp.
 
-  1. Pull R2 state: processed.json (set of noticeIds already bundled) and
-     queue.json (FIFO of noticeIds we still want to fetch).
-  2. Stream ContractOpportunitiesFullCSV.csv (no quota, free S3). Filter to
-     the notice types + NAICS prefixes configured below. Add any new noticeId
-     (not in processed, not in queue) to the tail of the queue with its CSV
-     metadata captured.
-  3. Dequeue up to --max-calls noticeIds. For each:
-       - GET api.sam.gov/prod/opportunities/v2/{noticeId} (consumes 1 API call
-         from the 1,000/day free-tier quota).
-       - Download every PDF attachment from the S3 links the API returns.
-       - Extract text with pypdf.
-       - Write bundles/{noticeId}.json = CSV metadata + API metadata +
-         per-attachment { filename, bytes, sha256, pages, chars, text }.
-       - Add noticeId to processed, remove from queue.
-  4. Push state + bundles back to R2.
-
-Budget: hard-capped at --max-calls so the quota never gets slammed.
-Anything we don't get to stays in the queue and drains over subsequent days.
+Flow:
+  1. Pull state from R2 (if configured): processed.json, last_fetched_date.json.
+  2. Determine the posted-date window: from (last_fetched_date - 1 day) to today.
+     First run falls back to --start-date or 180 days ago.
+  3. Paginate through api.sam.gov/prod/opportunities/v2/search with
+     postedFrom/postedTo/limit=1000/offset= until the page is short.
+  4. For each opp:
+       - Skip if NAICS prefix doesn't match (default: 541).
+       - Skip if notice type isn't in the RFP-adjacent set.
+       - Skip if noticeId already in processed.
+       - Download each resourceLink (free S3), extract text via pypdf /
+         python-docx / openpyxl. Run the regex label classifier.
+       - Write bundles/{noticeId}.json and add to processed.
+  5. Update last_fetched_date = today. Push state + bundles to R2.
 
 Run:
-    python3 rfp_text_pipeline.py                    # daily run, 950 calls
-    python3 rfp_text_pipeline.py --max-calls 100    # cheaper test
-    python3 rfp_text_pipeline.py --dry-run          # discover only, no API
+    python3 rfp_text_pipeline.py                       # default daily window
+    python3 rfp_text_pipeline.py --start-date 2025-10-01   # bootstrap
+    python3 rfp_text_pipeline.py --dry-run             # no API, no downloads
+    python3 rfp_text_pipeline.py --max-api-calls 5     # cap paginator
 """
 
 from __future__ import annotations
@@ -39,9 +38,9 @@ import os
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 import requests
 from dotenv import load_dotenv
@@ -54,7 +53,7 @@ except ImportError as exc:  # pragma: no cover
 try:
     from docx import Document  # python-docx
 except ImportError:
-    Document = None  # docx extraction optional; warn at call time
+    Document = None
 
 try:
     from openpyxl import load_workbook  # xlsx
@@ -74,14 +73,11 @@ DATA_DIR       = Path("data/rfp_text")
 STATE_DIR      = DATA_DIR / "state"
 BUNDLE_DIR     = DATA_DIR / "bundles"
 PROCESSED_JSON = STATE_DIR / "processed.json"
-QUEUE_JSON     = STATE_DIR / "queue.json"
+LAST_DATE_JSON = STATE_DIR / "last_fetched_date.json"
 QUOTA_JSON     = STATE_DIR / "quota.json"
 
-S3_CSV_URL     = "https://s3.amazonaws.com/falextracts/Contract%20Opportunities/datagov/ContractOpportunitiesFullCSV.csv"
 OPP_SEARCH_API = "https://api.sam.gov/prod/opportunities/v2/search"
 
-# Keep anything likely to carry a PWS / SOW / capability list.
-# Award Notice is skipped — metadata is enough, attachments are admin paperwork.
 DEFAULT_NOTICE_TYPES = {
     "Solicitation",
     "Combined Synopsis/Solicitation",
@@ -91,11 +87,8 @@ DEFAULT_NOTICE_TYPES = {
     "Justification",
     "Fair Opportunity / Limited Sources Justification",
 }
-
-# NAICS prefix filter. 541xxx = Professional, Scientific, Technical Services.
-# Covers legal, accounting, engineering, IT (5415), consulting, R&D, advertising,
-# and the "other" bucket. Matches the user's "use all 54-series" ask.
 DEFAULT_NAICS_PREFIXES = ("541",)
+DEFAULT_LOOKBACK_DAYS  = 180
 
 API_KEY = os.environ.get("SAM_API_KEY")
 R2_PREFIX = "it_rfps/"
@@ -117,13 +110,12 @@ def _save_json(path: Path, data: Any) -> None:
 
 
 def _maybe_hydrate_from_r2() -> None:
-    """If R2 creds are set and local state is empty, pull state from R2."""
     if not os.environ.get("CF_R2_ACCOUNT_ID"):
         return
-    if PROCESSED_JSON.exists() and QUEUE_JSON.exists():
+    if PROCESSED_JSON.exists() and LAST_DATE_JSON.exists():
         return
     print("Hydrating state from R2...")
-    import r2_sync  # local module
+    import r2_sync
 
     s3 = r2_sync._client()
     paginator = s3.get_paginator("list_objects_v2")
@@ -145,130 +137,88 @@ def _push_state_to_r2() -> None:
     for f in STATE_DIR.glob("*.json"):
         key = R2_PREFIX + "state/" + f.name
         s3.upload_file(str(f), r2_sync.BUCKET, key)
-        print(f"  R2 <- {f.name}")
+    print(f"  state -> R2")
 
 
-def _push_bundles_to_r2(new_noticeids: list[str]) -> None:
-    if not os.environ.get("CF_R2_ACCOUNT_ID") or not new_noticeids:
+def _push_bundles_to_r2(noticeids: list[str]) -> None:
+    if not os.environ.get("CF_R2_ACCOUNT_ID") or not noticeids:
         return
     import r2_sync
 
     s3 = r2_sync._client()
-    for nid in new_noticeids:
+    for nid in noticeids:
         local = BUNDLE_DIR / f"{nid}.json"
         if not local.exists():
             continue
         key = R2_PREFIX + f"bundles/{nid}.json"
         s3.upload_file(str(local), r2_sync.BUCKET, key)
-    print(f"  Uploaded {len(new_noticeids)} bundle(s) to R2")
+    print(f"  {len(noticeids)} bundle(s) -> R2")
 
 
 # ---------------------------------------------------------------------------
-# Discovery: stream the rolling CSV, enqueue new NAICS-matching notices
+# Bulk search
 # ---------------------------------------------------------------------------
 
-def _naics_matches(naics: str, prefixes: tuple[str, ...]) -> bool:
-    return any(naics.startswith(p) for p in prefixes)
+def _mmddyyyy(d: date) -> str:
+    return d.strftime("%m/%d/%Y")
 
 
-def discover_new_notices(
-    processed: set[str],
-    queued_ids: set[str],
-    notice_types: set[str],
-    naics_prefixes: tuple[str, ...],
-) -> list[dict]:
-    """Stream the current CSV and return new queue entries (not yet processed,
-    not already queued). Each entry carries a metadata snapshot so we don't
-    have to re-scan the CSV to rebuild context."""
-    print(f"Streaming {S3_CSV_URL} ...")
-    r = requests.get(S3_CSV_URL, stream=True, timeout=600)
-    r.raise_for_status()
-
-    def lines():
-        for chunk in r.iter_lines(chunk_size=1024 * 1024, decode_unicode=False):
-            if chunk is not None:
-                yield chunk.decode("latin-1")
-
-    reader = csv.DictReader(lines())
-    new_entries: list[dict] = []
-    scanned = 0
-    for row in reader:
-        scanned += 1
-        if scanned % 100_000 == 0:
-            print(f"  {scanned:,} scanned  {len(new_entries):,} new")
-
-        nid = (row.get("NoticeId") or "").strip()
-        if not nid or nid in processed or nid in queued_ids:
-            continue
-        if row.get("Type") not in notice_types:
-            continue
-        naics = (row.get("NaicsCode") or "").strip()
-        if not naics or not _naics_matches(naics, naics_prefixes):
-            continue
-
-        new_entries.append({
-            "notice_id":    nid,
-            "title":        row.get("Title"),
-            "type":         row.get("Type"),
-            "naics":        naics,
-            "posted_date":  row.get("PostedDate"),
-            "response_deadline": row.get("ResponseDeadLine"),
-            "department":   row.get("Department/Ind.Agency"),
-            "sub_agency":   row.get("Sub-Tier"),
-            "office":       row.get("Office"),
-            "psc":          row.get("ClassificationCode"),
-            "solicitation_number": row.get("Sol#"),
-            "sam_link":     row.get("Link"),
-            "enqueued_at":  datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
-        })
-
-    print(f"  scanned {scanned:,} rows, {len(new_entries):,} new queue entries")
-    return new_entries
-
-
-# ---------------------------------------------------------------------------
-# API fetch + PDF extract
-# ---------------------------------------------------------------------------
-
-def fetch_opp_detail(session: requests.Session, queue_entry: dict) -> dict | None:
-    """One API call. Returns parsed opportunity dict or None on 404.
-
-    SAM's /v2/search requires a posted-date window. We derive a ±7-day window
-    around the entry's PostedDate so the query hits the right record.
-    """
-    notice_id = queue_entry["notice_id"]
-    posted = (queue_entry.get("posted_date") or "")[:10]
-    try:
-        d = datetime.strptime(posted, "%Y-%m-%d")
-    except ValueError:
-        d = datetime.now(timezone.utc)
-    # SAM wants MM/dd/yyyy.
-    start = (d.replace(day=1)).strftime("%m/%d/%Y")
-    end_d = d.replace(day=28)  # safe upper bound within any month
-    end = end_d.strftime("%m/%d/%Y")
-
+def search_page(
+    session: requests.Session,
+    posted_from: date,
+    posted_to: date,
+    offset: int,
+    limit: int = 1000,
+) -> tuple[list[dict], int]:
+    """One bulk search call. Returns (opportunitiesData, totalRecords)."""
     r = session.get(
         OPP_SEARCH_API,
         params={
             "api_key":    API_KEY,
-            "noticeid":   notice_id,
-            "postedFrom": start,
-            "postedTo":   end,
-            "limit":      1,
+            "postedFrom": _mmddyyyy(posted_from),
+            "postedTo":   _mmddyyyy(posted_to),
+            "limit":      limit,
+            "offset":     offset,
         },
-        timeout=60,
+        timeout=120,
     )
     if r.status_code == 429:
-        raise SystemExit("SAM 429 — daily quota exhausted. Resumes midnight UTC.")
-    if r.status_code == 404:
-        return None
+        raise SystemExit("SAM 429 — quota exhausted. Resumes midnight UTC.")
     if r.status_code != 200:
-        print(f"  HTTP {r.status_code} on {notice_id}: {r.text[:200]}", file=sys.stderr)
-        return None
+        raise SystemExit(f"SAM HTTP {r.status_code}: {r.text[:300]}")
     data = r.json()
-    opps = data.get("opportunitiesData") or []
-    return opps[0] if opps else None
+    return data.get("opportunitiesData") or [], int(data.get("totalRecords") or 0)
 
+
+def iter_opps_in_window(
+    session: requests.Session,
+    posted_from: date,
+    posted_to: date,
+    max_calls: int,
+) -> Iterator[tuple[dict, int]]:
+    """Yield each opp + running page number. Stops at max_calls or when drained."""
+    offset = 0
+    page = 0
+    total = None
+    while page < max_calls:
+        page += 1
+        opps, total_records = search_page(session, posted_from, posted_to, offset)
+        if total is None:
+            total = total_records
+            print(f"  window has {total:,} opps total; up to {max_calls} page(s) * 1000 this run")
+        if not opps:
+            break
+        for opp in opps:
+            yield opp, page
+        if len(opps) < 1000:
+            break
+        offset += 1000
+        time.sleep(1.0)  # light throttle between pages
+
+
+# ---------------------------------------------------------------------------
+# Attachment download + text extraction
+# ---------------------------------------------------------------------------
 
 def _extract_pdf_text(pdf_bytes: bytes) -> tuple[int | None, str | None]:
     try:
@@ -290,7 +240,6 @@ def _extract_docx_text(docx_bytes: bytes) -> tuple[int | None, str | None]:
     try:
         doc = Document(io.BytesIO(docx_bytes))
         paragraphs = [p.text for p in doc.paragraphs if p.text]
-        # Tables — SOWs often lay out CLINs, deliverables, schedules in tables.
         for table in doc.tables:
             for row in table.rows:
                 cells = [c.text for c in row.cells if c.text]
@@ -302,7 +251,6 @@ def _extract_docx_text(docx_bytes: bytes) -> tuple[int | None, str | None]:
 
 
 def _extract_xlsx_text(xlsx_bytes: bytes) -> tuple[int | None, str | None]:
-    """Flatten each sheet into pipe-delimited rows; preserves CLIN/pricing structure."""
     if load_workbook is None:
         return None, "[openpyxl not installed]"
     try:
@@ -335,11 +283,9 @@ def _extract_by_ext(filename: str, content_type: str, data: bytes) -> tuple[int 
 
 
 def download_and_extract(session: requests.Session, opp: dict) -> list[dict]:
-    """For each resourceLink on the opportunity, download + extract text."""
     links = opp.get("resourceLinks") or []
     out: list[dict] = []
     for i, url in enumerate(links):
-        # SAM endpoints want the api_key appended, S3 links don't.
         fetch_url = url
         if "sam.gov" in url and "api_key=" not in url:
             fetch_url = f"{url}{'&' if '?' in url else '?'}api_key={API_KEY}"
@@ -394,7 +340,6 @@ _RE_USER  = re.compile(
 
 
 def classify_bundle_text(text: str) -> dict:
-    """Four simple regex flags. Intentionally minimal — extend later."""
     return {
         "mentions_rtm":     bool(_RE_RTM.search(text)),
         "shall_count":      len(_RE_SHALL.findall(text)),
@@ -403,43 +348,39 @@ def classify_bundle_text(text: str) -> dict:
     }
 
 
-def build_bundle(queue_entry: dict, opp: dict, attachments: list[dict]) -> dict:
-    """Compose the per-opportunity output JSON."""
-    # Combine extractable text (attachment bodies + the opp's description field)
-    # for regex labels. Description from the API is included so single-file
-    # Combined Synopsis/Solicitation notices still get scored even when the
-    # attachment is missing.
-    combined = "\n\n".join(
-        (a.get("text") or "") for a in attachments if a.get("text")
-    )
+# ---------------------------------------------------------------------------
+# Bundle builder
+# ---------------------------------------------------------------------------
+
+def build_bundle(opp: dict, attachments: list[dict]) -> dict:
+    combined = "\n\n".join((a.get("text") or "") for a in attachments if a.get("text"))
     desc = opp.get("description") or ""
     labels = classify_bundle_text(combined + "\n\n" + desc)
 
     return {
-        "notice_id":          queue_entry["notice_id"],
+        "notice_id":          opp.get("noticeId"),
         "fetched_at":         datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
         "labels":             labels,
-        "csv_metadata":       queue_entry,
-        "api_metadata": {
-            "title":           opp.get("title"),
-            "type":            opp.get("type"),
-            "base_type":       opp.get("baseType"),
-            "naics_code":      opp.get("naicsCode"),
-            "classification":  opp.get("classificationCode"),
-            "active":          opp.get("active"),
-            "solicitation_number": opp.get("solicitationNumber"),
-            "posted_date":     opp.get("postedDate"),
-            "response_deadline": opp.get("responseDeadLine"),
-            "archive_date":    opp.get("archiveDate"),
-            "set_aside":       opp.get("typeOfSetAside"),
-            "set_aside_desc":  opp.get("typeOfSetAsideDescription"),
-            "description":     opp.get("description"),
-            "department_name": (opp.get("fullParentPathName") or "").split(".")[0] if opp.get("fullParentPathName") else None,
-            "full_path_name":  opp.get("fullParentPathName"),
-            "point_of_contact": opp.get("pointOfContact"),
-            "award":           opp.get("award"),
-            "place_of_performance": opp.get("placeOfPerformance"),
-            "ui_link":         opp.get("uiLink"),
+        "metadata": {
+            "title":                 opp.get("title"),
+            "type":                  opp.get("type"),
+            "base_type":             opp.get("baseType"),
+            "naics_code":            opp.get("naicsCode"),
+            "classification":        opp.get("classificationCode"),
+            "active":                opp.get("active"),
+            "solicitation_number":   opp.get("solicitationNumber"),
+            "posted_date":           opp.get("postedDate"),
+            "response_deadline":     opp.get("responseDeadLine"),
+            "archive_date":          opp.get("archiveDate"),
+            "set_aside":             opp.get("typeOfSetAside"),
+            "set_aside_desc":        opp.get("typeOfSetAsideDescription"),
+            "description":           opp.get("description"),
+            "full_path_name":        opp.get("fullParentPathName"),
+            "department":            (opp.get("fullParentPathName") or "").split(".")[0] if opp.get("fullParentPathName") else None,
+            "point_of_contact":      opp.get("pointOfContact"),
+            "award":                 opp.get("award"),
+            "place_of_performance":  opp.get("placeOfPerformance"),
+            "ui_link":               opp.get("uiLink"),
         },
         "attachments":        attachments,
     }
@@ -449,18 +390,21 @@ def build_bundle(queue_entry: dict, opp: dict, attachments: list[dict]) -> dict:
 # Main
 # ---------------------------------------------------------------------------
 
+def _naics_matches(naics: str, prefixes: tuple[str, ...]) -> bool:
+    return any(naics.startswith(p) for p in prefixes)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--max-calls", type=int, default=950,
-                    help="Hard cap on SAM API calls this run (default: 950)")
-    ap.add_argument("--naics-prefix", nargs="+", default=list(DEFAULT_NAICS_PREFIXES),
-                    help="NAICS prefixes to keep (default: 541)")
-    ap.add_argument("--types", nargs="+", default=sorted(DEFAULT_NOTICE_TYPES),
-                    help="Notice types to keep (default: all RFP-adjacent)")
+    ap.add_argument("--start-date",
+                    help="First-run window start (YYYY-MM-DD). Ignored if state has last_fetched_date.")
+    ap.add_argument("--max-api-calls", type=int, default=50,
+                    help="Cap on search pages this run (default: 50 = up to 50,000 opps scanned)")
+    ap.add_argument("--naics-prefix", nargs="+", default=list(DEFAULT_NAICS_PREFIXES))
+    ap.add_argument("--types", nargs="+", default=sorted(DEFAULT_NOTICE_TYPES))
     ap.add_argument("--dry-run", action="store_true",
-                    help="Discover only; make no API calls")
-    ap.add_argument("--summary-file", default="",
-                    help="Append a markdown summary (e.g. $GITHUB_STEP_SUMMARY)")
+                    help="List window + first page of matches; no downloads")
+    ap.add_argument("--summary-file", default="")
     args = ap.parse_args()
 
     if not args.dry_run and not API_KEY:
@@ -471,98 +415,106 @@ def main() -> None:
     _maybe_hydrate_from_r2()
 
     processed: set[str] = set(_load_json(PROCESSED_JSON, []))
-    queue: list[dict] = _load_json(QUEUE_JSON, [])
-    queued_ids = {q["notice_id"] for q in queue}
+    last_fetched = _load_json(LAST_DATE_JSON, None)
+    today = date.today()
 
-    print(f"State: {len(processed):,} processed, {len(queue):,} queued")
+    if last_fetched:
+        # Overlap by 1 day to catch late-posted amendments.
+        posted_from = datetime.strptime(last_fetched, "%Y-%m-%d").date() - timedelta(days=1)
+    elif args.start_date:
+        posted_from = datetime.strptime(args.start_date, "%Y-%m-%d").date()
+    else:
+        posted_from = today - timedelta(days=DEFAULT_LOOKBACK_DAYS)
+    posted_to = today
 
     notice_types = set(args.types)
     naics_prefixes = tuple(args.naics_prefix)
 
-    new_entries = discover_new_notices(processed, queued_ids, notice_types, naics_prefixes)
-    queue.extend(new_entries)
-    _save_json(QUEUE_JSON, queue)
+    print(f"Window: {posted_from} → {posted_to}")
+    print(f"State: {len(processed):,} processed so far")
+    print(f"Notice types: {len(notice_types)} kept; NAICS: {list(naics_prefixes)}")
 
     if args.dry_run:
-        print(f"\n--dry-run: added {len(new_entries):,} new entries to queue, no API calls.")
-        _push_state_to_r2()
+        session = requests.Session()
+        opps, total = search_page(session, posted_from, posted_to, 0)
+        match = [o for o in opps if _naics_matches((o.get("naicsCode") or ""), naics_prefixes)
+                 and o.get("type") in notice_types]
+        print(f"\n--dry-run: first page = {len(opps)} opps of {total:,} in window; "
+              f"{len(match)} match NAICS+type; {sum(1 for o in match if o.get('noticeId') not in processed)} unseen.")
         return
 
     session = requests.Session()
-    budget = args.max_calls
-    calls_spent = 0
     bundles_written: list[str] = []
-    errors: list[dict] = []
+    pages = 0
+    scanned = kept_new = skipped_processed = skipped_type = skipped_naics = 0
 
-    print(f"\nProcessing up to {budget} opportunities from queue...")
-    remaining: list[dict] = []
+    try:
+        for opp, page_no in iter_opps_in_window(session, posted_from, posted_to, args.max_api_calls):
+            scanned += 1
+            pages = page_no
+            nid = opp.get("noticeId")
+            if not nid:
+                continue
 
-    for entry in queue:
-        if calls_spent >= budget:
-            remaining.append(entry)
-            continue
+            if nid in processed:
+                skipped_processed += 1
+                continue
+            if opp.get("type") not in notice_types:
+                skipped_type += 1
+                continue
+            naics = opp.get("naicsCode") or ""
+            if not _naics_matches(naics, naics_prefixes):
+                skipped_naics += 1
+                continue
 
-        nid = entry["notice_id"]
-        try:
-            opp = fetch_opp_detail(session, entry)
-            calls_spent += 1
-        except SystemExit:
-            # 429 — stop, preserve the rest of the queue.
-            remaining.append(entry)
-            # Everything after this is also still pending.
-            idx = queue.index(entry)
-            remaining.extend(queue[idx + 1:])
-            print(f"Quota exhausted after {calls_spent} calls")
-            break
-
-        if opp is None:
-            # 404 → mark processed so we don't waste tomorrow's quota on it.
+            attachments = download_and_extract(session, opp)
+            bundle = build_bundle(opp, attachments)
+            (BUNDLE_DIR / f"{nid}.json").write_text(json.dumps(bundle, indent=2, default=str))
             processed.add(nid)
-            errors.append({"notice_id": nid, "error": "not found"})
-            continue
+            bundles_written.append(nid)
+            kept_new += 1
 
-        attachments = download_and_extract(session, opp)
-        bundle = build_bundle(entry, opp, attachments)
-        path = BUNDLE_DIR / f"{nid}.json"
-        path.write_text(json.dumps(bundle, indent=2, default=str))
-        bundles_written.append(nid)
-        processed.add(nid)
+            if kept_new % 25 == 0:
+                print(f"  {kept_new} bundled (page {page_no}, scanned {scanned})")
+    except SystemExit as e:
+        # 429 or other SAM error — save what we have.
+        print(f"{e}")
 
-        if calls_spent % 25 == 0:
-            print(f"  {calls_spent}/{budget}  last: {nid}  attachments: {len(attachments)}")
-
-        # Light throttle so we don't hammer the API.
-        time.sleep(0.25)
+    # Only advance the cursor on a clean finish. If we bailed out mid-window
+    # we want to re-try tomorrow from the same posted_from.
+    full_drain = pages > 0 and pages < args.max_api_calls  # exited via len < 1000
+    if full_drain:
+        _save_json(LAST_DATE_JSON, posted_to.isoformat())
 
     _save_json(PROCESSED_JSON, sorted(processed))
-    _save_json(QUEUE_JSON, remaining)
     _save_json(QUOTA_JSON, {
-        "run_at":         datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
-        "calls_spent":    calls_spent,
-        "bundles_written": len(bundles_written),
-        "errors":         len(errors),
-        "queue_size_after": len(remaining),
+        "run_at":              datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
+        "window":              f"{posted_from} to {posted_to}",
+        "api_pages":           pages,
+        "opps_scanned":        scanned,
+        "bundles_written":     len(bundles_written),
+        "skipped_already_processed": skipped_processed,
+        "skipped_wrong_type":  skipped_type,
+        "skipped_wrong_naics": skipped_naics,
+        "window_fully_drained": full_drain,
     })
 
     _push_state_to_r2()
     _push_bundles_to_r2(bundles_written)
 
-    print(f"\nRun complete: {calls_spent} calls, {len(bundles_written)} bundles, "
-          f"{len(remaining):,} still queued")
+    print(f"\nRun complete: {pages} API call(s), {scanned:,} scanned, "
+          f"{kept_new} bundled. {len(processed):,} total processed.")
 
     if args.summary_file:
-        lines = [f"## RFP text pipeline\n"]
-        lines.append(f"- API calls spent: **{calls_spent}** / {budget}")
+        lines = [f"## RFP text pipeline (bulk-search)\n"]
+        lines.append(f"- Window: **{posted_from} → {posted_to}**")
+        lines.append(f"- API pages spent: **{pages}** / {args.max_api_calls}")
+        lines.append(f"- Opps scanned: **{scanned:,}**")
         lines.append(f"- Bundles written: **{len(bundles_written)}**")
-        lines.append(f"- 404 / errors: **{len(errors)}**")
-        lines.append(f"- New queue entries discovered: **{len(new_entries):,}**")
-        lines.append(f"- Queue remaining: **{len(remaining):,}**")
-        lines.append(f"- Total processed to date: **{len(processed):,}**\n")
-        if errors[:10]:
-            lines.append("### First errors")
-            for e in errors[:10]:
-                lines.append(f"- `{e['notice_id']}`: {e['error']}")
-            lines.append("")
+        lines.append(f"- Skipped (already processed / wrong type / wrong NAICS): "
+                     f"{skipped_processed:,} / {skipped_type:,} / {skipped_naics:,}")
+        lines.append(f"- Total processed to date: **{len(processed):,}**")
+        lines.append(f"- Window fully drained: **{full_drain}**\n")
         with open(args.summary_file, "a") as f:
             f.write("\n".join(lines) + "\n")
 
