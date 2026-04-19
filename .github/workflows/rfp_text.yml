@@ -16,7 +16,8 @@ on:
         type: boolean
         default: false
   schedule:
-    - cron: "0 9 * * *"  # daily at 09:00 UTC
+    - cron: "0 1 * * *"  # 01:00 UTC daily — ~1hr after SAM quota reset,
+                          # overnight ET so fresh bundles are ready in the morning
 
 permissions:
   contents: read
