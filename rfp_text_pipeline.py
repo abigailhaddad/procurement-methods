@@ -447,6 +447,7 @@ def main() -> None:
     bundles_written: list[str] = []
     pages = 0
     scanned = kept_new = skipped_processed = skipped_type = skipped_naics = 0
+    sam_error: str | None = None
 
     try:
         for opp, page_no in iter_opps_in_window(session, posted_from, posted_to, args.max_api_calls):
@@ -477,8 +478,9 @@ def main() -> None:
             if kept_new % 25 == 0:
                 print(f"  {kept_new} bundled (page {page_no}, scanned {scanned})")
     except SystemExit as e:
-        # 429 or other SAM error — save what we have.
-        print(f"{e}")
+        # 429 or other SAM error — remember it, save what we have, fail at the end.
+        sam_error = str(e)
+        print(f"{sam_error}")
 
     # Only advance the cursor on a clean finish. If we bailed out mid-window
     # we want to re-try tomorrow from the same posted_from.
@@ -517,6 +519,11 @@ def main() -> None:
         lines.append(f"- Window fully drained: **{full_drain}**\n")
         with open(args.summary_file, "a") as f:
             f.write("\n".join(lines) + "\n")
+
+    if sam_error:
+        raise SystemExit(f"FAIL: SAM error during run — {sam_error}")
+    if kept_new == 0:
+        raise SystemExit("FAIL: 0 new bundles written this run.")
 
 
 if __name__ == "__main__":
