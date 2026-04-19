@@ -377,11 +377,48 @@ def download_and_extract(session: requests.Session, opp: dict) -> list[dict]:
     return out
 
 
+# ---------------------------------------------------------------------------
+# Labels (regex-only for now — kept minimal on purpose)
+# ---------------------------------------------------------------------------
+
+_RE_RTM   = re.compile(r"\b(requirements?\s+traceability\s+matrix|RTM)\b", re.IGNORECASE)
+_RE_SHALL = re.compile(r"\bshall\b", re.IGNORECASE)
+_RE_AGILE = re.compile(
+    r"\b(sprint|agile|scrum|kanban|iteration|backlog|user\s+stor(y|ies)|mvp|working\s+software|ceremon(y|ies)|stand[- ]?up|retrospective)\b",
+    re.IGNORECASE,
+)
+_RE_USER  = re.compile(
+    r"\b(end[- ]?users?|stakeholders?|user\s+research|user\s+needs?|user\s+experience|ux)\b",
+    re.IGNORECASE,
+)
+
+
+def classify_bundle_text(text: str) -> dict:
+    """Four simple regex flags. Intentionally minimal — extend later."""
+    return {
+        "mentions_rtm":     bool(_RE_RTM.search(text)),
+        "shall_count":      len(_RE_SHALL.findall(text)),
+        "has_agile_vocab":  bool(_RE_AGILE.search(text)),
+        "has_user_vocab":   bool(_RE_USER.search(text)),
+    }
+
+
 def build_bundle(queue_entry: dict, opp: dict, attachments: list[dict]) -> dict:
     """Compose the per-opportunity output JSON."""
+    # Combine extractable text (attachment bodies + the opp's description field)
+    # for regex labels. Description from the API is included so single-file
+    # Combined Synopsis/Solicitation notices still get scored even when the
+    # attachment is missing.
+    combined = "\n\n".join(
+        (a.get("text") or "") for a in attachments if a.get("text")
+    )
+    desc = opp.get("description") or ""
+    labels = classify_bundle_text(combined + "\n\n" + desc)
+
     return {
         "notice_id":          queue_entry["notice_id"],
         "fetched_at":         datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
+        "labels":             labels,
         "csv_metadata":       queue_entry,
         "api_metadata": {
             "title":           opp.get("title"),
