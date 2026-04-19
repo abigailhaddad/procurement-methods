@@ -2,3 +2,7 @@ tango-python
 python-dotenv
 pandas
 requests
+boto3
+pypdf
+python-docx
+openpyxl

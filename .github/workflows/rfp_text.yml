@@ -1,0 +1,52 @@
+name: RFP Text Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_calls:
+        description: "Hard cap on SAM API calls this run"
+        required: false
+        default: "950"
+      dry_run:
+        description: "Discover only (no API calls)"
+        type: boolean
+        default: false
+  schedule:
+    - cron: "0 9 * * *"  # daily at 09:00 UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rfp-text
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+
+    env:
+      CF_R2_ACCOUNT_ID: ${{ secrets.CF_R2_ACCOUNT_ID }}
+      CF_R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
+      CF_R2_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY_ID }}
+      CF_R2_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_ACCESS_KEY }}
+      SAM_API_KEY: ${{ secrets.SAM_API_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run RFP text pipeline
+        run: |
+          ARGS="--max-calls ${{ inputs.max_calls || '950' }} --summary-file $GITHUB_STEP_SUMMARY"
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            ARGS="$ARGS --dry-run"
+          fi
+          python rfp_text_pipeline.py $ARGS

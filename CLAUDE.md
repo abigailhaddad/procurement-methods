@@ -8,6 +8,40 @@ and what that means for which kinds of vendors win.
 Standalone demo/research project. NOT related to sole-source contracting,
 corruption, or political donations.
 
+## Sibling pipeline: `rfp_text_pipeline.py`
+
+Independent daily pipeline that extracts text from RFP attachments for 541xxx
+opportunities on SAM.gov. Self-contained, doesn't feed the dashboard.
+
+- **Discovery (free):** streams `ContractOpportunitiesFullCSV.csv`, filters to
+  NAICS prefix `541` and RFP-adjacent notice types (Solicitation, Combined
+  Synopsis/Solicitation, Sources Sought, Presolicitation, Special Notice,
+  Justification, Fair Opportunity). Award Notice is skipped.
+- **Fetch (quota-bound):** for each queued noticeId, calls SAM's
+  `opportunities/v2/search?noticeid=…&postedFrom=…&postedTo=…` to get
+  attachment `resourceLinks` (1 API call; uses the month around the CSV's
+  PostedDate as the window).
+- **Extract:** downloads each attachment (free), extracts text from `.pdf` via
+  pypdf and `.docx` via python-docx, hashes the bytes, writes
+  `data/rfp_text/bundles/{noticeId}.json` = CSV metadata + API metadata +
+  per-attachment text.
+- **Budget:** hard cap via `--max-calls` (default 950, leaves headroom under
+  SAM's 1,000/day free-tier quota). Overflow stays in the queue for tomorrow.
+- **State on R2:** prefix `it_rfps/` — `state/processed.json`, `state/queue.json`,
+  `state/quota.json` (last run's stats), `bundles/{noticeId}.json`.
+- **Daily cron:** `.github/workflows/rfp_text.yml` runs at 09:00 UTC.
+- **Deps:** `pypdf`, `python-docx`, `boto3`, `requests`.
+
+Run locally:
+```bash
+python3 rfp_text_pipeline.py --dry-run                # discover + enqueue, no API
+python3 rfp_text_pipeline.py --max-calls 3            # smoke test
+python3 rfp_text_pipeline.py                           # full 950-call run
+```
+
+Extraction coverage on a sample run: ~76% of attachments (.pdf + .docx).
+Misses are .xlsx pricing sheets and image-only PDFs (no OCR yet).
+
 ## Data pipeline (run in order)
 
 ### Step 1 — `fetch_bulk.py`
