@@ -483,8 +483,11 @@ def main() -> None:
         print(f"{sam_error}")
 
     # Only advance the cursor on a clean finish. If we bailed out mid-window
-    # we want to re-try tomorrow from the same posted_from.
-    full_drain = pages > 0 and pages < args.max_api_calls  # exited via len < 1000
+    # (SAM 429, or hit the page cap) we want to re-try tomorrow from the same
+    # posted_from so we don't skip opps we never saw.
+    full_drain = (sam_error is None
+                  and pages > 0
+                  and pages < args.max_api_calls)  # exited via len < 1000
     if full_drain:
         _save_json(LAST_DATE_JSON, posted_to.isoformat())
 
