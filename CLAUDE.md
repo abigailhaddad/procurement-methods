@@ -33,8 +33,11 @@ Flow:
    - Download each `resourceLink` (free S3), extract text via pypdf /
      python-docx / openpyxl, run the regex label classifier, write
      `bundles/{noticeId}.json`.
-5. On clean drain, advance `last_fetched_date = today`. On 429, keep the old
-   cursor so we re-try the same window tomorrow.
+5. On clean drain, advance `last_fetched_date = posted_to` and clear
+   `scan_cursor`. On 429 or page cap, save `scan_cursor.json =
+   {posted_from, posted_to, offset}` so the *next* run resumes mid-drain
+   (pinned window, offset advances) instead of re-scanning the top of the
+   sort and only seeing already-processed opps.
 6. Push state + bundles to R2 (prefix `it_rfps/`).
 
 **Labels (regex-only for now):**
@@ -46,8 +49,9 @@ Solicitation, Combined Synopsis/Solicitation, Sources Sought, Presolicitation,
 Special Notice, Justification, Fair Opportunity / Limited Sources Justification.
 
 **State on R2:** prefix `it_rfps/` — `state/processed.json`,
-`state/last_fetched_date.json`, `state/quota.json` (last run's stats),
-`bundles/{noticeId}.json`.
+`state/last_fetched_date.json`, `state/scan_cursor.json` (present only
+mid-drain — pins the window and saved offset), `state/quota.json`
+(last run's stats), `bundles/{noticeId}.json`.
 
 **Daily cron:** `.github/workflows/rfp_text.yml` at 09:00 UTC.
 

@@ -72,9 +72,10 @@ csv.field_size_limit(min(sys.maxsize, 2**31 - 1))
 DATA_DIR       = Path("data/rfp_text")
 STATE_DIR      = DATA_DIR / "state"
 BUNDLE_DIR     = DATA_DIR / "bundles"
-PROCESSED_JSON = STATE_DIR / "processed.json"
-LAST_DATE_JSON = STATE_DIR / "last_fetched_date.json"
-QUOTA_JSON     = STATE_DIR / "quota.json"
+PROCESSED_JSON   = STATE_DIR / "processed.json"
+LAST_DATE_JSON   = STATE_DIR / "last_fetched_date.json"
+QUOTA_JSON       = STATE_DIR / "quota.json"
+SCAN_CURSOR_JSON = STATE_DIR / "scan_cursor.json"  # pinned window + offset for multi-day drains
 
 OPP_SEARCH_API = "https://api.sam.gov/prod/opportunities/v2/search"
 
@@ -127,6 +128,21 @@ def _maybe_hydrate_from_r2() -> None:
             local.parent.mkdir(parents=True, exist_ok=True)
             s3.download_file(r2_sync.BUCKET, obj["Key"], str(local))
             print(f"  R2 -> {name}")
+
+
+def _clear_scan_cursor() -> None:
+    """Remove scan_cursor state locally + on R2 (called after a full-window drain)."""
+    if SCAN_CURSOR_JSON.exists():
+        SCAN_CURSOR_JSON.unlink()
+    if not os.environ.get("CF_R2_ACCOUNT_ID"):
+        return
+    import r2_sync
+    key = R2_PREFIX + "state/" + SCAN_CURSOR_JSON.name
+    try:
+        r2_sync._client().delete_object(Bucket=r2_sync.BUCKET, Key=key)
+        print(f"  scan_cursor cleared on R2")
+    except Exception as e:
+        print(f"  warning: could not delete R2 scan_cursor ({e})")
 
 
 def _push_state_to_r2() -> None:
@@ -196,9 +212,10 @@ def iter_opps_in_window(
     posted_from: date,
     posted_to: date,
     max_calls: int,
+    start_offset: int = 0,
 ) -> Iterator[tuple[dict, int]]:
     """Yield each opp + running page number. Stops at max_calls or when drained."""
-    offset = 0
+    offset = start_offset
     page = 0
     total = None
     while page < max_calls:
@@ -417,27 +434,42 @@ def main() -> None:
 
     processed: set[str] = set(_load_json(PROCESSED_JSON, []))
     last_fetched = _load_json(LAST_DATE_JSON, None)
+    scan_cursor = _load_json(SCAN_CURSOR_JSON, None)
     today = date.today()
 
-    if last_fetched:
+    # scan_cursor wins when present — means a previous run bailed mid-drain
+    # (SAM 429 or page cap). We pin posted_from/posted_to from that run so
+    # offsets stay stable across days, and resume from the saved offset.
+    if scan_cursor:
+        posted_from = datetime.strptime(scan_cursor["posted_from"], "%Y-%m-%d").date()
+        posted_to   = datetime.strptime(scan_cursor["posted_to"],   "%Y-%m-%d").date()
+        start_offset = int(scan_cursor["offset"])
+    elif last_fetched:
         # Overlap by 1 day to catch late-posted amendments.
         posted_from = datetime.strptime(last_fetched, "%Y-%m-%d").date() - timedelta(days=1)
+        posted_to = today
+        start_offset = 0
     elif args.start_date:
         posted_from = datetime.strptime(args.start_date, "%Y-%m-%d").date()
+        posted_to = today
+        start_offset = 0
     else:
         posted_from = today - timedelta(days=DEFAULT_LOOKBACK_DAYS)
-    posted_to = today
+        posted_to = today
+        start_offset = 0
 
     notice_types = set(args.types)
     naics_prefixes = tuple(args.naics_prefix)
 
     print(f"Window: {posted_from} → {posted_to}")
+    if start_offset:
+        print(f"Resuming mid-drain at offset {start_offset:,}")
     print(f"State: {len(processed):,} processed so far")
     print(f"Notice types: {len(notice_types)} kept; NAICS: {list(naics_prefixes)}")
 
     if args.dry_run:
         session = requests.Session()
-        opps, total = search_page(session, posted_from, posted_to, 0)
+        opps, total = search_page(session, posted_from, posted_to, start_offset)
         match = [o for o in opps if _naics_matches((o.get("naicsCode") or ""), naics_prefixes)
                  and o.get("type") in notice_types]
         print(f"\n--dry-run: first page = {len(opps)} opps of {total:,} in window; "
@@ -451,7 +483,7 @@ def main() -> None:
     sam_error: str | None = None
 
     try:
-        for opp, page_no in iter_opps_in_window(session, posted_from, posted_to, args.max_api_calls):
+        for opp, page_no in iter_opps_in_window(session, posted_from, posted_to, args.max_api_calls, start_offset=start_offset):
             scanned += 1
             pages = page_no
             nid = opp.get("noticeId")
@@ -483,20 +515,37 @@ def main() -> None:
         sam_error = str(e)
         print(f"{sam_error}")
 
-    # Only advance the cursor on a clean finish. If we bailed out mid-window
-    # (SAM 429, or hit the page cap) we want to re-try tomorrow from the same
-    # posted_from so we don't skip opps we never saw.
+    # Cursor logic:
+    #   - full drain (short page, no error): advance last_fetched_date to
+    #     the pinned posted_to; clear scan_cursor.
+    #   - otherwise (SAM 429 or page cap): keep last_fetched_date alone,
+    #     save scan_cursor with the pinned window + resume offset so the
+    #     next run picks up where we stopped instead of re-scanning the
+    #     same top-of-window pages.
     full_drain = (sam_error is None
                   and pages > 0
                   and pages < args.max_api_calls)  # exited via len < 1000
+    final_offset = start_offset + pages * 1000
     if full_drain:
         _save_json(LAST_DATE_JSON, posted_to.isoformat())
+        _clear_scan_cursor()
+    elif pages > 0:
+        _save_json(SCAN_CURSOR_JSON, {
+            "posted_from": posted_from.isoformat(),
+            "posted_to":   posted_to.isoformat(),
+            "offset":      final_offset,
+            "updated_at":  datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
+            "reason":      sam_error or "page cap reached",
+        })
+        print(f"  scan_cursor saved: offset={final_offset:,} (window pinned {posted_from} → {posted_to})")
 
     _save_json(PROCESSED_JSON, sorted(processed))
     _save_json(QUOTA_JSON, {
         "run_at":              datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
         "window":              f"{posted_from} to {posted_to}",
         "api_pages":           pages,
+        "start_offset":        start_offset,
+        "end_offset":          final_offset,
         "opps_scanned":        scanned,
         "bundles_written":     len(bundles_written),
         "skipped_already_processed": skipped_processed,
@@ -514,6 +563,7 @@ def main() -> None:
     if args.summary_file:
         lines = [f"## RFP text pipeline (bulk-search)\n"]
         lines.append(f"- Window: **{posted_from} → {posted_to}**")
+        lines.append(f"- Offset: **{start_offset:,} → {final_offset:,}**")
         lines.append(f"- API pages spent: **{pages}** / {args.max_api_calls}")
         lines.append(f"- Opps scanned: **{scanned:,}**")
         lines.append(f"- Bundles written: **{len(bundles_written)}**")
