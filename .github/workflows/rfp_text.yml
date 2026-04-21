@@ -20,7 +20,7 @@ on:
                           # midnight-UTC quota reset (≈ 8:05 PM ET)
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: rfp-text
@@ -58,3 +58,22 @@ jobs:
             ARGS="$ARGS --dry-run"
           fi
           python rfp_text_pipeline.py $ARGS
+
+      # Rebuild even when the pipeline exited 1 (e.g. SAM 429 mid-window) —
+      # bundles already pushed to R2 this run should still make it to the dashboard.
+      - name: Rebuild dashboard JSONs from R2
+        if: always() && inputs.dry_run != 'true'
+        run: python build_rfp_signals.py
+
+      - name: Commit updated dashboard JSONs
+        if: always() && inputs.dry_run != 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/data/rfp_signals.json web/data/rfp_bundles.json
+          if git diff --cached --quiet; then
+            echo "No dashboard changes to commit."
+          else
+            git commit -m "Rebuild RFP dashboard JSONs [skip ci]"
+            git push
+          fi
