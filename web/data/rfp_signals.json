@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-04-21T00:55Z",
-  "total_bundles": 527,
-  "with_attachments": 419,
+  "generated_at": "2026-04-21T01:07Z",
+  "total_bundles": 603,
+  "with_attachments": 477,
   "date_range": {
     "from": "2026-04-08",
-    "to": "2026-04-19"
+    "to": "2026-04-20"
   },
   "labels": [
     {
       "key": "shall_count",
       "label": "Contains 'shall' clauses",
       "description": "FAR-style requirement language ('the contractor shall...')",
-      "count": 336,
-      "percent": 63.8,
+      "count": 389,
+      "percent": 64.5,
       "examples": [
         {
           "title": "7B20--ENGINEERING SALIENT SERVERS",
@@ -29,11 +29,11 @@
           "ui_link": "https://sam.gov/workspace/contract/opp/0261a8fd51a14d3094bb1ced1c74e0c6/view"
         },
         {
-          "title": "R--VETERINARIAN SERVICES",
-          "type": "Combined Synopsis/Solicitation",
-          "department": "INTERIOR, DEPARTMENT OF THE",
-          "posted_date": "2026-04-13",
-          "ui_link": "https://sam.gov/workspace/contract/opp/02b7d85d635b4e37808afe7c5afeec33/view"
+          "title": "FDIC_Sailpoint IdentityIQ software subscription renewal",
+          "type": "Solicitation",
+          "department": "FEDERAL DEPOSIT INSURANCE CORPORATION",
+          "posted_date": "2026-04-20",
+          "ui_link": "https://sam.gov/workspace/contract/opp/028d76ce34724f32875595081c876433/view"
         }
       ]
     },
@@ -41,29 +41,29 @@
       "key": "has_user_vocab",
       "label": "Mentions users / stakeholders",
       "description": "end users, stakeholders, user research, UX",
-      "count": 177,
-      "percent": 33.6,
+      "count": 207,
+      "percent": 34.3,
       "examples": [
+        {
+          "title": "FDIC_Sailpoint IdentityIQ software subscription renewal",
+          "type": "Solicitation",
+          "department": "FEDERAL DEPOSIT INSURANCE CORPORATION",
+          "posted_date": "2026-04-20",
+          "ui_link": "https://sam.gov/workspace/contract/opp/028d76ce34724f32875595081c876433/view"
+        },
+        {
+          "title": "Endless Forge",
+          "type": "Solicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-20",
+          "ui_link": "https://sam.gov/workspace/contract/opp/034a126a87634d73ae92080976c7ef7b/view"
+        },
         {
           "title": "One Comprehensive Universal Radiotherapy for Everyone (1-CURE)",
           "type": "Solicitation",
           "department": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
           "posted_date": "2026-04-16",
           "ui_link": "https://sam.gov/workspace/contract/opp/04a66f55124f4020891144571ccf2a38/view"
-        },
-        {
-          "title": "R--Appraisal & Valuation Support Management Services for the Department of the Int",
-          "type": "Presolicitation",
-          "department": "INTERIOR, DEPARTMENT OF THE",
-          "posted_date": "2026-04-17",
-          "ui_link": "https://sam.gov/workspace/contract/opp/0603d93c6450447c8ab090b49c2ae4de/view"
-        },
-        {
-          "title": "Y1DA--460-24-017 | Facility Master Plan",
-          "type": "Presolicitation",
-          "department": "VETERANS AFFAIRS, DEPARTMENT OF",
-          "posted_date": "2026-04-09",
-          "ui_link": "https://sam.gov/workspace/contract/opp/060b33c04c404c25874e35936f456655/view"
         }
       ]
     },
@@ -71,9 +71,16 @@
       "key": "has_agile_vocab",
       "label": "Uses agile vocabulary",
       "description": "sprints, scrum, kanban, backlog, user stories",
-      "count": 64,
-      "percent": 12.1,
+      "count": 74,
+      "percent": 12.3,
       "examples": [
+        {
+          "title": "Endless Forge",
+          "type": "Solicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-20",
+          "ui_link": "https://sam.gov/workspace/contract/opp/034a126a87634d73ae92080976c7ef7b/view"
+        },
         {
           "title": "DPW CAD-GIS-GPS Support Services",
           "type": "Sources Sought",
@@ -87,13 +94,6 @@
           "department": "DEPT OF DEFENSE",
           "posted_date": "2026-04-17",
           "ui_link": "https://sam.gov/workspace/contract/opp/09fa8e9f5f2048538b80102332d6cb7c/view"
-        },
-        {
-          "title": "Alliant 3 GWAC, Request for Proposal (RFP)",
-          "type": "Solicitation",
-          "department": "GENERAL SERVICES ADMINISTRATION",
-          "posted_date": "2026-04-15",
-          "ui_link": "https://sam.gov/workspace/contract/opp/0a79f3a5df83434498ce377111b81a26/view"
         }
       ]
     },
@@ -101,9 +101,16 @@
       "key": "mentions_rtm",
       "label": "Mentions an RTM",
       "description": "requirements traceability matrix",
-      "count": 7,
-      "percent": 1.3,
+      "count": 9,
+      "percent": 1.5,
       "examples": [
+        {
+          "title": "Census Bureau Transformation & Application Modernization (CenTAM) - Draft Solicitation Sections for Industry Review and Feedback",
+          "type": "Special Notice",
+          "department": "COMMERCE, DEPARTMENT OF",
+          "posted_date": "2026-04-20",
+          "ui_link": "https://sam.gov/workspace/contract/opp/3235294d18ab494a8ea6aeeb6a95cfa9/view"
+        },
         {
           "title": "National Recruitment Advertising Campaign Services (NRAC)",
           "type": "Combined Synopsis/Solicitation",
@@ -117,13 +124,6 @@
           "department": "HOMELAND SECURITY, DEPARTMENT OF",
           "posted_date": "2026-04-17",
           "ui_link": "https://sam.gov/workspace/contract/opp/8169d303f699451980bfe44a183f81c1/view"
-        },
-        {
-          "title": "DG01--Connectivity & Collaboration Services (CCS):  Network  Engineering, Design, Implementation and Infrastructure  Support (NEDIIS) - Recompete (VA-26-00019737)",
-          "type": "Sources Sought",
-          "department": "VETERANS AFFAIRS, DEPARTMENT OF",
-          "posted_date": "2026-04-16",
-          "ui_link": "https://sam.gov/workspace/contract/opp/870f7e47c73a489080b4fbcea770570f/view"
         }
       ]
     }
@@ -131,65 +131,65 @@
   "top_departments": [
     {
       "name": "DEPT OF DEFENSE",
-      "count": 243
+      "count": 280
     },
     {
       "name": "VETERANS AFFAIRS, DEPARTMENT OF",
-      "count": 88
+      "count": 95
     },
     {
       "name": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
-      "count": 43
+      "count": 46
     },
     {
       "name": "INTERIOR, DEPARTMENT OF THE",
-      "count": 26
+      "count": 31
     },
     {
       "name": "NATIONAL AERONAUTICS AND SPACE ADMINISTRATION",
-      "count": 26
+      "count": 30
     },
     {
       "name": "STATE, DEPARTMENT OF",
+      "count": 14
+    },
+    {
+      "name": "COMMERCE, DEPARTMENT OF",
       "count": 13
     },
     {
       "name": "HOMELAND SECURITY, DEPARTMENT OF",
-      "count": 12
+      "count": 13
     },
     {
-      "name": "COMMERCE, DEPARTMENT OF",
+      "name": "ENERGY, DEPARTMENT OF",
       "count": 11
     },
     {
       "name": "TRANSPORTATION, DEPARTMENT OF",
-      "count": 8
-    },
-    {
-      "name": "ENERGY, DEPARTMENT OF",
-      "count": 8
+      "count": 9
     }
   ],
   "top_notice_types": [
     {
       "name": "Solicitation",
-      "count": 131
+      "count": 152
     },
     {
       "name": "Sources Sought",
-      "count": 102
-    },
-    {
-      "name": "Combined Synopsis/Solicitation",
-      "count": 93
+      "count": 126
     },
     {
       "name": "Special Notice",
-      "count": 92
+      "count": 106
+    },
+    {
+      "name": "Combined Synopsis/Solicitation",
+      "count": 105
     },
     {
       "name": "Presolicitation",
-      "count": 68
+      "count": 73
     },
     {
       "name": "Justification",
