@@ -84,8 +84,9 @@ DEFAULT_NOTICE_TYPES = {
     "Sources Sought",
     "Presolicitation",
     "Special Notice",
-    "Justification",
-    "Fair Opportunity / Limited Sources Justification",
+    # Justification + Fair Opportunity / Limited Sources Justification live in
+    # the pull_usaspending repo instead — they're about non-competition
+    # rationale on awarded contracts, not RFP language.
 }
 DEFAULT_NAICS_PREFIXES = ("541",)
 DEFAULT_LOOKBACK_DAYS  = 180
@@ -327,7 +328,7 @@ def download_and_extract(session: requests.Session, opp: dict) -> list[dict]:
 # Labels (regex-only for now — kept minimal on purpose)
 # ---------------------------------------------------------------------------
 
-_RE_RTM   = re.compile(r"\b(requirements?\s+traceability\s+matrix|RTM)\b", re.IGNORECASE)
+_RE_RTM   = re.compile(r"\brequirements?\s+traceability\s+matrix\b", re.IGNORECASE)
 _RE_SHALL = re.compile(r"\bshall\b", re.IGNORECASE)
 _RE_AGILE = re.compile(
     r"\b(sprint|agile|scrum|kanban|iteration|backlog|user\s+stor(y|ies)|mvp|working\s+software|ceremon(y|ies)|stand[- ]?up|retrospective)\b",
