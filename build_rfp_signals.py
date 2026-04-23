@@ -136,6 +136,11 @@ def aggregate(bundles):
     examples = {k: [] for k, _, _ in LABELS}
     bundle_rows: list[dict] = []
 
+    # by_dept: dept -> {total, label_key -> hit_count}
+    dept_stats: dict[str, dict] = {}
+    # by_month: "YYYY-MM" -> {total, label_key -> hit_count}
+    month_stats: dict[str, dict] = {}
+
     for b in bundles:
         total += 1
         atts = b.get("attachments") or []
@@ -149,6 +154,7 @@ def aggregate(bundles):
         posted_date = (m.get("posted_date") or "")[:10]
         if posted_date:
             posted.append(posted_date)
+        month_key = posted_date[:7] if posted_date else None  # "YYYY-MM"
 
         # Recompute labels from stored text rather than trusting the
         # pipeline-time labels[] field — so regex tweaks here take effect on
@@ -178,6 +184,27 @@ def aggregate(bundles):
                         "posted_date": posted_date,
                         "ui_link":     m.get("ui_link"),
                     })
+
+            # by_dept accumulation
+            ds = dept_stats.setdefault(d, {"total": 0, **{k: 0 for k, _, _ in LABELS}})
+            if key not in ds:
+                ds[key] = 0
+            if hit:
+                ds[key] += 1
+
+            # by_month accumulation
+            if month_key:
+                ms = month_stats.setdefault(month_key, {"total": 0, **{k: 0 for k, _, _ in LABELS}})
+                if key not in ms:
+                    ms[key] = 0
+                if hit:
+                    ms[key] += 1
+
+        # increment totals outside the label loop
+        dept_stats.setdefault(d, {"total": 0, **{k: 0 for k, _, _ in LABELS}})["total"] += 1
+        if month_key:
+            month_stats.setdefault(month_key, {"total": 0, **{k: 0 for k, _, _ in LABELS}})["total"] += 1
+
         bundle_rows.append({
             "notice_id":   b.get("notice_id"),
             "title":       m.get("title"),
@@ -193,6 +220,31 @@ def aggregate(bundles):
         })
 
     bundle_rows.sort(key=lambda r: (r.get("posted_date") or "", r.get("title") or ""), reverse=True)
+
+    label_keys = [k for k, _, _ in LABELS]
+
+    # Build by_dept: sorted by total desc, at least 5 bundles
+    by_dept = []
+    for d_name, stats in sorted(dept_stats.items(), key=lambda x: -x[1]["total"]):
+        n = stats["total"]
+        if n < 5:
+            continue
+        by_dept.append({
+            "dept":  d_name,
+            "total": n,
+            "pcts":  {k: round(stats[k] / n * 100, 1) for k in label_keys},
+        })
+
+    # Build by_month: sorted chronologically
+    by_month = []
+    for mo in sorted(month_stats.keys()):
+        stats = month_stats[mo]
+        n = stats["total"]
+        by_month.append({
+            "month": mo,
+            "total": n,
+            "pcts":  {k: round(stats[k] / n * 100, 1) for k in label_keys},
+        })
 
     signals = {
         "generated_at":   datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
@@ -213,6 +265,8 @@ def aggregate(bundles):
         ],
         "top_departments": [{"name": n, "count": c} for n, c in dept.most_common(10)],
         "top_notice_types": [{"name": n, "count": c} for n, c in ntype.most_common()],
+        "by_dept":  by_dept,
+        "by_month": by_month,
     }
     return signals, bundle_rows
 
