@@ -15,6 +15,10 @@ on:
         description: "Probe first page only; no downloads"
         type: boolean
         default: false
+      force_window_start:
+        description: "Override all state and scan from this date YYYY-MM-DD (backfill). Leave blank for normal run."
+        required: false
+        default: ""
   schedule:
     - cron: "5 0 * * *"  # 00:05 UTC daily — a few minutes after SAM's
                           # midnight-UTC quota reset (≈ 8:05 PM ET)
@@ -51,7 +55,9 @@ jobs:
       - name: Run RFP text pipeline
         run: |
           ARGS="--max-api-calls ${{ inputs.max_api_calls || '50' }} --summary-file $GITHUB_STEP_SUMMARY"
-          if [ -n "${{ inputs.start_date }}" ]; then
+          if [ -n "${{ inputs.force_window_start }}" ]; then
+            ARGS="$ARGS --force-window-start ${{ inputs.force_window_start }}"
+          elif [ -n "${{ inputs.start_date }}" ]; then
             ARGS="$ARGS --start-date ${{ inputs.start_date }}"
           fi
           if [ "${{ inputs.dry_run }}" = "true" ]; then

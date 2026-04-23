@@ -416,6 +416,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--start-date",
                     help="First-run window start (YYYY-MM-DD). Ignored if state has last_fetched_date.")
+    ap.add_argument("--force-window-start",
+                    help="Override any existing state and start window from this date (YYYY-MM-DD). Use for backfills.")
     ap.add_argument("--max-api-calls", type=int, default=50,
                     help="Cap on search pages this run (default: 50 = up to 50,000 opps scanned)")
     ap.add_argument("--naics-prefix", nargs="+", default=list(DEFAULT_NAICS_PREFIXES))
@@ -437,10 +439,22 @@ def main() -> None:
     scan_cursor = _load_json(SCAN_CURSOR_JSON, None)
     today = date.today()
 
+    # --force-window-start overrides everything: clears cursor + last_fetched
+    # so we scan from the given date. Use for backfills.
+    if args.force_window_start:
+        posted_from = datetime.strptime(args.force_window_start, "%Y-%m-%d").date()
+        posted_to = today
+        start_offset = 0
+        scan_cursor = None
+        if SCAN_CURSOR_JSON.exists():
+            SCAN_CURSOR_JSON.unlink()
+        if LAST_DATE_JSON.exists():
+            LAST_DATE_JSON.unlink()
+        print(f"Force-window-start: overriding state, scanning from {posted_from}")
     # scan_cursor wins when present — means a previous run bailed mid-drain
     # (SAM 429 or page cap). We pin posted_from/posted_to from that run so
     # offsets stay stable across days, and resume from the saved offset.
-    if scan_cursor:
+    elif scan_cursor:
         posted_from = datetime.strptime(scan_cursor["posted_from"], "%Y-%m-%d").date()
         posted_to   = datetime.strptime(scan_cursor["posted_to"],   "%Y-%m-%d").date()
         start_offset = int(scan_cursor["offset"])
