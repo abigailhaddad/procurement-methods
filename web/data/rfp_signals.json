@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-04-22T01:05Z",
-  "total_bundles": 697,
-  "with_attachments": 554,
+  "generated_at": "2026-04-23T01:12Z",
+  "total_bundles": 782,
+  "with_attachments": 616,
   "date_range": {
     "from": "2026-04-08",
-    "to": "2026-04-21"
+    "to": "2026-04-22"
   },
   "labels": [
     {
       "key": "shall_count",
       "label": "Contains 'shall' clauses",
       "description": "FAR-style requirement language ('the contractor shall...')",
-      "count": 456,
-      "percent": 65.4,
+      "count": 514,
+      "percent": 65.7,
       "examples": [
         {
           "title": "7B20--ENGINEERING SALIENT SERVERS",
@@ -41,7 +41,7 @@
       "key": "has_user_vocab",
       "label": "Mentions users / stakeholders",
       "description": "end users, stakeholders, user research, UX",
-      "count": 239,
+      "count": 268,
       "percent": 34.3,
       "examples": [
         {
@@ -59,11 +59,11 @@
           "ui_link": "https://sam.gov/workspace/contract/opp/034a126a87634d73ae92080976c7ef7b/view"
         },
         {
-          "title": "One Comprehensive Universal Radiotherapy for Everyone (1-CURE)",
-          "type": "Solicitation",
-          "department": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
-          "posted_date": "2026-04-16",
-          "ui_link": "https://sam.gov/workspace/contract/opp/04a66f55124f4020891144571ccf2a38/view"
+          "title": "Defense Civilian Pay System (DCPS)",
+          "type": "Sources Sought",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-22",
+          "ui_link": "https://sam.gov/workspace/contract/opp/03952194c8dd4015bb963b2f9d25670f/view"
         }
       ]
     },
@@ -71,8 +71,8 @@
       "key": "has_agile_vocab",
       "label": "Uses agile vocabulary",
       "description": "sprints, scrum, kanban, backlog, user stories",
-      "count": 85,
-      "percent": 12.2,
+      "count": 94,
+      "percent": 12.0,
       "examples": [
         {
           "title": "Endless Forge",
@@ -82,18 +82,18 @@
           "ui_link": "https://sam.gov/workspace/contract/opp/034a126a87634d73ae92080976c7ef7b/view"
         },
         {
+          "title": "Defense Civilian Pay System (DCPS)",
+          "type": "Sources Sought",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-22",
+          "ui_link": "https://sam.gov/workspace/contract/opp/03952194c8dd4015bb963b2f9d25670f/view"
+        },
+        {
           "title": "DPW CAD-GIS-GPS Support Services",
           "type": "Sources Sought",
           "department": "DEPT OF DEFENSE",
           "posted_date": "2026-04-15",
           "ui_link": "https://sam.gov/workspace/contract/opp/05b55d77d6634267884ea56b51c370b8/view"
-        },
-        {
-          "title": "Program Executive Office (PEO) Defense Healthcare Management Systems (DHMS) Deployment Solutions",
-          "type": "Combined Synopsis/Solicitation",
-          "department": "DEPT OF DEFENSE",
-          "posted_date": "2026-04-17",
-          "ui_link": "https://sam.gov/workspace/contract/opp/09fa8e9f5f2048538b80102332d6cb7c/view"
         }
       ]
     },
@@ -101,8 +101,8 @@
       "key": "mentions_rtm",
       "label": "Mentions an RTM",
       "description": "requirements traceability matrix",
-      "count": 10,
-      "percent": 1.4,
+      "count": 12,
+      "percent": 1.5,
       "examples": [
         {
           "title": "Census Bureau Transformation & Application Modernization (CenTAM) - Draft Solicitation Sections for Industry Review and Feedback",
@@ -119,11 +119,11 @@
           "ui_link": "https://sam.gov/workspace/contract/opp/4ea9402b5acb4330abf8da0ed1d3c982/view"
         },
         {
-          "title": "Language Translation English to Central Alaskan Yup'ik-Amendment 1",
-          "type": "Combined Synopsis/Solicitation",
+          "title": "Screening Equipment Deployment Services (SEDS) - Checkpoint (CP)",
+          "type": "Solicitation",
           "department": "HOMELAND SECURITY, DEPARTMENT OF",
-          "posted_date": "2026-04-17",
-          "ui_link": "https://sam.gov/workspace/contract/opp/8169d303f699451980bfe44a183f81c1/view"
+          "posted_date": "2026-04-22",
+          "ui_link": "https://sam.gov/workspace/contract/opp/71b6b618e314436ab81a3113c54472e6/view"
         }
       ]
     }
@@ -131,19 +131,19 @@
   "top_departments": [
     {
       "name": "DEPT OF DEFENSE",
-      "count": 328
+      "count": 373
     },
     {
       "name": "VETERANS AFFAIRS, DEPARTMENT OF",
-      "count": 105
+      "count": 115
     },
     {
       "name": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
-      "count": 52
+      "count": 61
     },
     {
       "name": "INTERIOR, DEPARTMENT OF THE",
-      "count": 38
+      "count": 41
     },
     {
       "name": "NATIONAL AERONAUTICS AND SPACE ADMINISTRATION",
@@ -151,45 +151,45 @@
     },
     {
       "name": "COMMERCE, DEPARTMENT OF",
-      "count": 17
+      "count": 19
     },
     {
       "name": "STATE, DEPARTMENT OF",
-      "count": 15
+      "count": 16
     },
     {
       "name": "HOMELAND SECURITY, DEPARTMENT OF",
-      "count": 14
+      "count": 15
     },
     {
       "name": "ENERGY, DEPARTMENT OF",
-      "count": 13
+      "count": 14
     },
     {
       "name": "AGRICULTURE, DEPARTMENT OF",
-      "count": 10
+      "count": 12
     }
   ],
   "top_notice_types": [
     {
       "name": "Solicitation",
-      "count": 185
+      "count": 210
     },
     {
       "name": "Sources Sought",
-      "count": 144
+      "count": 165
     },
     {
       "name": "Combined Synopsis/Solicitation",
-      "count": 122
+      "count": 144
     },
     {
       "name": "Special Notice",
-      "count": 117
+      "count": 128
     },
     {
       "name": "Presolicitation",
-      "count": 88
+      "count": 94
     },
     {
       "name": "Justification",
