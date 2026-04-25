@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-24T01:06Z",
-  "total_bundles": 792,
-  "with_attachments": 622,
+  "generated_at": "2026-04-25T01:36Z",
+  "total_bundles": 1191,
+  "with_attachments": 925,
   "date_range": {
-    "from": "2026-04-08",
+    "from": "2026-03-18",
     "to": "2026-04-22"
   },
   "labels": [
@@ -11,29 +11,29 @@
       "key": "shall_count",
       "label": "Contains 'shall' clauses",
       "description": "FAR-style requirement language ('the contractor shall...')",
-      "count": 518,
-      "percent": 65.4,
+      "count": 782,
+      "percent": 65.7,
       "examples": [
+        {
+          "title": "Foundation Sustainment Support, Software and Integration (FS3i)",
+          "type": "Presolicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-06",
+          "ui_link": "https://sam.gov/workspace/contract/opp/000452db627e430b924fe16572912f7f/view"
+        },
+        {
+          "title": "C219--Reduce Inefficiencies in VA Design and Construction (RICVDC)    - Special Notice / Request for Information for Standards  Alert Memo",
+          "type": "Special Notice",
+          "department": "VETERANS AFFAIRS, DEPARTMENT OF",
+          "posted_date": "2026-04-02",
+          "ui_link": "https://sam.gov/workspace/contract/opp/003d0cae36ad4fffa408d2536ea50d07/view"
+        },
         {
           "title": "7B20--ENGINEERING SALIENT SERVERS",
           "type": "Sources Sought",
           "department": "VETERANS AFFAIRS, DEPARTMENT OF",
           "posted_date": "2026-04-10",
           "ui_link": "https://sam.gov/workspace/contract/opp/00a0f2d9984641c5a9898f470bc52b85/view"
-        },
-        {
-          "title": "C211--657A4-26-119 FCA - Replace Fire and Domestic Main II PB",
-          "type": "Sources Sought",
-          "department": "VETERANS AFFAIRS, DEPARTMENT OF",
-          "posted_date": "2026-04-17",
-          "ui_link": "https://sam.gov/workspace/contract/opp/0261a8fd51a14d3094bb1ced1c74e0c6/view"
-        },
-        {
-          "title": "FDIC_Sailpoint IdentityIQ software subscription renewal",
-          "type": "Solicitation",
-          "department": "FEDERAL DEPOSIT INSURANCE CORPORATION",
-          "posted_date": "2026-04-20",
-          "ui_link": "https://sam.gov/workspace/contract/opp/028d76ce34724f32875595081c876433/view"
         }
       ]
     },
@@ -41,29 +41,29 @@
       "key": "has_user_vocab",
       "label": "Mentions users / stakeholders",
       "description": "end users, stakeholders, user research, UX",
-      "count": 271,
-      "percent": 34.2,
+      "count": 397,
+      "percent": 33.3,
       "examples": [
         {
-          "title": "FDIC_Sailpoint IdentityIQ software subscription renewal",
-          "type": "Solicitation",
-          "department": "FEDERAL DEPOSIT INSURANCE CORPORATION",
-          "posted_date": "2026-04-20",
-          "ui_link": "https://sam.gov/workspace/contract/opp/028d76ce34724f32875595081c876433/view"
-        },
-        {
-          "title": "Endless Forge",
-          "type": "Solicitation",
+          "title": "Foundation Sustainment Support, Software and Integration (FS3i)",
+          "type": "Presolicitation",
           "department": "DEPT OF DEFENSE",
-          "posted_date": "2026-04-20",
-          "ui_link": "https://sam.gov/workspace/contract/opp/034a126a87634d73ae92080976c7ef7b/view"
+          "posted_date": "2026-04-06",
+          "ui_link": "https://sam.gov/workspace/contract/opp/000452db627e430b924fe16572912f7f/view"
         },
         {
-          "title": "Defense Civilian Pay System (DCPS)",
+          "title": "RACER Maintenance Support Service",
           "type": "Sources Sought",
           "department": "DEPT OF DEFENSE",
-          "posted_date": "2026-04-22",
-          "ui_link": "https://sam.gov/workspace/contract/opp/03952194c8dd4015bb963b2f9d25670f/view"
+          "posted_date": "2026-03-30",
+          "ui_link": "https://sam.gov/workspace/contract/opp/018775d0071a4a408d6163a3723d7ff7/view"
+        },
+        {
+          "title": "Commercial Properties Maintenance Services",
+          "type": "Solicitation",
+          "department": "STATE, DEPARTMENT OF",
+          "posted_date": "2026-04-01",
+          "ui_link": "https://sam.gov/workspace/contract/opp/028cf25f10594ee59c954ada53e39258/view"
         }
       ]
     },
@@ -71,9 +71,16 @@
       "key": "has_agile_vocab",
       "label": "Uses agile vocabulary",
       "description": "sprints, scrum, kanban, backlog, user stories",
-      "count": 96,
-      "percent": 12.1,
+      "count": 163,
+      "percent": 13.7,
       "examples": [
+        {
+          "title": "Foundation Sustainment Support, Software and Integration (FS3i)",
+          "type": "Presolicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-06",
+          "ui_link": "https://sam.gov/workspace/contract/opp/000452db627e430b924fe16572912f7f/view"
+        },
         {
           "title": "Endless Forge",
           "type": "Solicitation",
@@ -87,13 +94,6 @@
           "department": "DEPT OF DEFENSE",
           "posted_date": "2026-04-22",
           "ui_link": "https://sam.gov/workspace/contract/opp/03952194c8dd4015bb963b2f9d25670f/view"
-        },
-        {
-          "title": "DPW CAD-GIS-GPS Support Services",
-          "type": "Sources Sought",
-          "department": "DEPT OF DEFENSE",
-          "posted_date": "2026-04-15",
-          "ui_link": "https://sam.gov/workspace/contract/opp/05b55d77d6634267884ea56b51c370b8/view"
         }
       ]
     },
@@ -101,29 +101,29 @@
       "key": "mentions_rtm",
       "label": "Mentions an RTM",
       "description": "requirements traceability matrix",
-      "count": 12,
-      "percent": 1.5,
+      "count": 17,
+      "percent": 1.4,
       "examples": [
         {
-          "title": "Census Bureau Transformation & Application Modernization (CenTAM) - Draft Solicitation Sections for Industry Review and Feedback",
+          "title": "Foundation Sustainment Support, Software and Integration (FS3i)",
+          "type": "Presolicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-06",
+          "ui_link": "https://sam.gov/workspace/contract/opp/000452db627e430b924fe16572912f7f/view"
+        },
+        {
+          "title": "DA01--Revenue Operations Workflow, Payer Compliance and Technical  Process Optimization - New Requirement",
+          "type": "Sources Sought",
+          "department": "VETERANS AFFAIRS, DEPARTMENT OF",
+          "posted_date": "2026-04-07",
+          "ui_link": "https://sam.gov/workspace/contract/opp/130f49426ec2434aaa503e72b8a8a108/view"
+        },
+        {
+          "title": "United States Space Force (USSF) Human Resources Information Technology (HRIT) Guardian Automation Layer (GAL) Request for Information",
           "type": "Special Notice",
-          "department": "COMMERCE, DEPARTMENT OF",
-          "posted_date": "2026-04-20",
-          "ui_link": "https://sam.gov/workspace/contract/opp/3235294d18ab494a8ea6aeeb6a95cfa9/view"
-        },
-        {
-          "title": "National Recruitment Advertising Campaign Services (NRAC)",
-          "type": "Combined Synopsis/Solicitation",
-          "department": "HOMELAND SECURITY, DEPARTMENT OF",
-          "posted_date": "2026-04-09",
-          "ui_link": "https://sam.gov/workspace/contract/opp/4ea9402b5acb4330abf8da0ed1d3c982/view"
-        },
-        {
-          "title": "Screening Equipment Deployment Services (SEDS) - Checkpoint (CP)",
-          "type": "Solicitation",
-          "department": "HOMELAND SECURITY, DEPARTMENT OF",
-          "posted_date": "2026-04-22",
-          "ui_link": "https://sam.gov/workspace/contract/opp/71b6b618e314436ab81a3113c54472e6/view"
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-08",
+          "ui_link": "https://sam.gov/workspace/contract/opp/26cefad7bad1498bb65cabd548fcbdf7/view"
         }
       ]
     }
@@ -131,65 +131,65 @@
   "top_departments": [
     {
       "name": "DEPT OF DEFENSE",
-      "count": 380
+      "count": 573
     },
     {
       "name": "VETERANS AFFAIRS, DEPARTMENT OF",
-      "count": 116
+      "count": 200
     },
     {
       "name": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
-      "count": 61
+      "count": 77
     },
     {
       "name": "INTERIOR, DEPARTMENT OF THE",
-      "count": 42
+      "count": 61
     },
     {
       "name": "NATIONAL AERONAUTICS AND SPACE ADMINISTRATION",
-      "count": 35
+      "count": 41
     },
     {
       "name": "COMMERCE, DEPARTMENT OF",
-      "count": 19
-    },
-    {
-      "name": "STATE, DEPARTMENT OF",
-      "count": 16
-    },
-    {
-      "name": "HOMELAND SECURITY, DEPARTMENT OF",
-      "count": 15
-    },
-    {
-      "name": "ENERGY, DEPARTMENT OF",
-      "count": 14
+      "count": 27
     },
     {
       "name": "AGRICULTURE, DEPARTMENT OF",
-      "count": 12
+      "count": 25
+    },
+    {
+      "name": "ENERGY, DEPARTMENT OF",
+      "count": 25
+    },
+    {
+      "name": "STATE, DEPARTMENT OF",
+      "count": 24
+    },
+    {
+      "name": "HOMELAND SECURITY, DEPARTMENT OF",
+      "count": 22
     }
   ],
   "top_notice_types": [
     {
       "name": "Solicitation",
-      "count": 211
+      "count": 300
     },
     {
       "name": "Sources Sought",
-      "count": 168
+      "count": 300
     },
     {
       "name": "Combined Synopsis/Solicitation",
-      "count": 147
+      "count": 208
     },
     {
       "name": "Special Notice",
-      "count": 129
+      "count": 199
     },
     {
       "name": "Presolicitation",
-      "count": 96
+      "count": 143
     },
     {
       "name": "Justification",
@@ -199,131 +199,141 @@
   "by_dept": [
     {
       "dept": "DEPT OF DEFENSE",
-      "total": 380,
+      "total": 573,
       "pcts": {
         "shall_count": 59.2,
-        "has_user_vocab": 25.5,
-        "has_agile_vocab": 13.4,
-        "mentions_rtm": 1.1
+        "has_user_vocab": 25.7,
+        "has_agile_vocab": 15.7,
+        "mentions_rtm": 1.0
       }
     },
     {
       "dept": "VETERANS AFFAIRS, DEPARTMENT OF",
-      "total": 116,
+      "total": 200,
       "pcts": {
         "shall_count": 81.0,
-        "has_user_vocab": 43.1,
-        "has_agile_vocab": 12.1,
-        "mentions_rtm": 1.7
+        "has_user_vocab": 42.0,
+        "has_agile_vocab": 13.0,
+        "mentions_rtm": 2.0
       }
     },
     {
       "dept": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
-      "total": 61,
+      "total": 77,
       "pcts": {
-        "shall_count": 57.4,
-        "has_user_vocab": 42.6,
-        "has_agile_vocab": 19.7,
+        "shall_count": 59.7,
+        "has_user_vocab": 42.9,
+        "has_agile_vocab": 22.1,
         "mentions_rtm": 0.0
       }
     },
     {
       "dept": "INTERIOR, DEPARTMENT OF THE",
-      "total": 42,
+      "total": 61,
       "pcts": {
         "shall_count": 73.8,
-        "has_user_vocab": 42.9,
-        "has_agile_vocab": 7.1,
+        "has_user_vocab": 37.7,
+        "has_agile_vocab": 4.9,
         "mentions_rtm": 0.0
       }
     },
     {
       "dept": "NATIONAL AERONAUTICS AND SPACE ADMINISTRATION",
-      "total": 35,
+      "total": 41,
       "pcts": {
-        "shall_count": 60.0,
-        "has_user_vocab": 28.6,
-        "has_agile_vocab": 2.9,
+        "shall_count": 58.5,
+        "has_user_vocab": 29.3,
+        "has_agile_vocab": 2.4,
         "mentions_rtm": 0.0
       }
     },
     {
       "dept": "COMMERCE, DEPARTMENT OF",
-      "total": 19,
+      "total": 27,
       "pcts": {
-        "shall_count": 89.5,
-        "has_user_vocab": 63.2,
-        "has_agile_vocab": 10.5,
-        "mentions_rtm": 5.3
+        "shall_count": 88.9,
+        "has_user_vocab": 51.9,
+        "has_agile_vocab": 11.1,
+        "mentions_rtm": 3.7
+      }
+    },
+    {
+      "dept": "AGRICULTURE, DEPARTMENT OF",
+      "total": 25,
+      "pcts": {
+        "shall_count": 80.0,
+        "has_user_vocab": 4.0,
+        "has_agile_vocab": 0.0,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
+      "dept": "ENERGY, DEPARTMENT OF",
+      "total": 25,
+      "pcts": {
+        "shall_count": 20.0,
+        "has_user_vocab": 8.0,
+        "has_agile_vocab": 12.0,
+        "mentions_rtm": 0.0
       }
     },
     {
       "dept": "STATE, DEPARTMENT OF",
-      "total": 16,
+      "total": 24,
       "pcts": {
-        "shall_count": 81.2,
-        "has_user_vocab": 37.5,
-        "has_agile_vocab": 18.8,
+        "shall_count": 83.3,
+        "has_user_vocab": 45.8,
+        "has_agile_vocab": 16.7,
         "mentions_rtm": 0.0
       }
     },
     {
       "dept": "HOMELAND SECURITY, DEPARTMENT OF",
-      "total": 15,
+      "total": 22,
       "pcts": {
-        "shall_count": 66.7,
-        "has_user_vocab": 40.0,
-        "has_agile_vocab": 13.3,
-        "mentions_rtm": 33.3
+        "shall_count": 68.2,
+        "has_user_vocab": 31.8,
+        "has_agile_vocab": 18.2,
+        "mentions_rtm": 27.3
       }
     },
     {
-      "dept": "ENERGY, DEPARTMENT OF",
-      "total": 14,
+      "dept": "TRANSPORTATION, DEPARTMENT OF",
+      "total": 20,
       "pcts": {
-        "shall_count": 28.6,
-        "has_user_vocab": 14.3,
-        "has_agile_vocab": 14.3,
-        "mentions_rtm": 0.0
-      }
-    },
-    {
-      "dept": "AGRICULTURE, DEPARTMENT OF",
-      "total": 12,
-      "pcts": {
-        "shall_count": 91.7,
-        "has_user_vocab": 0.0,
-        "has_agile_vocab": 0.0,
+        "shall_count": 80.0,
+        "has_user_vocab": 65.0,
+        "has_agile_vocab": 25.0,
         "mentions_rtm": 0.0
       }
     },
     {
       "dept": "JUSTICE, DEPARTMENT OF",
-      "total": 10,
+      "total": 15,
       "pcts": {
-        "shall_count": 90.0,
-        "has_user_vocab": 70.0,
-        "has_agile_vocab": 0.0,
-        "mentions_rtm": 0.0
-      }
-    },
-    {
-      "dept": "TRANSPORTATION, DEPARTMENT OF",
-      "total": 10,
-      "pcts": {
-        "shall_count": 60.0,
-        "has_user_vocab": 70.0,
-        "has_agile_vocab": 20.0,
+        "shall_count": 73.3,
+        "has_user_vocab": 53.3,
+        "has_agile_vocab": 6.7,
         "mentions_rtm": 0.0
       }
     },
     {
       "dept": "GENERAL SERVICES ADMINISTRATION",
-      "total": 7,
+      "total": 11,
       "pcts": {
-        "shall_count": 71.4,
-        "has_user_vocab": 42.9,
-        "has_agile_vocab": 14.3,
+        "shall_count": 63.6,
+        "has_user_vocab": 45.5,
+        "has_agile_vocab": 18.2,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
+      "dept": "FEDERAL DEPOSIT INSURANCE CORPORATION",
+      "total": 6,
+      "pcts": {
+        "shall_count": 100.0,
+        "has_user_vocab": 100.0,
+        "has_agile_vocab": 0.0,
         "mentions_rtm": 0.0
       }
     },
@@ -338,6 +348,16 @@
       }
     },
     {
+      "dept": "ENVIRONMENTAL PROTECTION AGENCY",
+      "total": 6,
+      "pcts": {
+        "shall_count": 0.0,
+        "has_user_vocab": 0.0,
+        "has_agile_vocab": 0.0,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
       "dept": "AMERICAN BATTLE MONUMENTS COMMISSION",
       "total": 5,
       "pcts": {
@@ -346,27 +366,27 @@
         "has_agile_vocab": 20.0,
         "mentions_rtm": 0.0
       }
-    },
-    {
-      "dept": "ENVIRONMENTAL PROTECTION AGENCY",
-      "total": 5,
-      "pcts": {
-        "shall_count": 0.0,
-        "has_user_vocab": 0.0,
-        "has_agile_vocab": 0.0,
-        "mentions_rtm": 0.0
-      }
     }
   ],
   "by_month": [
     {
+      "month": "2026-03",
+      "total": 193,
+      "pcts": {
+        "shall_count": 66.8,
+        "has_user_vocab": 34.2,
+        "has_agile_vocab": 21.8,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
       "month": "2026-04",
-      "total": 792,
+      "total": 998,
       "pcts": {
         "shall_count": 65.4,
-        "has_user_vocab": 34.2,
+        "has_user_vocab": 33.2,
         "has_agile_vocab": 12.1,
-        "mentions_rtm": 1.5
+        "mentions_rtm": 1.7
       }
     }
   ]
