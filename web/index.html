@@ -193,10 +193,10 @@
       color: white;
       opacity: 0.85;
     }
-    .chip.chip-shall     { background: #4b6cb7; }
-    .chip.chip-user      { background: #2a9d8f; }
-    .chip.chip-agile     { background: #e76f51; }
-    .chip.chip-rtm       { background: #6a0572; }
+    .chip.chip-shall     { background: #1B4332; }
+    .chip.chip-user      { background: #2D6A4F; }
+    .chip.chip-agile     { background: #C9A84C; color: #1B4332; }
+    .chip.chip-rtm       { background: #374151; }
 
 
     /* ── RFP text modal ────────────────────────────────────────────────── */
@@ -490,46 +490,87 @@
     .add-filter-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
     .clear-filters-link { font-size: 0.78rem; color: var(--color-text-muted); margin-left: auto; text-decoration: none; }
     .clear-filters-link:hover { color: var(--color-error); }
-    .filter-popover {
-      position: absolute;
-      top: calc(100% + 4px);
-      left: 0;
-      z-index: 200;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
+    /* ── Filter modal (centered, two-step like lawcases) ──────────────── */
+    .filter-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.45);
+      align-items: center;
+      justify-content: center;
+    }
+    .filter-overlay.open { display: flex; }
+    .filter-dialog {
+      background: white;
       border-radius: 0.5rem;
-      box-shadow: var(--shadow-md);
-      padding: 1rem 1.25rem;
-      min-width: 280px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      padding: 1.5rem;
+      min-width: 340px;
+      max-width: 480px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
     }
-    .filter-pop-section { margin-bottom: 0.875rem; }
-    .filter-pop-title { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-muted); margin-bottom: 0.375rem; }
-    .filter-pop-select {
-      width: 100%;
-      padding: 0.35rem 0.5rem;
-      border: 1px solid var(--color-border);
-      border-radius: 0.25rem;
-      font: inherit;
-      font-size: 0.875rem;
-      background: var(--color-bg);
+    .filter-dialog-title {
+      font-size: 1rem;
+      font-weight: 700;
       color: var(--color-text);
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid var(--color-border);
     }
-    .filter-pop-labels { display: flex; flex-direction: column; gap: 0.25rem; }
-    .filter-pop-labels label { font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; gap: 0.375rem; }
-    .filter-pop-actions { display: flex; gap: 0.5rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--color-border); }
-    .filter-pop-apply {
-      background: var(--color-accent);
-      color: white;
-      border: none;
-      border-radius: 0.25rem;
-      padding: 0.375rem 0.875rem;
+    .filter-field-list { display: flex; flex-direction: column; gap: 0.125rem; }
+    .filter-field-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.625rem 0.75rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+      font-size: 0.9375rem;
+      color: var(--color-text);
+      transition: background 0.1s;
+    }
+    .filter-field-item:hover { background: var(--color-bg); color: var(--color-accent); }
+    .filter-field-item .arrow { color: var(--color-text-muted); font-size: 0.875rem; }
+    .filter-search-input {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: 0.375rem;
       font: inherit;
       font-size: 0.875rem;
-      font-weight: 600;
-      cursor: pointer;
+      margin-bottom: 0.75rem;
+      box-sizing: border-box;
     }
-    .filter-pop-apply:hover { background: var(--color-accent-hover); }
-    .filter-pop-cancel { background: none; border: 1px solid var(--color-border); border-radius: 0.25rem; padding: 0.375rem 0.75rem; font: inherit; font-size: 0.875rem; cursor: pointer; color: var(--color-text-muted); }
+    .filter-search-input:focus { outline: none; border-color: var(--color-accent); box-shadow: 0 0 0 3px rgba(27,67,50,0.1); }
+    .filter-options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid var(--color-border);
+      border-radius: 0.375rem;
+      padding: 0.25rem;
+    }
+    .filter-options-list label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.5rem;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .filter-options-list label:hover { background: var(--color-bg); }
+    .filter-options-list input[type="checkbox"] { accent-color: var(--color-accent); width: 15px; height: 15px; cursor: pointer; }
+    .filter-dialog-actions { display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--color-border); justify-content: flex-end; }
+    .filter-btn-apply { background: var(--color-accent); color: white; border: none; border-radius: 0.375rem; padding: 0.5rem 1rem; font: inherit; font-size: 0.875rem; font-weight: 600; cursor: pointer; }
+    .filter-btn-apply:hover { background: var(--color-accent-hover); }
+    .filter-btn-cancel { background: none; border: 1px solid var(--color-border); border-radius: 0.375rem; padding: 0.5rem 0.875rem; font: inherit; font-size: 0.875rem; cursor: pointer; color: var(--color-text-muted); }
+    .filter-btn-cancel:hover { border-color: var(--color-text-muted); }
   </style>
 </head>
 <body>
@@ -537,7 +578,7 @@
 <header class="site-header">
   <div class="site-container">
     <h1>How the Federal Government Buys IT Services</h1>
-    <p class="site-subtitle">Federal IT procurement — NAICS 541511 &amp; 541512, FY2022–2026</p>
+    <p class="site-subtitle">Federal IT procurement &mdash; contracts: NAICS 541511/512, FY2022&ndash;2026 &middot; RFPs: 541xxx (still filling in)</p>
   </div>
 </header>
 
@@ -550,9 +591,9 @@
   <section id="panel-rfp" aria-hidden="false">
 
     <p class="narrative" style="margin-top:1.25rem;">
-      Each row is one SAM.gov notice with attachment text extracted daily for 541xxx NAICS codes.
-      Filter by department to see both RFP patterns and awarded contract data side by side.
-      Search scans full extracted text. Click any row for detail. Click a card to filter by that signal.
+      Each row is one SAM.gov solicitation notice (NAICS 541xxx) with attachment text extracted daily.
+      Contract awards (NAICS 541511/512, FY2022&ndash;2026) are linked where solicitation numbers match &mdash; coverage grows as the RFP backfill runs.
+      Click a card to see what vocabulary it matches. Use <strong>+ Add filter</strong> to filter the table.
     </p>
 
     <!-- Reactive summary cards -->
@@ -578,7 +619,7 @@
         <div class="rfp-card-n" id="rcRtm">—</div>
         <div class="rfp-card-label">RTM<br><span style="font-size:0.65rem;font-weight:400;">requirements traceability</span></div>
       </div>
-      <div style="width:100%;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:0.25rem;margin-top:0.5rem;">Awarded contracts (NAICS 541511/512, FY2022&ndash;2026)</div>
+      <div style="width:100%;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:0.25rem;margin-top:0.5rem;">Matched awards (NAICS 541511/512, FY2022&ndash;2026)</div>
       <div class="rfp-card">
         <div class="rfp-card-n" id="ccContracts">—</div>
         <div class="rfp-card-label">contracts</div>
@@ -593,7 +634,14 @@
         <button class="add-filter-btn" id="addFilterBtn">+ Add filter</button>
         <a class="clear-filters-link" id="filterClearAll" href="#" style="display:none;">Clear all</a>
       </div>
-      <div class="filter-popover" id="filterPopover" style="display:none;"></div>
+    </div>
+
+    <!-- Filter modal overlay (two-step: field list → value picker) -->
+    <div id="filterOverlay" class="filter-overlay">
+      <div class="filter-dialog" id="filterDialog">
+        <div class="filter-dialog-title" id="filterDialogTitle">Add filter</div>
+        <div id="filterDialogBody"></div>
+      </div>
     </div>
 
     <!-- DataTable -->
@@ -634,7 +682,7 @@
   <footer class="site-footer">
     <p>Data: <a href="https://www.usaspending.gov" target="_blank">USASpending</a> &middot;
        <a href="https://govcon.dev" target="_blank">Tango API</a> (FPDS) &middot;
-       NAICS 541511 + 541512 &middot;
+       Contracts: NAICS 541511/512 &middot; RFPs: 541xxx &middot;
        <a href="https://github.com/abigailhaddad/procurement-methods" target="_blank">Source code</a></p>
   </footer>
 
@@ -702,133 +750,218 @@ const RFP_LABEL_META = {
 let rfpDetailByNid = {};
 
 let rfpDT = null;
-const activeLabels = new Set();
-let filterDept = '';
-let filterType = '';
-let filterText = '';
-let filterHasContracts = false;
 
-// ── Chip filter state ─────────────────────────────────────────────────────────
+// ── Unified filter state (lawcases pattern) ───────────────────────────────────
+// Each filter: { id, field, label, type:'multiselect'|'text', values:[] | value:'' }
+let activeFilters = [];
+let filterIdSeq = 0;
+
+function getFilterValues(field) {
+  return activeFilters.filter(f => f.field === field).flatMap(f => f.values || [f.value]);
+}
+function getActiveLabels() {
+  return new Set(getFilterValues('label'));
+}
+function getFilterText() {
+  const tf = activeFilters.find(f => f.field === 'text');
+  return tf ? tf.value : '';
+}
+function getFilterDept() {
+  const vals = getFilterValues('dept');
+  return vals.length === 1 ? vals[0] : '';
+}
+
 function renderFilterChips() {
   const chips = document.getElementById('filterChips');
   const empty = document.getElementById('filterBarEmpty');
   const clearAll = document.getElementById('filterClearAll');
 
-  const parts = [];
-  if (filterText)          parts.push({ field:'text',      label:'Search',  value: filterText });
-  if (filterDept)          parts.push({ field:'dept',      label:'Dept',    value: filterDept });
-  if (filterType)          parts.push({ field:'type',      label:'Type',    value: filterType });
-  activeLabels.forEach(l => parts.push({ field:'label',    label:'Label',   value: l }));
-  if (filterHasContracts)  parts.push({ field:'contracts', label:'Has contracts', value:'yes' });
-
-  chips.innerHTML = parts.map(p => `
-    <span class="filter-chip-active" data-field="${p.field}" data-value="${escapeHtml(p.value)}">
-      <span class="fc-label">${p.label}:</span>
-      <span class="fc-val">&nbsp;${escapeHtml(p.value)}</span>
-      <span class="fc-x" title="Remove">\xd7</span>
-    </span>
-  `).join('');
+  chips.innerHTML = activeFilters.map(f => {
+    const display = f.type === 'multiselect'
+      ? f.values.join(', ')
+      : f.value;
+    return `<span class="filter-chip-active" data-id="${f.id}">
+      <span class="fc-label">${escapeHtml(f.label)}:</span>
+      <span class="fc-val">&nbsp;${escapeHtml(display)}</span>
+      <span class="fc-x" title="Remove">&times;</span>
+    </span>`;
+  }).join('');
 
   chips.querySelectorAll('.fc-x').forEach(x => {
     x.addEventListener('click', () => {
-      const chip = x.closest('.filter-chip-active');
-      removeFilter(chip.dataset.field, chip.dataset.value);
+      const id = Number(x.closest('.filter-chip-active').dataset.id);
+      activeFilters = activeFilters.filter(f => f.id !== id);
+      applyFiltersToTable();
     });
   });
 
-  const hasAny = parts.length > 0;
+  const hasAny = activeFilters.length > 0;
   empty.style.display = hasAny ? 'none' : '';
   clearAll.style.display = hasAny ? '' : 'none';
 }
 
-function removeFilter(field, value) {
-  if (field === 'text')      { filterText = ''; rfpDT && rfpDT.search(''); }
-  if (field === 'dept')      { filterDept = ''; rfpDT && rfpDT.column(3).search(''); }
-  if (field === 'type')      { filterType = ''; rfpDT && rfpDT.column(2).search(''); }
-  if (field === 'label')     { activeLabels.delete(value); }
-  if (field === 'contracts') { filterHasContracts = false; }
+function colSearch(col, vals, exact = true) {
+  if (!rfpDT) return;
+  if (!vals.length) { rfpDT.column(col).search('', true, false); return; }
+  const esc = v => v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  rfpDT.column(col).search(exact ? vals.map(v => '^' + esc(v) + '$').join('|') : vals.join('|'), true, false);
+}
+
+function applyFiltersToTable() {
+  if (!rfpDT) return;
+
+  // Global text search (full-text column)
+  rfpDT.search(getFilterText());
+
+  // Column-specific searches
+  const titleVals = getFilterValues('title');
+  rfpDT.column(0).search(titleVals.length ? titleVals.join('|') : '', true, false);
+  const dateVals = getFilterValues('date');
+  rfpDT.column(1).search(dateVals.length ? dateVals.join('|') : '', true, false);
+  colSearch(2, getFilterValues('type'));
+  colSearch(3, getFilterValues('dept'));
+  colSearch(4, getFilterValues('naics'));
+  colSearch(5, getFilterValues('sa'), false);
+
+  rfpDT.draw();
+  renderFilterChips();
+
   // Sync card active states
+  const lbls = getActiveLabels();
   document.querySelectorAll('.rfp-card-clickable').forEach(c => {
-    if (activeLabels.has(c.dataset.chip)) c.classList.add('active');
-    else c.classList.remove('active');
+    c.classList.toggle('active', lbls.has(c.dataset.chip));
   });
-  if (rfpDT) rfpDT.draw();
-  renderFilterChips();
+
+  updateContractCards(getFilterDept());
 }
 
-function applyFilters() {
-  if (rfpDT) rfpDT.draw();
-  renderFilterChips();
-  updateContractCards(filterDept);
+// ── Two-step filter modal ────────────────────────────────────────────────────
+let filterBundles = [];
+
+const FILTER_COLS = [
+  { field: 'title',     label: 'Title',                  type: 'text' },
+  { field: 'date',      label: 'Posted Date',            type: 'text' },
+  { field: 'type',      label: 'Notice Type',            type: 'multiselect', getVals: b => b.type },
+  { field: 'dept',      label: 'Department',             type: 'multiselect', getVals: b => b.dept || b.department },
+  { field: 'naics',     label: 'NAICS',                  type: 'multiselect', getVals: b => b.naics },
+  { field: 'sa',        label: 'Set-aside',              type: 'multiselect', getVals: b => typeof b.set_aside === 'string' ? b.set_aside : b.sa },
+  { field: 'label',     label: 'Label',                  type: 'multiselect', staticOptions: ['shall clauses', 'user vocab', 'agile vocab', 'RTM'] },
+  { field: 'contracts', label: 'Has matched contracts',  type: 'multiselect', staticOptions: ['yes'] },
+  { field: 'text',      label: 'Full text search',       type: 'text' },
+];
+
+function openFilterModal() {
+  const overlay = document.getElementById('filterOverlay');
+  const title = document.getElementById('filterDialogTitle');
+  const body = document.getElementById('filterDialogBody');
+  title.textContent = 'Add filter';
+  body.innerHTML = `
+    <div class="filter-field-list">
+      ${FILTER_COLS.map(col => `
+        <div class="filter-field-item" data-field="${col.field}">
+          <span>${escapeHtml(col.label)}</span>
+          <span class="arrow">›</span>
+        </div>
+      `).join('')}
+    </div>
+    <div class="filter-dialog-actions">
+      <button class="filter-btn-cancel" id="fmCancel">Cancel</button>
+    </div>
+  `;
+  body.querySelectorAll('.filter-field-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const col = FILTER_COLS.find(c => c.field === item.dataset.field);
+      if (col) openFilterStep2(col);
+    });
+  });
+  document.getElementById('fmCancel').addEventListener('click', closeFilterModal);
+  overlay.classList.add('open');
 }
 
-function openFilterPopover(bundles) {
-  const pop = document.getElementById('filterPopover');
-  const depts = [...new Set(bundles.map(b => b.dept || b.department).filter(Boolean))].sort();
-  const types = [...new Set(bundles.map(b => b.type).filter(Boolean))].sort();
+function openFilterStep2(col) {
+  const title = document.getElementById('filterDialogTitle');
+  const body = document.getElementById('filterDialogBody');
+  title.textContent = `Filter by ${col.label}`;
 
-  pop.innerHTML = `
-    <div class="filter-pop-section">
-      <div class="filter-pop-title">Search text</div>
-      <input type="text" class="filter-pop-select" id="fpText" placeholder="Search title, vendor, full RFP text…" value="${escapeHtml(filterText)}" style="font-size:0.875rem;">
-    </div>
-    <div class="filter-pop-section">
-      <div class="filter-pop-title">Department</div>
-      <select class="filter-pop-select" id="fpDept">
-        <option value="">— select —</option>
-        ${depts.map(d => `<option value="${escapeHtml(d)}"${filterDept===d?' selected':''}>${escapeHtml(d)}</option>`).join('')}
-      </select>
-    </div>
-    <div class="filter-pop-section">
-      <div class="filter-pop-title">Notice Type</div>
-      <select class="filter-pop-select" id="fpType">
-        <option value="">— select —</option>
-        ${types.map(t => `<option value="${escapeHtml(t)}"${filterType===t?' selected':''}>${escapeHtml(t)}</option>`).join('')}
-      </select>
-    </div>
-    <div class="filter-pop-section">
-      <div class="filter-pop-title">Labels</div>
-      <div class="filter-pop-labels">
-        ${[['shall','shall clauses'],['user','user vocab'],['agile','agile vocab'],['RTM','RTM']].map(([v,l])=>`
-          <label><input type="checkbox" name="fplabel" value="${v}"${activeLabels.has(v)?' checked':''}> ${l}</label>
+  let inputHtml = '';
+  if (col.type === 'multiselect') {
+    const opts = col.staticOptions || [...new Set(filterBundles.map(b => col.getVals(b)).filter(v => v && typeof v === 'string'))].sort();
+    inputHtml = `
+      <input type="text" class="filter-search-input" id="fmOptSearch" placeholder="Search options…">
+      <div class="filter-options-list" id="fmOptList">
+        ${opts.map(v => `
+          <label>
+            <input type="checkbox" value="${escapeHtml(v)}">
+            ${escapeHtml(v)}
+          </label>
         `).join('')}
       </div>
-    </div>
-    <div class="filter-pop-section">
-      <label class="filter-pop-labels" style="flex-direction:row;align-items:center;">
-        <input type="checkbox" id="fpContracts"${filterHasContracts?' checked':''}> Has matched contracts
-      </label>
-    </div>
-    <div class="filter-pop-actions">
-      <button class="filter-pop-apply" id="fpApply">Apply</button>
-      <button class="filter-pop-cancel" id="fpCancel">Cancel</button>
+    `;
+  } else {
+    inputHtml = `<input type="text" class="filter-search-input" id="fmTextVal" placeholder="Enter search text…" style="margin-bottom:0">`;
+  }
+
+  body.innerHTML = `
+    ${inputHtml}
+    <div class="filter-dialog-actions">
+      <button class="filter-btn-cancel" id="fmBack">← Back</button>
+      <button class="filter-btn-apply" id="fmApply">Add filter</button>
     </div>
   `;
 
-  document.getElementById('fpApply').addEventListener('click', () => {
-    filterText = document.getElementById('fpText').value.trim();
-    filterDept = document.getElementById('fpDept').value;
-    filterType = document.getElementById('fpType').value;
-    activeLabels.clear();
-    pop.querySelectorAll('input[name="fplabel"]:checked').forEach(cb => activeLabels.add(cb.value));
-    filterHasContracts = document.getElementById('fpContracts').checked;
-
-    if (rfpDT) {
-      rfpDT.search(filterText);
-      rfpDT.column(3).search(filterDept);
-      rfpDT.column(2).search(filterType);
-    }
-    document.querySelectorAll('.rfp-card-clickable').forEach(c => {
-      if (activeLabels.has(c.dataset.chip)) c.classList.add('active');
-      else c.classList.remove('active');
+  // Option search for multiselect
+  const optSearch = document.getElementById('fmOptSearch');
+  if (optSearch) {
+    optSearch.focus();
+    optSearch.addEventListener('input', () => {
+      const q = optSearch.value.toLowerCase();
+      document.querySelectorAll('#fmOptList label').forEach(l => {
+        l.style.display = l.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
     });
-    pop.style.display = 'none';
-    applyFilters();
-  });
+  } else {
+    const tv = document.getElementById('fmTextVal');
+    if (tv) tv.focus();
+  }
 
-  document.getElementById('fpCancel').addEventListener('click', () => pop.style.display = 'none');
-  pop.style.display = pop.style.display === 'none' ? '' : 'none';
+  document.getElementById('fmBack').addEventListener('click', openFilterModal);
+  document.getElementById('fmApply').addEventListener('click', () => {
+    if (col.type === 'multiselect') {
+      const checked = [...document.querySelectorAll('#fmOptList input:checked')].map(c => c.value);
+      if (!checked.length) return;
+      // Map label chip names back to activeLabels keys
+      if (col.field === 'label') {
+        const LABEL_MAP = {'shall clauses':'shall','user vocab':'user','agile vocab':'agile','RTM':'RTM'};
+        checked.forEach(v => {
+          const chip = LABEL_MAP[v] || v;
+          activeFilters.push({ id: ++filterIdSeq, field: 'label', label: 'Label', type: 'multiselect', values: [chip] });
+        });
+      } else {
+        activeFilters.push({ id: ++filterIdSeq, field: col.field, label: col.label, type: 'multiselect', values: checked });
+      }
+    } else {
+      const val = document.getElementById('fmTextVal').value.trim();
+      if (!val) return;
+      activeFilters.push({ id: ++filterIdSeq, field: col.field, label: col.label, type: 'text', value: val });
+    }
+    closeFilterModal();
+    applyFiltersToTable();
+  });
 }
+
+function closeFilterModal() {
+  document.getElementById('filterOverlay').classList.remove('open');
+}
+
+// Custom DataTables search for label and contracts filters
+$.fn.dataTable.ext.search.push(function(settings, data) {
+  if (settings.nTable.id !== 'rfpTable') return true;
+  const lbls = getActiveLabels();
+  if (lbls.size && ![...lbls].every(l => data[6].includes(l))) return false;
+  if (activeFilters.some(f => f.field === 'contracts') && data[7] === '—') return false;
+  return true;
+});
+
 
 function updateRfpCards() {
   if (!rfpDT) return;
@@ -857,21 +990,13 @@ function setupRfpBrowser() {
   // Build rfp detail lookup (for modal snippets + search_text)
   (DATA.rfp_bundles || []).forEach(b => { rfpDetailByNid[b.notice_id] = b; });
 
-  // Custom filters
-  $.fn.dataTable.ext.search.push(function(settings, data) {
-    if (settings.nTable.id !== 'rfpTable') return true;
-    if (activeLabels.size && !([...activeLabels].every(l => data[6].includes(l)))) return false;
-    if (filterHasContracts && data[7] === '—') return false;
-    return true;
-  });
 
   function makeChips(b) {
     const hits = b.label_hits || b.labels || {};
     return Object.keys(hits).map(lb => {
       const m = RFP_LABEL_META[lb] || { short: lb, cls: '' };
       const n = hits[lb];
-      const suffix = lb === 'shall_count' ? ` ${n}` : '';
-      return `<span class="chip ${m.cls}">${m.short}${suffix}</span>`;
+      return `<span class="chip ${m.cls}">${m.short}</span>`;
     }).join(' ');
   }
 
@@ -1043,8 +1168,10 @@ function setupRfpBrowser() {
       pop.querySelector('.vocab-filter-link').addEventListener('click', (e2) => {
         e2.preventDefault();
         const chip = e2.target.dataset.chip;
-        if (activeLabels.has(chip)) { activeLabels.delete(chip); card.classList.remove('active'); }
-        else { activeLabels.add(chip); card.classList.add('active'); }
+        // Toggle label filter via activeFilters array
+        const existing = activeFilters.findIndex(f => f.field === 'label' && (f.values||[]).includes(chip));
+        if (existing >= 0) { activeFilters.splice(existing, 1); card.classList.remove('active'); }
+        else { activeFilters.push({ id: ++filterIdSeq, field:'label', label:'Label', type:'multiselect', values:[chip] }); card.classList.add('active'); }
         renderFilterChips();
         rfpDT.draw();
         pop.remove();
@@ -1057,22 +1184,20 @@ function setupRfpBrowser() {
     });
   });
 
-  // Add filter button
-  document.getElementById('addFilterBtn').addEventListener('click', () => openFilterPopover(bundles));
+  // Add filter button → open two-step modal
+  filterBundles = bundles;
+  document.getElementById('addFilterBtn').addEventListener('click', openFilterModal);
 
-  // Close popover on outside click
-  document.addEventListener('click', e => {
-    const pop = document.getElementById('filterPopover');
-    if (!pop.contains(e.target) && e.target.id !== 'addFilterBtn') {
-      pop.style.display = 'none';
-    }
-  }, true);
+  // Close filter modal on overlay click
+  document.getElementById('filterOverlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('filterOverlay')) closeFilterModal();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeFilterModal(); });
 
   // Clear all
   document.getElementById('filterClearAll').addEventListener('click', e => {
     e.preventDefault();
-    filterText = ''; filterDept = ''; filterType = ''; filterHasContracts = false;
-    activeLabels.clear();
+    activeFilters = [];
     document.querySelectorAll('.rfp-card-clickable').forEach(c => c.classList.remove('active'));
     rfpDT.search('').columns().search('').draw();
     renderFilterChips();
@@ -1126,23 +1251,25 @@ function openRfpModal(bundle, detail, query) {
     }
   }
 
-  // Pre-computed label snippets
-  const snippets = (detail || bundle).snippets || {};
-  const snipKeys = Object.keys(snippets);
-  if (snipKeys.length) {
-    html += `<div class="rfp-modal-section-title">Label Matches</div>`;
-    snipKeys.forEach(key => {
-      const lm = RFP_LABEL_META[key] || { h4: key };
-      html += `<div style="font-family:var(--font-heading);font-size:0.875rem;font-weight:600;margin:0.875rem 0 0.25rem">${escapeHtml(lm.h4||key)}</div>`;
-      snippets[key].forEach(s => {
-        html += `<div class="rfp-modal-context">
-          <div class="ctx-src">from ${escapeHtml(s.source)}</div>
-          ${escapeHtml(s.before)}<mark>${escapeHtml(s.match)}</mark>${escapeHtml(s.after)}
-        </div>`;
+  // Pre-computed label snippets — only show when not doing a text search
+  if (!q) {
+    const snippets = (detail || bundle).snippets || {};
+    const snipKeys = Object.keys(snippets);
+    if (snipKeys.length) {
+      html += `<div class="rfp-modal-section-title">Label Matches</div>`;
+      snipKeys.forEach(key => {
+        const lm = RFP_LABEL_META[key] || { h4: key };
+        html += `<div style="font-family:var(--font-heading);font-size:0.875rem;font-weight:600;margin:0.875rem 0 0.25rem">${escapeHtml(lm.h4||key)}</div>`;
+        snippets[key].forEach(s => {
+          html += `<div class="rfp-modal-context">
+            <div class="ctx-src">from ${escapeHtml(s.source)}</div>
+            ${escapeHtml(s.before)}<mark>${escapeHtml(s.match)}</mark>${escapeHtml(s.after)}
+          </div>`;
+        });
       });
-    });
-  } else if (!q) {
-    html += `<div style="color:var(--color-text-muted);font-size:0.875rem;">No label snippets for this bundle.</div>`;
+    } else {
+      html += `<div style="color:var(--color-text-muted);font-size:0.875rem;">No label snippets for this bundle.</div>`;
+    }
   }
 
   // Matched contracts
