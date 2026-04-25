@@ -583,10 +583,6 @@
         <div class="rfp-card-n" id="ccContracts">—</div>
         <div class="rfp-card-label">contracts</div>
       </div>
-      <div class="rfp-card">
-        <div class="rfp-card-n" id="ccLpta">—</div>
-        <div class="rfp-card-label">LPTA rate</div>
-      </div>
     </div>
 
     <!-- Chip filter system -->
@@ -709,6 +705,7 @@ let rfpDT = null;
 const activeLabels = new Set();
 let filterDept = '';
 let filterType = '';
+let filterText = '';
 let filterHasContracts = false;
 
 // ── Chip filter state ─────────────────────────────────────────────────────────
@@ -718,9 +715,10 @@ function renderFilterChips() {
   const clearAll = document.getElementById('filterClearAll');
 
   const parts = [];
-  if (filterDept)          parts.push({ field:'dept',     label:'Dept',    value: filterDept });
-  if (filterType)          parts.push({ field:'type',     label:'Type',    value: filterType });
-  activeLabels.forEach(l => parts.push({ field:'label', label:'Label', value: l }));
+  if (filterText)          parts.push({ field:'text',      label:'Search',  value: filterText });
+  if (filterDept)          parts.push({ field:'dept',      label:'Dept',    value: filterDept });
+  if (filterType)          parts.push({ field:'type',      label:'Type',    value: filterType });
+  activeLabels.forEach(l => parts.push({ field:'label',    label:'Label',   value: l }));
   if (filterHasContracts)  parts.push({ field:'contracts', label:'Has contracts', value:'yes' });
 
   chips.innerHTML = parts.map(p => `
@@ -744,6 +742,7 @@ function renderFilterChips() {
 }
 
 function removeFilter(field, value) {
+  if (field === 'text')      { filterText = ''; rfpDT && rfpDT.search(''); }
   if (field === 'dept')      { filterDept = ''; rfpDT && rfpDT.column(3).search(''); }
   if (field === 'type')      { filterType = ''; rfpDT && rfpDT.column(2).search(''); }
   if (field === 'label')     { activeLabels.delete(value); }
@@ -769,6 +768,10 @@ function openFilterPopover(bundles) {
   const types = [...new Set(bundles.map(b => b.type).filter(Boolean))].sort();
 
   pop.innerHTML = `
+    <div class="filter-pop-section">
+      <div class="filter-pop-title">Search text</div>
+      <input type="text" class="filter-pop-select" id="fpText" placeholder="Search title, vendor, full RFP text…" value="${escapeHtml(filterText)}" style="font-size:0.875rem;">
+    </div>
     <div class="filter-pop-section">
       <div class="filter-pop-title">Department</div>
       <select class="filter-pop-select" id="fpDept">
@@ -803,6 +806,7 @@ function openFilterPopover(bundles) {
   `;
 
   document.getElementById('fpApply').addEventListener('click', () => {
+    filterText = document.getElementById('fpText').value.trim();
     filterDept = document.getElementById('fpDept').value;
     filterType = document.getElementById('fpType').value;
     activeLabels.clear();
@@ -810,6 +814,7 @@ function openFilterPopover(bundles) {
     filterHasContracts = document.getElementById('fpContracts').checked;
 
     if (rfpDT) {
+      rfpDT.search(filterText);
       rfpDT.column(3).search(filterDept);
       rfpDT.column(2).search(filterType);
     }
@@ -919,7 +924,7 @@ function setupRfpBrowser() {
       { title: 'Set-aside', orderable: false },
       { title: 'Labels',    orderable: false },
       { title: 'Contracts', orderable: false },
-      { title: 'SAM.gov',   orderable: false, searchable: false },
+      { title: 'SAM.gov',   orderable: false },
       { title: 'Att.',      className: 'num' },
       { title: '_text',     visible: false, searchable: true },
       { title: '_idx',      visible: false, searchable: false },
@@ -940,35 +945,26 @@ function setupRfpBrowser() {
 
   // Contract cards: fuzzy-match dept filter value against DATA.by_agency entries
   function updateContractCards(deptValue) {
-    const agencyData = DATA.by_agency || [];
     const allBundles = DATA.combined_table || DATA.rfp_bundles || [];
-    let contractsVal = '—', lptaVal = '—';
+    let contractsVal = '—';
 
     if (!deptValue) {
-      // Count only contracts actually matched to our RFPs
       const totalMatched = allBundles.reduce((sum, b) => sum + (b.contracts || []).length, 0);
       if (totalMatched > 0) contractsVal = totalMatched.toLocaleString() + ' matched';
-      lptaVal = '—';
     } else {
       function tokenize(str) {
         return str.toUpperCase().split(/[^A-Z0-9]+/).filter(w => w.length > 3);
       }
       const deptTokens = new Set(tokenize(deptValue));
-      let bestMatch = null, bestScore = 0;
-      agencyData.forEach(row => {
-        const agencyTokens = tokenize(row.agency || '');
-        let score = 0;
-        agencyTokens.forEach(w => { if (deptTokens.has(w)) score++; });
-        if (score > bestScore) { bestScore = score; bestMatch = row; }
+      const deptBundles = allBundles.filter(b => {
+        const d = b.dept || b.department || '';
+        return tokenize(d).some(w => deptTokens.has(w));
       });
-      if (bestMatch && bestScore >= 2) {
-        contractsVal = bestMatch.total.toLocaleString();
-        lptaVal = bestMatch.lpta_pct != null ? bestMatch.lpta_pct + '%' : '—';
-      }
+      const deptMatched = deptBundles.reduce((sum, b) => sum + (b.contracts || []).length, 0);
+      contractsVal = deptMatched > 0 ? deptMatched.toLocaleString() + ' matched' : '—';
     }
 
     document.getElementById('ccContracts').textContent = contractsVal;
-    document.getElementById('ccLpta').textContent = lptaVal;
 
     const sig = DATA.rfp_signals || {};
     const drEl = document.getElementById('rcDateRange');
@@ -1016,7 +1012,7 @@ function setupRfpBrowser() {
   // Clear all
   document.getElementById('filterClearAll').addEventListener('click', e => {
     e.preventDefault();
-    filterDept = ''; filterType = ''; filterHasContracts = false;
+    filterText = ''; filterDept = ''; filterType = ''; filterHasContracts = false;
     activeLabels.clear();
     document.querySelectorAll('.rfp-card-clickable').forEach(c => c.classList.remove('active'));
     rfpDT.search('').columns().search('').draw();
