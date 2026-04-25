@@ -246,6 +246,7 @@ r2_sync.py                 — R2 checkpoint sync for GitHub Actions
   fetch.yml                — GitHub Actions: fetch_bulk.py with R2 persistence (monthly)
   fetch_tradeoff.yml       — GitHub Actions: fetch_tradeoff.py daily at 10:00 UTC
   rfp_text.yml             — GitHub Actions: rfp_text_pipeline.py daily at 09:00 UTC
+  rebuild.yml              — GitHub Actions: rebuild web/data/ after tradeoff fetch; data tests gate the commit
 web/index.html             — Dashboard + RFP browser
 web/shared/filters.js      — FilterManager class (shared filter UX component)
 web/shared/shared.css      — Design tokens + component styles

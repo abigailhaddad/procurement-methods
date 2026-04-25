@@ -1,0 +1,170 @@
+name: Rebuild Dashboard Data
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Fetch Tradeoff Codes"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: rebuild-dashboard
+  cancel-in-progress: true
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+
+    env:
+      CF_R2_ACCOUNT_ID: ${{ secrets.CF_R2_ACCOUNT_ID }}
+      CF_R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
+      CF_R2_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY_ID }}
+      CF_R2_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_ACCESS_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download data files from R2
+        run: |
+          python - <<'EOF'
+          import os, boto3, json
+          from pathlib import Path
+          from botocore.config import Config
+
+          s3 = boto3.client('s3',
+              endpoint_url=f'https://{os.environ["CF_R2_ACCOUNT_ID"]}.r2.cloudflarestorage.com',
+              aws_access_key_id=os.environ['CF_R2_ACCESS_KEY_ID'],
+              aws_secret_access_key=os.environ['CF_R2_SECRET_ACCESS_KEY'],
+              config=Config(signature_version='s3v4'), region_name='auto')
+          bucket = os.environ['CF_R2_BUCKET']
+          Path('data').mkdir(exist_ok=True)
+
+          def dl(key, dest):
+              try:
+                  s3.download_file(bucket, key, dest)
+                  size = Path(dest).stat().st_size
+                  print(f"  ✓ {key} ({size/1e6:.1f} MB)")
+                  return True
+              except Exception as e:
+                  print(f"  – {key} not found ({e})")
+                  return False
+
+          dl('it_contracts/contracts_bulk.csv',   'data/contracts_bulk.csv')
+          dl('it_tradeoff/tradeoff_lookup.csv',   'data/tradeoff_lookup.csv')
+          dl('it_contracts/sam_lookup.csv',        'data/sam_lookup.csv')
+          dl('it_contracts/protests_matched.csv',  'data/protests_matched.csv')
+          EOF
+
+      - name: Build contracts_raw.csv
+        id: build_contracts
+        run: |
+          python build_contracts.py 2>&1 | tee /tmp/build_contracts.log
+          # Extract summary stats for job summary
+          contracts=$(grep "Wrote.*contracts to" /tmp/build_contracts.log | grep -oP '\d+(?= contracts)' || echo "?")
+          tradeoff=$(grep "tradeoff code" /tmp/build_contracts.log | grep -oP '\d+\.\d+(?=%)' || echo "?")
+          echo "contracts=$contracts" >> $GITHUB_OUTPUT
+          echo "tradeoff_pct=$tradeoff" >> $GITHUB_OUTPUT
+
+      - name: Build dashboard JSON (analyze.py)
+        id: analyze
+        run: |
+          python analyze.py 2>&1 | tee /tmp/analyze.log
+          obligated=$(grep "Total obligated" /tmp/analyze.log | grep -oP '\$[\d.]+[BM]' | head -1 || echo "?")
+          echo "obligated=$obligated" >> $GITHUB_OUTPUT
+
+      - name: Build RFP signals and combined table
+        id: rfp
+        run: |
+          python build_rfp_signals.py 2>&1 | tee /tmp/rfp_signals.log
+          bundles=$(grep "wrote.*rfp_bundles" /tmp/rfp_signals.log | grep -oP '\d+(?= rows)' || echo "?")
+          python build_combined_table.py 2>&1 | tee /tmp/combined.log
+          matched=$(grep "with contract matches" /tmp/combined.log | grep -oP '\d+(?= with)' || echo "?")
+          echo "bundles=$bundles" >> $GITHUB_OUTPUT
+          echo "matched=$matched" >> $GITHUB_OUTPUT
+
+      - name: Run data integrity tests (must pass before committing)
+        run: python -m pytest tests/data/ -v
+
+      - name: Update baseline (raise the floor)
+        run: python tests/data/update_baseline.py
+
+      - name: Commit and push web/data/ + baseline
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add web/data/ tests/data/baseline.json
+          if git diff --staged --quiet; then
+            echo "No changes to web/data/ — skipping commit"
+          else
+            git commit -m "Rebuild dashboard data [skip ci]
+
+          Contracts: ${{ steps.build_contracts.outputs.contracts }} total, ${{ steps.build_contracts.outputs.tradeoff_pct }}% tradeoff coverage
+          Obligated: ${{ steps.analyze.outputs.obligated }}
+          RFP bundles: ${{ steps.rfp.outputs.bundles }} | Matched: ${{ steps.rfp.outputs.matched }}"
+            git push
+          fi
+
+      - name: Write job summary
+        if: always()
+        run: |
+          python - <<'EOF'
+          import json, os
+          from pathlib import Path
+
+          def load(f):
+              try: return json.loads(Path(f"web/data/{f}").read_text())
+              except: return None
+
+          summary   = load("summary.json") or {}
+          em        = load("by_eval_method.json") or []
+          bundles   = load("rfp_bundles.json") or []
+          contracts = load("by_eval_method.json") or []
+
+          tc_pct    = os.environ.get("TRADEOFF_PCT", "?")
+
+          lines = [
+            "## Dashboard rebuild summary",
+            "",
+            "### Contracts pipeline (USASpending + Tango)",
+            f"| Metric | Value |",
+            f"|--------|-------|",
+            f"| Total contracts | {summary.get('total_contracts', '?'):,} |" if isinstance(summary.get('total_contracts'), int) else f"| Total contracts | {summary.get('total_contracts', '?')} |",
+            f"| Total obligated | ${summary.get('total_obligated_b', '?')} B |",
+            f"| Tradeoff code coverage | {summary.get('tradeoff_pct', '?')}% |",
+            "",
+            "**Eval method breakdown:**",
+            "| Method | Count | % |",
+            "|--------|-------|---|",
+          ]
+          for d in sorted(em, key=lambda x: -x.get("count", 0)):
+              lines.append(f"| {d['method']} | {d['count']:,} | {d['pct']}% |")
+
+          lines += [
+            "",
+            "### RFP browser pipeline (SAM.gov)",
+            f"| Metric | Value |",
+            f"|--------|-------|",
+            f"| RFP bundles (541511/512) | {len(bundles)} |",
+          ]
+
+          ct = load("combined_table.json") or []
+          matched = sum(1 for b in ct if b.get("contracts"))
+          lines.append(f"| RFPs with matched contracts | {matched} |")
+
+          print("\n".join(lines))
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a") as f:
+              f.write("\n".join(lines) + "\n")
+          EOF
+        env:
+          TRADEOFF_PCT: ${{ steps.build_contracts.outputs.tradeoff_pct }}
