@@ -1,43 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 :root {
-    /* Colors */
-    --color-bg: #FFF8F0;
-    --color-surface: #F5EDE0;
-    --color-text: #3D2B1F;
-    --color-text-muted: #7A6E62;
-    --color-accent: #2D6A4F;
-    --color-accent-hover: #245A42;
-    --color-highlight: #D4A03C;
-    --color-border: #E8DDD0;
-    --color-code-bg: #2A211A;
-    --color-code-text: #F5EDE0;
-    --color-error: #C0392B;
-
-    /* Override Bootstrap's blue with our brand accent */
-    --bs-primary: #2D6A4F;
-    --bs-primary-rgb: 45, 106, 79;
-    --bs-link-color: #2D6A4F;
-    --bs-link-hover-color: #245A42;
-    --bs-focus-ring-color: rgba(45, 106, 79, 0.25);
-    --bs-body-bg: #FFF8F0;
-    --bs-body-color: #3D2B1F;
-
-    /* Typography */
-    --font-heading: 'DM Sans', sans-serif;
-    --font-body: 'Source Sans 3', sans-serif;
+    --color-bg: #F8FAFA;
+    --color-surface: #FFFFFF;
+    --color-header: #1B4332;
+    --color-text: #111827;
+    --color-text-muted: #6B7280;
+    --color-accent: #1B4332;
+    --color-accent-hover: #15362A;
+    --color-gold: #C9A84C;
+    --color-highlight: #C9A84C;
+    --color-border: #D1E4D1;
+    --color-code-bg: #1B4332;
+    --color-code-text: #F8FAFA;
+    --color-error: #DC2626;
+    --bs-primary: #1B4332;
+    --bs-primary-rgb: 27, 67, 50;
+    --bs-link-color: #1B4332;
+    --bs-link-hover-color: #15362A;
+    --font-heading: 'Inter', -apple-system, sans-serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
-
-    /* Spacing */
     --max-width-text: 720px;
     --max-width-layout: 1100px;
+    --shadow-sm: 0 1px 3px rgba(27,67,50,0.08);
+    --shadow-md: 0 4px 8px rgba(27,67,50,0.12);
+
+    /* Spacing */
     --section-padding: 4rem;
     --card-padding: 1.5rem;
     --card-radius: 0.5rem;
-
-    /* Shadows */
-    --shadow-sm: 0 1px 3px rgba(61, 43, 31, 0.08);
-    --shadow-md: 0 4px 8px rgba(61, 43, 31, 0.1);
 }
 
 /* ============================================
@@ -62,6 +54,7 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: -0.01em;
     color: var(--color-text);
 }
+
 
 h1 {
     font-size: 2.5rem;
@@ -108,16 +101,21 @@ a:hover {
    ============================================ */
 
 .site-header {
-    padding: 2rem 0 1.5rem;
+    background: var(--color-header);
+    color: #FFFFFF;
+    padding: 2rem 0 1.75rem;
+    margin-bottom: 0;
 }
-
 .site-header h1 {
+    color: #FFFFFF;
+    font-size: 1.75rem;
+    font-weight: 700;
     margin: 0 0 0.25rem;
 }
-
 .site-subtitle {
-    color: var(--color-text-muted);
-    font-size: 1.0625rem;
+    color: var(--color-gold);
+    font-size: 0.9375rem;
+    font-weight: 500;
     margin: 0;
 }
 
