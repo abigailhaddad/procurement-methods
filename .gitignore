@@ -7,3 +7,5 @@ __pycache__/
 
 # Local Netlify folder
 .netlify
+*.png
+*.jpeg

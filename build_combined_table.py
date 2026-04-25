@@ -29,7 +29,8 @@ def fmt_dollars(v):
         return "—"
 
 # ── Load contracts keyed by solicitation_id ───────────────────────────────────
-print("Loading contracts…")
+# Source 1: pre-fetched contracts_raw.csv (NAICS 541511/512 only)
+print("Loading contracts from contracts_raw.csv…")
 contracts_by_sol = defaultdict(list)
 with open("data/contracts_raw.csv", newline="", encoding="utf-8") as f:
     for row in csv.DictReader(f):
@@ -37,12 +38,16 @@ with open("data/contracts_raw.csv", newline="", encoding="utf-8") as f:
         if not sid:
             continue
         ob_raw = row.get("obligated", "")
+        try:
+            ob_float = float(ob_raw)
+        except (TypeError, ValueError):
+            ob_float = 0.0
         contracts_by_sol[sid].append({
             "key":    row.get("key", ""),
             "vendor": row.get("recipient_name", ""),
             "em":     row.get("eval_method", ""),
             "ob":     fmt_dollars(ob_raw),
-            "ob_raw": float(ob_raw) if ob_raw.replace(".", "", 1).lstrip("-").isdigit() else 0,
+            "ob_raw": ob_float,
             "ct":     CT_LABELS.get(row.get("contract_type", ""), row.get("contract_type", "")),
             "sa":     row.get("set_aside", ""),
             "fy":     row.get("fiscal_year", ""),
@@ -51,6 +56,36 @@ with open("data/contracts_raw.csv", newline="", encoding="utf-8") as f:
 
 total_with_sol = sum(len(v) for v in contracts_by_sol.values())
 print(f"  {total_with_sol:,} contracts have a solicitation_id ({len(contracts_by_sol):,} unique)")
+
+# Source 2: live USASpending API matches (all NAICS, from fetch_rfp_contracts.py)
+rfp_matches_path = Path("data/rfp_contract_matches.json")
+if rfp_matches_path.exists():
+    live = json.loads(rfp_matches_path.read_text())
+    added = 0
+    for sol, rows in live.items():
+        for row in rows:
+            ob_raw = row.get("ob") or 0
+            try:
+                ob_float = float(ob_raw)
+            except (TypeError, ValueError):
+                ob_float = 0.0
+            entry = {
+                "key":    row.get("piid", ""),
+                "vendor": row.get("vendor", ""),
+                "em":     "",   # USASpending search API doesn't return eval method
+                "ob":     fmt_dollars(str(ob_float)),
+                "ob_raw": ob_float,
+                "ct":     row.get("ct", ""),
+                "sa":     row.get("sa", ""),
+                "fy":     "",
+                "date":   row.get("date", ""),
+            }
+            # Add only if not already in contracts_by_sol
+            existing_keys = {c["key"] for c in contracts_by_sol[sol]}
+            if entry["key"] not in existing_keys:
+                contracts_by_sol[sol].append(entry)
+                added += 1
+    print(f"  +{added} from rfp_contract_matches.json")
 
 # ── Load RFP bundles and enrich with matched contracts ────────────────────────
 print("Loading RFP bundles…")
