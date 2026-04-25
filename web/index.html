@@ -327,9 +327,72 @@
     }
     .signal-row .signal-desc {
       grid-column: 1 / -1;
-      font-size: 0.78rem;
-      color: var(--color-text-muted);
+      font-size: 0.8125rem;
+      color: var(--color-text);
       margin-bottom: 0.25rem;
+    }
+    .signal-vocab {
+      grid-column: 1 / -1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-bottom: 0.25rem;
+    }
+    .signal-vocab-chip {
+      display: inline-block;
+      padding: 0.125rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      background: var(--color-border);
+      color: var(--color-text-muted);
+      font-family: var(--font-mono, monospace);
+    }
+
+    /* ── RFP reactive cards ────────────────────────────────────────────── */
+    .rfp-cards-row {
+      display: flex;
+      gap: 0.625rem;
+      flex-wrap: wrap;
+      margin: 1rem 0 0.875rem;
+    }
+    .rfp-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 0.5rem;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      min-width: 100px;
+      flex: 1;
+    }
+    .rfp-card-clickable { cursor: pointer; transition: background 0.1s, border-color 0.1s; }
+    .rfp-card-clickable:hover { background: var(--color-border); }
+    .rfp-card-clickable.active { border-color: var(--color-accent); background: rgba(45,106,79,0.07); }
+    .rfp-card-n {
+      font-family: var(--font-mono, monospace);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text);
+      line-height: 1.2;
+    }
+    .rfp-card-label { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.25rem; line-height: 1.3; }
+
+    /* ── RFP filter bar ────────────────────────────────────────────────── */
+    .rfp-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem 0.625rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+    .rfp-filter-select {
+      padding: 0.3rem 0.5rem;
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
+      font: inherit;
+      font-size: 0.875rem;
+      background: var(--color-bg);
+      color: var(--color-text);
     }
     .signal-row .signal-track {
       grid-column: 1 / -1;
@@ -393,8 +456,7 @@
 
   <nav class="tab-nav" role="tablist">
     <button role="tab" id="tab-contracts" aria-controls="panel-contracts" aria-selected="true">Contracts</button>
-    <button role="tab" id="tab-rfp"       aria-controls="panel-rfp"       aria-selected="false">RFP signals</button>
-    <button role="tab" id="tab-table"     aria-controls="panel-table"     aria-selected="false">RFP browser</button>
+    <button role="tab" id="tab-rfp"       aria-controls="panel-rfp"       aria-selected="false">RFPs</button>
   </nav>
 
   <section id="panel-contracts" class="tab-panel" role="tabpanel" aria-labelledby="tab-contracts" aria-hidden="false">
@@ -799,62 +861,44 @@
 
   <section id="panel-rfp" class="tab-panel" role="tabpanel" aria-labelledby="tab-rfp" aria-hidden="true">
 
-    <h2 class="section-header" style="margin-top:1.5rem;">What language appears in the RFP text?</h2>
-
-    <p class="narrative">
-      A sibling pipeline pulls the actual attachment text for 541xxx RFPs as
-      they post on SAM.gov (see <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/rfp_text_pipeline.py" target="_blank">rfp_text_pipeline.py</a>),
-      then runs a small set of regex classifiers over each bundle. Early days &mdash;
-      these are crude, keyword-level, and meant to bootstrap a richer classifier.
+    <p class="narrative" style="margin-top:1.25rem;">
+      RFP attachment text pulled daily from SAM.gov for 541xxx NAICS codes.
+      Each row is one notice. The search box scans full extracted text.
+      Click any row to see context. Click a card to filter by that signal.
     </p>
 
-    <div id="rfpSignalsSection" style="display:none;">
-      <div class="chart-card" style="padding:1.25rem 1.5rem;">
-        <div id="rfpSignalsHeader" style="font-size:0.875rem; color:var(--color-text-muted); margin-bottom:1rem;"></div>
-        <div id="rfpSignalsBars"></div>
-        <div id="rfpSignalsExamples" style="margin-top:1.25rem; font-size:0.8125rem; color:var(--color-text-muted);"></div>
+    <!-- Reactive summary cards -->
+    <div class="rfp-cards-row" id="rfpCards" style="display:none;">
+      <div class="rfp-card">
+        <div class="rfp-card-n" id="rcTotal">—</div>
+        <div class="rfp-card-label">RFPs</div>
+      </div>
+      <div class="rfp-card rfp-card-clickable" data-label-key="shall_count" data-chip="shall">
+        <div class="rfp-card-n" id="rcShall">—</div>
+        <div class="rfp-card-label">contain 'shall'</div>
+      </div>
+      <div class="rfp-card rfp-card-clickable" data-label-key="has_user_vocab" data-chip="user">
+        <div class="rfp-card-n" id="rcUser">—</div>
+        <div class="rfp-card-label">user vocab</div>
+      </div>
+      <div class="rfp-card rfp-card-clickable" data-label-key="has_agile_vocab" data-chip="agile">
+        <div class="rfp-card-n" id="rcAgile">—</div>
+        <div class="rfp-card-label">agile vocab<br><span style="font-size:0.65rem;font-weight:400;">sprint·scrum·kanban·backlog</span></div>
+      </div>
+      <div class="rfp-card rfp-card-clickable" data-label-key="mentions_rtm" data-chip="RTM">
+        <div class="rfp-card-n" id="rcRtm">—</div>
+        <div class="rfp-card-label">RTM<br><span style="font-size:0.65rem;font-weight:400;">requirements traceability</span></div>
       </div>
     </div>
 
-    <h2 class="section-header">How do these patterns vary by department?</h2>
-
-    <p class="narrative">
-      For each department with at least 5 RFPs indexed, label hit rates compared
-      to that department's LPTA rate in awarded contracts (from USASpending).
-      Departments without a match in the contracts data show &mdash; for LPTA rate.
-    </p>
-
-    <div id="rfpDeptSection" style="display:none;">
-      <div class="chart-card" style="padding:1.25rem 1.5rem; overflow-x:auto;">
-        <div id="rfpDeptTable"></div>
-      </div>
+    <!-- Filter bar -->
+    <div class="rfp-filter-bar" id="rfpFilterBar" style="display:none;">
+      <select id="rfpFilterDept" class="rfp-filter-select"><option value="">All departments</option></select>
+      <select id="rfpFilterType" class="rfp-filter-select"><option value="">All notice types</option></select>
+      <a id="rfpFilterClear" href="#" style="display:none; font-size:0.8125rem; color:var(--color-text-muted); margin-left:auto; text-decoration:none;">✕ Clear filters</a>
     </div>
 
-    <h2 class="section-header">Do these patterns change over time?</h2>
-
-    <p class="narrative">
-      Monthly label hit rates across all indexed RFPs. More meaningful once the
-      6-month backfill completes &mdash; right now it only covers recent weeks.
-    </p>
-
-    <div id="rfpTrendsSection" style="display:none;">
-      <div class="chart-card" style="padding:1.25rem 1.5rem;">
-        <canvas id="rfpTrendsChart" height="220"></canvas>
-      </div>
-    </div>
-
-  </section><!-- /panel-rfp -->
-
-  <section id="panel-table" class="tab-panel" role="tabpanel" aria-labelledby="tab-table" aria-hidden="true">
-
-    <h2 class="section-header" style="margin-top:1.5rem;">Browse &amp; search RFPs</h2>
-
-    <p class="narrative">
-      Each row is one SAM.gov notice. The search box scans full extracted attachment
-      text in addition to title, department, and NAICS — type anything to find it.
-      Click any row to see matches highlighted in context.
-    </p>
-
+    <!-- DataTable -->
     <div style="overflow-x:auto;">
       <table id="rfpTable" class="display" style="width:100%">
         <thead>
@@ -874,7 +918,7 @@
       </table>
     </div>
 
-  </section><!-- /panel-table -->
+  </section><!-- /panel-rfp -->
 
   <!-- RFP text modal -->
   <div id="rfpModal" class="rfp-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="rfpModalTitle">
@@ -945,15 +989,15 @@ async function loadAll() {
 
 function setupTabs() {
   const buttons = document.querySelectorAll('.tab-nav button');
-  let tableReady = false;
+  let rfpReady = false;
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
       buttons.forEach(b => b.setAttribute('aria-selected', b === btn ? 'true' : 'false'));
       document.querySelectorAll('.tab-panel').forEach(p => {
         p.setAttribute('aria-hidden', p.id === btn.getAttribute('aria-controls') ? 'false' : 'true');
       });
-      if (btn.id === 'tab-table' && !tableReady && DATA.rfp_bundles) {
-        tableReady = true;
+      if (btn.id === 'tab-rfp' && !rfpReady && DATA.rfp_bundles) {
+        rfpReady = true;
         setupRfpBrowser();
       }
     });
@@ -970,148 +1014,9 @@ function render() {
   renderAgency();
   renderProtests();
   renderVendorTable();
-  renderRfpSignals();
-  renderRfpDeptTable();
-  renderRfpTrends();
   renderGaps();
 }
 
-function renderRfpSignals() {
-  const s = DATA.rfp_signals;
-  if (!s || !s.labels || !s.total_bundles) return;
-  document.getElementById('rfpSignalsSection').style.display = '';
-
-  const hdr = document.getElementById('rfpSignalsHeader');
-  const range = s.date_range && s.date_range.from
-    ? `posted ${s.date_range.from} → ${s.date_range.to}` : '';
-  hdr.textContent = `${s.total_bundles.toLocaleString()} bundles indexed (${s.with_attachments.toLocaleString()} with attachments) ${range}`;
-
-  const bars = document.getElementById('rfpSignalsBars');
-  bars.innerHTML = s.labels.map(lb => `
-    <div class="signal-row" data-label-key="${escapeHtml(lb.key)}" title="Click to browse matching RFPs">
-      <div class="signal-label">${escapeHtml(lb.label)}</div>
-      <div class="signal-pct">${lb.percent}%</div>
-      <div class="signal-desc">${escapeHtml(lb.description)} &mdash; ${lb.count.toLocaleString()} of ${s.total_bundles.toLocaleString()} bundles</div>
-      <div class="signal-track"><div class="signal-fill" style="width:${lb.percent}%"></div></div>
-      <div class="signal-hint">↗ click to browse these ${lb.count.toLocaleString()} RFPs</div>
-    </div>
-  `).join('');
-
-  bars.querySelectorAll('.signal-row').forEach(row => {
-    row.addEventListener('click', () => drilldownRfpLabel(row.dataset.labelKey));
-  });
-
-  const topLabel = s.labels.find(l => l.examples && l.examples.length);
-  const ex = document.getElementById('rfpSignalsExamples');
-  if (topLabel) {
-    ex.innerHTML = `
-      <strong style="color:var(--color-text); font-family:var(--font-heading); font-size:0.875rem;">
-        Example hits &mdash; ${escapeHtml(topLabel.label)}
-      </strong>
-      <ul style="padding-left:1.25rem; margin:0.5rem 0 0;">
-        ${topLabel.examples.map(e => `
-          <li>
-            <a href="${e.ui_link || '#'}" target="_blank">${escapeHtml(e.title || '(untitled)')}</a>
-            &nbsp;&middot;&nbsp; ${escapeHtml(e.type || '')}
-            &nbsp;&middot;&nbsp; ${escapeHtml(e.department || '')}
-            &nbsp;&middot;&nbsp; posted ${e.posted_date || ''}
-          </li>
-        `).join('')}
-      </ul>
-    `;
-  } else {
-    ex.textContent = '';
-  }
-}
-
-function renderRfpDeptTable() {
-  const s = DATA.rfp_signals;
-  if (!s || !s.by_dept || !s.by_dept.length) return;
-  document.getElementById('rfpDeptSection').style.display = '';
-
-  // Build LPTA lookup from by_agency (dept name → lpta_pct)
-  // by_agency uses "Department of State" style; rfp data uses "STATE, DEPARTMENT OF"
-  // Normalize both to uppercase words for fuzzy matching.
-  const agencyData = DATA.by_agency || [];
-  const lptaMap = {};
-  agencyData.forEach(a => {
-    lptaMap[a.agency.toUpperCase()] = a.lpta_pct;
-  });
-  function lookupLpta(rfpDept) {
-    const key = rfpDept.toUpperCase();
-    if (lptaMap[key] !== undefined) return lptaMap[key];
-    // try keyword overlap: find the agency entry with most words in common
-    const rfpWords = new Set(key.split(/\W+/).filter(w => w.length > 3));
-    let best = null, bestScore = 0;
-    Object.entries(lptaMap).forEach(([k, v]) => {
-      const score = k.split(/\W+/).filter(w => rfpWords.has(w)).length;
-      if (score > bestScore) { bestScore = score; best = v; }
-    });
-    return bestScore >= 2 ? best : null;
-  }
-
-  const labelKeys = ['shall_count','has_user_vocab','has_agile_vocab','mentions_rtm'];
-  const labelShort = {shall_count:'shall', has_user_vocab:'user', has_agile_vocab:'agile', mentions_rtm:'RTM'};
-
-  const rows = s.by_dept.map(d => {
-    const lpta = lookupLpta(d.dept);
-    const lptaClass = lpta === null ? '' : lpta > 40 ? 'lpta-high' : lpta > 20 ? 'lpta-mid' : 'lpta-low';
-    const lptaStr  = lpta === null ? '&mdash;' : `${lpta}%`;
-    return `<tr>
-      <td>${escapeHtml(d.dept)}</td>
-      <td class="num">${d.total}</td>
-      ${labelKeys.map(k => `<td class="num">${d.pcts[k] ?? 0}%</td>`).join('')}
-      <td class="num lpta-cell ${lptaClass}">${lptaStr}</td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('rfpDeptTable').innerHTML = `
-    <table class="rfp-dept-table">
-      <thead><tr>
-        <th>Department</th>
-        <th class="num">RFPs</th>
-        ${labelKeys.map(k => `<th class="num">${labelShort[k]}</th>`).join('')}
-        <th class="num">LPTA rate<br><span style="font-weight:400;font-size:0.7rem">(contracts)</span></th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-  `;
-}
-
-function renderRfpTrends() {
-  const s = DATA.rfp_signals;
-  if (!s || !s.by_month || s.by_month.length < 2) return;
-  document.getElementById('rfpTrendsSection').style.display = '';
-
-  const months  = s.by_month.map(m => m.month);
-  const colors  = { shall_count:'#3498DB', has_user_vocab:'#2ECC71', has_agile_vocab:'#E67E22', mentions_rtm:'#9B59B6' };
-  const labels  = { shall_count:"'shall' clauses", has_user_vocab:'User / stakeholder', has_agile_vocab:'Agile vocab', mentions_rtm:'RTM' };
-  const datasets = Object.entries(colors).map(([key, color]) => ({
-    label: labels[key],
-    data:  s.by_month.map(m => m.pcts[key] ?? 0),
-    borderColor: color,
-    backgroundColor: color + '22',
-    tension: 0.3,
-    pointRadius: months.length < 8 ? 5 : 3,
-    fill: false,
-  }));
-
-  mkChart('rfpTrendsChart', {
-    type: 'line',
-    data: { labels: months, datasets },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}%` } },
-      },
-      scales: {
-        x: { grid: { color: '#e8e4e080' }, ticks: { font: { size: 11 } } },
-        y: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 11 } }, grid: { color: '#e8e4e080' } },
-      },
-    },
-  });
-}
 
 function escapeHtml(s) {
   return String(s == null ? '' : s)
@@ -1119,7 +1024,7 @@ function escapeHtml(s) {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// ── RFP bundle browser ──────────────────────────────────────────────────────
+// ── RFP browser ─────────────────────────────────────────────────────────────
 const RFP_LABEL_META = {
   shall_count:     { short: 'shall',  cls: 'chip-shall',  h4: "'shall' clauses" },
   has_user_vocab:  { short: 'user',   cls: 'chip-user',   h4: "User / stakeholder vocabulary" },
@@ -1128,21 +1033,46 @@ const RFP_LABEL_META = {
 };
 
 let rfpDT = null;
+const activeLabels = new Set();
 
-function drilldownRfpLabel(labelKey) {
-  const chipShort = (RFP_LABEL_META[labelKey] || {}).short || labelKey;
-  document.getElementById('tab-table').click();
-  setTimeout(() => {
-    if (rfpDT) {
-      rfpDT.search('').columns().search('');
-      rfpDT.column(6).search(chipShort).draw();
-    }
-  }, 60);
+function updateRfpCards() {
+  if (!rfpDT) return;
+  const rows = rfpDT.rows({ search: 'applied' }).data();
+  const n = rows.length;
+  let shall = 0, user = 0, agile = 0, rtm = 0;
+  for (let i = 0; i < n; i++) {
+    const lbl = rows[i][6];
+    if (lbl.includes('shall'))  shall++;
+    if (lbl.includes('user'))   user++;
+    if (lbl.includes('agile'))  agile++;
+    if (lbl.includes('RTM'))    rtm++;
+  }
+  const pct = (k, tot) => tot ? Math.round(k / tot * 100) + '%' : '—';
+  document.getElementById('rcTotal').textContent = n.toLocaleString();
+  document.getElementById('rcShall').textContent = pct(shall, n);
+  document.getElementById('rcUser').textContent  = pct(user,  n);
+  document.getElementById('rcAgile').textContent = pct(agile, n);
+  document.getElementById('rcRtm').textContent   = pct(rtm,   n);
 }
 
 function setupRfpBrowser() {
   const bundles = DATA.rfp_bundles;
   if (!bundles || !bundles.length) return;
+
+  // Populate dept + type dropdowns
+  const depts = [...new Set(bundles.map(b => b.department).filter(Boolean))].sort();
+  const types = [...new Set(bundles.map(b => b.type).filter(Boolean))].sort();
+  const deptSel = document.getElementById('rfpFilterDept');
+  const typeSel = document.getElementById('rfpFilterType');
+  depts.forEach(d => deptSel.appendChild(new Option(d, d)));
+  types.forEach(t => typeSel.appendChild(new Option(t, t)));
+
+  // Custom label-chip filter (AND logic across active labels)
+  $.fn.dataTable.ext.search.push(function(settings, data) {
+    if (settings.nTable.id !== 'rfpTable' || !activeLabels.size) return true;
+    const lbl = data[6];
+    return [...activeLabels].every(l => lbl.includes(l));
+  });
 
   function makeChips(b) {
     return Object.keys(b.label_hits || {}).map(lb => {
@@ -1163,34 +1093,34 @@ function setupRfpBrowser() {
     const saRaw = typeof b.set_aside === 'string' ? b.set_aside
       : (b.set_aside && b.set_aside.description) ? b.set_aside.description : '';
     return [
-      escapeHtml(b.title || '(untitled)'),  // 0
-      b.posted_date || '',                   // 1
-      escapeHtml(b.type || ''),              // 2
-      escapeHtml(b.department || ''),        // 3
-      escapeHtml(b.naics || '—'),            // 4
-      escapeHtml(saRaw || '—'),              // 5  set-aside
-      makeChips(b),                          // 6  labels (orderable=false)
-      makeSamLink(b),                        // 7  SAM link (orderable=false)
-      b.attachment_count || 0,               // 8  att count
-      b.search_text || '',                   // 9  hidden full text
-      i,                                     // 10 hidden bundle index
+      escapeHtml(b.title || '(untitled)'),
+      b.posted_date || '',
+      escapeHtml(b.type || ''),
+      escapeHtml(b.department || ''),
+      escapeHtml(b.naics || '—'),
+      escapeHtml(saRaw || '—'),
+      makeChips(b),
+      makeSamLink(b),
+      b.attachment_count || 0,
+      b.search_text || '',
+      i,
     ];
   });
 
   rfpDT = $('#rfpTable').DataTable({
     data: tableData,
     columns: [
-      { title: 'Title',      className: 'rfp-title-cell' },
+      { title: 'Title',     className: 'rfp-title-cell' },
       { title: 'Date' },
       { title: 'Type' },
       { title: 'Department' },
       { title: 'NAICS' },
-      { title: 'Set-aside',  orderable: false },
-      { title: 'Labels',     orderable: false },
-      { title: 'SAM.gov',    orderable: false, searchable: false },
-      { title: 'Att.',       className: 'num' },
-      { title: '_text',      visible: false, searchable: true },
-      { title: '_idx',       visible: false, searchable: false },
+      { title: 'Set-aside', orderable: false },
+      { title: 'Labels',    orderable: false },
+      { title: 'SAM.gov',   orderable: false, searchable: false },
+      { title: 'Att.',      className: 'num' },
+      { title: '_text',     visible: false, searchable: true },
+      { title: '_idx',      visible: false, searchable: false },
     ],
     order: [[1, 'desc']],
     pageLength: 25,
@@ -1206,21 +1136,61 @@ function setupRfpBrowser() {
     },
   });
 
-  $('#rfpTable tbody').on('click', 'tr', function() {
-    const row = rfpDT.row(this);
-    const data = row.data();
-    if (!data) return;
-    const bundleIdx = data[10];
-    openRfpModal(bundles[bundleIdx], rfpDT.search());
+  // Update cards on every draw
+  $('#rfpTable').on('draw.dt', updateRfpCards);
+  updateRfpCards();
+
+  document.getElementById('rfpCards').style.display = '';
+  document.getElementById('rfpFilterBar').style.display = '';
+
+  // Card clicks → toggle label filter
+  document.querySelectorAll('.rfp-card-clickable').forEach(card => {
+    card.addEventListener('click', () => {
+      const chip = card.dataset.chip;
+      if (activeLabels.has(chip)) {
+        activeLabels.delete(chip);
+        card.classList.remove('active');
+      } else {
+        activeLabels.add(chip);
+        card.classList.add('active');
+      }
+      rfpDT.draw();
+      updateClearBtn();
+    });
   });
 
+  // Dept + type selects
+  function updateClearBtn() {
+    const any = activeLabels.size || deptSel.value || typeSel.value;
+    document.getElementById('rfpFilterClear').style.display = any ? '' : 'none';
+  }
+  deptSel.addEventListener('change', () => { rfpDT.column(3).search(deptSel.value).draw(); updateClearBtn(); });
+  typeSel.addEventListener('change', () => { rfpDT.column(2).search(typeSel.value).draw(); updateClearBtn(); });
+
+  // Clear all
+  document.getElementById('rfpFilterClear').addEventListener('click', e => {
+    e.preventDefault();
+    activeLabels.clear();
+    document.querySelectorAll('.rfp-card-clickable').forEach(c => c.classList.remove('active'));
+    deptSel.value = '';
+    typeSel.value = '';
+    rfpDT.search('').columns().search('').draw();
+    updateClearBtn();
+  });
+
+  // Row click → modal
+  $('#rfpTable tbody').on('click', 'tr', function() {
+    const data = rfpDT.row(this).data();
+    if (!data) return;
+    openRfpModal(bundles[data[10]], rfpDT.search());
+  });
+
+  // Modal close handlers (once)
   document.getElementById('rfpModalClose').addEventListener('click', closeRfpModal);
   document.getElementById('rfpModal').addEventListener('click', function(e) {
     if (e.target === this) closeRfpModal();
   });
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeRfpModal();
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeRfpModal(); });
 }
 
 function openRfpModal(bundle, query) {
