@@ -454,421 +454,17 @@
     Work in progress &mdash; still figuring out this data. Please don't rely on it.
   </div>
 
-  <nav class="tab-nav" role="tablist">
-    <button role="tab" id="tab-contracts" aria-controls="panel-contracts" aria-selected="true">Contracts</button>
-    <button role="tab" id="tab-rfp"       aria-controls="panel-rfp"       aria-selected="false">RFPs</button>
-  </nav>
-
-  <section id="panel-contracts" class="tab-panel" role="tabpanel" aria-labelledby="tab-contracts" aria-hidden="false">
-
-  <!-- ─── THE DATA ──────────────────────────────────────────────────── -->
-  <h2 class="section-header">What we're looking at</h2>
-
-  <p class="narrative">
-    This dataset covers a slice of federal IT procurement: specifically
-    <strong>NAICS 541511</strong> (Custom Computer Programming) and
-    <strong>541512</strong> (Computer Systems Design) from
-    <span id="fyRange">FY2022 through FY2026</span>.
-    These are two codes within the broader 5415 "Computer Systems Design and
-    Related Services" family, which also includes 541513 (Computer Facilities
-    Management), 541519 (Other Computer Related Services), and others.
-    We picked these two as a starting sample &mdash; the pipeline can be extended
-    to other NAICS codes.
-  </p>
-  <p class="narrative">
-    The contract records come from
-    <a href="https://www.usaspending.gov" target="_blank">USASpending</a> bulk
-    award archives. All
-    <a href="https://github.com/abigailhaddad/procurement-methods" target="_blank">code is on GitHub</a>
-    and the pipeline is designed to be extended to other NAICS codes.
-  </p>
-
-  <div class="stats-row">
-    <div class="stat-card">
-      <h3>Contracts</h3>
-      <div class="stat-value" id="statContracts">&mdash;</div>
-      <div class="stat-sub" id="statObligation">&mdash;</div>
-    </div>
-    <div class="stat-card">
-      <h3>Vendors</h3>
-      <div class="stat-value" id="statVendors">&mdash;</div>
-      <div class="stat-sub">unique entities (by UEI)</div>
-    </div>
-    <div class="stat-card">
-      <h3>Agencies</h3>
-      <div class="stat-value" id="statAgencies">&mdash;</div>
-      <div class="stat-sub">awarding departments</div>
-    </div>
-    <div class="stat-card">
-      <h3>Fiscal Years</h3>
-      <div class="stat-value" id="statFYs">&mdash;</div>
-      <div class="stat-sub" id="statFYRange">&mdash;</div>
-    </div>
-  </div>
-
-  <!-- ─── THE BREAKDOWN ─────────────────────────────────────────────── -->
-  <h2 class="section-header">How are these contracts evaluated?</h2>
-
-  <p class="narrative">
-    We classified every contract by how it was competed, combining two data
-    sources: <strong>FPDS tradeoff codes</strong> (via the
-    <a href="https://govcon.dev" target="_blank">Tango API</a>) tell us whether
-    a contract used LPTA or best-value tradeoff evaluation, and
-    <strong>USASpending competition fields</strong> tell us the solicitation method
-    for everything else.
-  </p>
-
-  <div class="chart-card">
-    <h3>Where the dollars go</h3>
-    <canvas id="chartEvalDollars"></canvas>
-    <p class="chart-note">Hover for contract counts and median contract sizes.</p>
-  </div>
-
-  <p class="narrative" id="evalNarrative"></p>
-
-  <!-- ─── OVER TIME ─────────────────────────────────────────────────── -->
-  <h2 class="section-header">Is this changing over time?</h2>
-
-  <div class="chart-card">
-    <canvas id="chartEvalFY"></canvas>
-  </div>
-
-  <p class="narrative" id="fyNarrative"></p>
-
-  <!-- ─── VENDOR AGE ─────────────────────────────────────────────────── -->
-  <div id="vendorAgeSection" style="display:none;">
-    <h2 class="section-header">How old are the vendors winning these contracts?</h2>
-
-    <p class="narrative">
-      Using SAM.gov entity registration data, we can compute how old each vendor was
-      (years since incorporation) at the time they won a contract. This comes from
-      the <code>ENTITY_START_DATE</code> field in the SAM monthly extract.
-    </p>
-
-    <div class="chart-card">
-      <h3>Vendor age distribution at time of award</h3>
-      <canvas id="chartVendorAge"></canvas>
-      <p class="chart-note">Shows all contracts with SAM entity_start_date available.</p>
-    </div>
-
-    <p class="narrative" id="ageNarrative"></p>
-  </div>
-
-  <!-- ─── BY AGENCY ─────────────────────────────────────────────────── -->
-  <h2 class="section-header">Which agencies use which methods?</h2>
-
-  <p class="narrative">
-    The chart below shows the top 25 departments by number of IT contracts where
-    we have a tradeoff code. Not all agencies report this consistently &mdash;
-    the match rate varies.
-  </p>
-
-  <div class="chart-card chart-tall">
-    <canvas id="chartAgency"></canvas>
-  </div>
-
-  <!-- ─── TOP VENDORS ───────────────────────────────────────────────── -->
-  <h2 class="section-header">Who gets these contracts?</h2>
-
-  <div class="chart-card" style="margin-bottom:1rem;">
-    <h3>Top 20 vendors by obligated dollars</h3>
-    <div class="table-scroll-wrapper" style="margin-top:0.75rem;">
-      <table class="vendor-table">
-        <thead>
-          <tr>
-            <th>Vendor</th>
-            <th class="num">Total $M</th>
-            <th class="num">Contracts</th>
-            <th class="num">LPTA</th>
-            <th class="num">Tradeoff</th>
-            <th style="min-width:130px;">LPTA Share</th>
-          </tr>
-        </thead>
-        <tbody id="vendorBody"></tbody>
-      </table>
-    </div>
-    <p class="chart-note">
-      LPTA and Tradeoff columns reflect only contracts with FPDS tradeoff codes.
-      Most large contracts flow through fair opportunity (IDIQ/GWAC task orders).
-    </p>
-  </div>
-
-  <!-- ─── PROTESTS ───────────────────────────────────────────────────── -->
-  <div id="protestSection" style="display:none;">
-    <h2 class="section-header">Do these contracts get protested?</h2>
-
-    <p class="narrative">
-      We matched GAO bid protest filings against the solicitation IDs in our IT
-      contract dataset. This shows which contract awards were formally challenged
-      and what happened.
-    </p>
-
-    <div class="stats-row" id="protestStats"></div>
-
-    <div class="chart-card" id="protestTableCard" style="display:none;">
-      <h3>Protested IT solicitations</h3>
-      <div class="table-scroll-wrapper" style="margin-top:0.75rem;">
-        <table class="vendor-table">
-          <thead>
-            <tr>
-              <th>Solicitation</th>
-              <th>Agency</th>
-              <th class="num">Protests</th>
-              <th>Outcomes</th>
-              <th>Link</th>
-            </tr>
-          </thead>
-          <tbody id="protestBody"></tbody>
-        </table>
-      </div>
-      <p class="chart-note" style="margin-top:0.75rem;">
-        Protest data from GAO via the Tango API. Only covers protests filed since
-        Jan 2025 &mdash; run <code>fetch_protests.py</code> to expand the date range.
-      </p>
-    </div>
-  </div>
-
-  <!-- ─── WHAT'S IN THE DATA ──────────────────────────────────────── -->
-  <h2 class="section-header">What fields do we have to work with?</h2>
-
-  <p class="narrative">
-    The USASpending bulk data has ~75 fields per transaction. Here are the ones
-    that seem most interesting for understanding how IT services are bought.
-    The field names link to their definitions in the
-    <a href="https://www.usaspending.gov/data-dictionary" target="_blank">USASpending data dictionary</a>.
-  </p>
-
-  <div class="chart-card" style="margin-bottom:1rem;">
-    <table class="vendor-table">
-      <thead>
-        <tr><th>Field</th><th>What it tells you</th><th>Notes</th></tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><strong>extent_competed_code</strong></td>
-          <td>Whether the contract was competed, and how</td>
-          <td>A = full &amp; open, D = after exclusion, F/G = SAP, B/C = not competed</td>
-        </tr>
-        <tr>
-          <td><strong>solicitation_procedures_code</strong></td>
-          <td>How offers were solicited</td>
-          <td>NP = negotiated proposal, MAFO = fair opportunity (IDIQ), SSS = sole source, SP1 = simplified</td>
-        </tr>
-        <tr>
-          <td><strong>number_of_offers_received</strong></td>
-          <td>How many vendors bid</td>
-          <td>Often blank or "999" (unknown). When populated, shows competition intensity</td>
-        </tr>
-        <tr>
-          <td><strong>type_of_contract_pricing_code</strong></td>
-          <td>Fixed price vs. cost-reimbursable vs. T&amp;M</td>
-          <td>J = FFP, Y = T&amp;M, Z = labor hours, K = FP with EPA</td>
-        </tr>
-        <tr>
-          <td><strong>type_of_set_aside_code</strong></td>
-          <td>Small business set-aside type</td>
-          <td>SBA, 8A, SDVOSBC, WOSB, HZC, etc. or NONE</td>
-        </tr>
-        <tr>
-          <td><strong>performance_based_service_acquisition_code</strong></td>
-          <td>Whether the contract uses performance-based criteria</td>
-          <td>~60% of IT contracts are marked performance-based (Y)</td>
-        </tr>
-        <tr>
-          <td><strong>commercial_item_acquisition_procedures_code</strong></td>
-          <td>Whether FAR Part 12 commercial procedures were used</td>
-          <td>~50% use commercial item procedures</td>
-        </tr>
-        <tr>
-          <td><strong>fair_opportunity_limited_sources_code</strong></td>
-          <td>For IDIQ task orders: was fair opportunity given?</td>
-          <td>Distinguishes competed task orders from sole-source task orders</td>
-        </tr>
-        <tr>
-          <td><strong>cost_or_pricing_data_code</strong></td>
-          <td>Whether certified cost/pricing data was required</td>
-          <td>Relates to Truth in Negotiations Act (TINA) thresholds</td>
-        </tr>
-        <tr>
-          <td><strong>contracting_officers_determination_of_business_size_code</strong></td>
-          <td>CO's determination: small or other than small</td>
-          <td>S = small, O = other than small. Independent of set-aside</td>
-        </tr>
-        <tr>
-          <td><strong>product_or_service_code</strong></td>
-          <td>What specifically was bought (more granular than NAICS)</td>
-          <td>D-series = IT services. Could sub-categorize by service type</td>
-        </tr>
-        <tr>
-          <td><strong>solicitation_identifier</strong></td>
-          <td>Links back to the original solicitation</td>
-          <td>Could be used to find the actual RFP on SAM.gov or beta.SAM.gov</td>
-        </tr>
-      </tbody>
-    </table>
-    <p class="chart-note" style="margin-top:0.75rem;">
-      We also pull <code>source_selection_process</code> (LPTA vs. tradeoff) from FPDS
-      via the Tango API &mdash; this field isn't in USASpending.
-      With SAM.gov enrichment, we can add vendor age, employee count, and SBA certifications.
-    </p>
-  </div>
-
-  <!-- ─── WHAT WE CAN'T TELL ───────────────────────────────────────── -->
-  <h2 class="section-header">What we can't tell yet</h2>
-
-  <p class="narrative">
-    <strong>Most contracts don't have LPTA/tradeoff data.</strong>
-    The FPDS <code>source_selection_process</code> field is contractor-reported
-    and blank for ~40&ndash;60% of awards. We currently have tradeoff codes for
-    about <strong id="matchPct">13%</strong> of contracts. The rest are classified
-    using USASpending competition fields, which tell us <em>how</em> a contract was
-    competed but not the specific evaluation criteria.
-  </p>
-
-  <p class="narrative">
-    <strong>"Negotiated Proposal" is a catch-all.</strong>
-    It captures all full-and-open competitions that aren't LPTA, tradeoff, or
-    fair opportunity. This is <strong id="npPct">43%</strong> of all contracts &mdash;
-    there's almost certainly interesting variation hiding inside this category
-    that we can't see from the data we have.
-  </p>
-
-  <p class="narrative">
-    <strong>Fair Opportunity dominates by dollars.</strong>
-    IDIQ/GWAC task orders account for most of the money but are evaluated
-    differently from standalone contracts. The evaluation process happens at the
-    task-order level and the details aren't captured in these fields.
-  </p>
-
-  <!-- ─── QUESTIONS ─────────────────────────────────────────────────── -->
-  <h2 class="section-header">Questions this raises</h2>
-
-  <p class="narrative">
-    This is a work in progress. Some things I'd like feedback on:
-  </p>
-  <ul class="narrative" style="padding-left:1.25rem;">
-    <li>Is the evaluation method classification reasonable? Are there better ways
-        to cut this using fields available in FPDS/USASpending?</li>
-    <li>For "Negotiated Proposal" contracts &mdash; is there a way to distinguish
-        best-value from LPTA when the tradeoff_process field is blank?</li>
-    <li>How should we think about fair opportunity task orders vs. standalone
-        competed contracts? Are they meaningfully comparable?</li>
-    <li>What would be the most useful next analysis to run on this data?</li>
-  </ul>
-
-  <p class="narrative">
-    If you have ideas or spot something wrong,
-    <a href="https://github.com/abigailhaddad/procurement-methods/issues" target="_blank">open an issue</a>
-    or reach out. The full pipeline is open source.
-  </p>
-
-  <!-- ─── METHODOLOGY ───────────────────────────────────────────────── -->
-  <h2 class="section-header" id="methodology">Methodology</h2>
-  <div class="chart-card methodology-card" style="margin-bottom:2rem;">
-    <div class="method-flow">
-
-      <div class="method-step">
-        <div class="method-icon">1</div>
-        <div class="method-body">
-          <strong>Contract data &mdash; USASpending bulk archives</strong>
-          <p>Transaction-level records from
-             <a href="https://www.usaspending.gov/download_center/award_data_archive" target="_blank">USASpending award data archives</a>,
-             filtered to NAICS 541511 + 541512. Aggregated to one row per contract
-             using the latest <code>total_dollars_obligated</code> (cumulative) and
-             latest categorical values.</p>
-          <p class="method-note">Source: <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/fetch_bulk.py" target="_blank"><code>fetch_bulk.py</code></a>
-             &middot; <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/build_contracts.py" target="_blank"><code>build_contracts.py</code></a></p>
-        </div>
-      </div>
-
-      <div class="method-arrow">&#9660;</div>
-
-      <div class="method-step">
-        <div class="method-icon">2</div>
-        <div class="method-body">
-          <strong>LPTA/tradeoff codes &mdash; Tango API (FPDS)</strong>
-          <p>USASpending doesn't publish <code>source_selection_process</code>.
-             We pull it from FPDS via the
-             <a href="https://govcon.dev" target="_blank">Tango API</a> and join on
-             <code>contract_award_unique_key</code>.
-             Currently matched to ~13% of contracts.</p>
-          <p class="method-note">Source: <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/fetch_tradeoff.py" target="_blank"><code>fetch_tradeoff.py</code></a></p>
-        </div>
-      </div>
-
-      <div class="method-arrow">&#9660;</div>
-
-      <div class="method-step">
-        <div class="method-icon">3</div>
-        <div class="method-body">
-          <strong>Evaluation method classification</strong>
-          <p>Each contract is classified into one category. Tango codes take priority
-             when available; USASpending competition fields classify the rest.</p>
-          <table class="vendor-table" style="margin: 0.75rem 0;">
-            <thead>
-              <tr>
-                <th>Category</th>
-                <th>Rule</th>
-                <th>Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><span class="pill pill-green">LPTA</span></td>
-                <td><code>tradeoff_process.code</code> = "LPTA"</td>
-                <td>Tango (FPDS)</td>
-              </tr>
-              <tr>
-                <td><span class="pill pill-gold">Best-Value Tradeoff</span></td>
-                <td><code>tradeoff_process.code</code> = "TO"</td>
-                <td>Tango (FPDS)</td>
-              </tr>
-              <tr>
-                <td><span class="pill" style="background:#4A90D9;color:#fff;">Fair Opportunity</span></td>
-                <td><code>solicitation_procedures_code</code> = "MAFO"</td>
-                <td>USASpending</td>
-              </tr>
-              <tr>
-                <td><span class="pill" style="background:#7B68AE;color:#fff;">Negotiated Proposal</span></td>
-                <td><code>extent_competed</code> in (A, D) AND <code>solicitation_procedures</code> = "NP"</td>
-                <td>USASpending</td>
-              </tr>
-              <tr>
-                <td><span class="pill" style="background:#E07B53;color:#fff;">Simplified Acquisition</span></td>
-                <td><code>extent_competed</code> in (F, G)</td>
-                <td>USASpending</td>
-              </tr>
-              <tr>
-                <td><span class="pill" style="background:#C0392B;color:#fff;">Sole Source</span></td>
-                <td><code>solicitation_procedures</code> = "SSS"</td>
-                <td>USASpending</td>
-              </tr>
-              <tr>
-                <td><span class="pill pill-muted">Not Competed</span></td>
-                <td><code>extent_competed</code> in (B, C), not sole source</td>
-                <td>USASpending</td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="method-note">Source: <a href="https://github.com/abigailhaddad/procurement-methods/blob/main/build_contracts.py" target="_blank"><code>build_contracts.py</code> &mdash; <code>classify_eval_method()</code></a></p>
-        </div>
-      </div>
-
-    </div><!-- /method-flow -->
-  </div>
-
-  </section><!-- /panel-contracts -->
-
-  <section id="panel-rfp" class="tab-panel" role="tabpanel" aria-labelledby="tab-rfp" aria-hidden="true">
+  <section id="panel-rfp" aria-hidden="false">
 
     <p class="narrative" style="margin-top:1.25rem;">
-      RFP attachment text pulled daily from SAM.gov for 541xxx NAICS codes.
-      Each row is one notice. The search box scans full extracted text.
-      Click any row to see context. Click a card to filter by that signal.
+      Each row is one SAM.gov notice with attachment text extracted daily for 541xxx NAICS codes.
+      Filter by department to see both RFP patterns and awarded contract data side by side.
+      Search scans full extracted text. Click any row for detail. Click a card to filter by that signal.
     </p>
 
     <!-- Reactive summary cards -->
     <div class="rfp-cards-row" id="rfpCards" style="display:none;">
+      <div style="width:100%;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:0.25rem;">RFP signals <span id="rcDateRange"></span></div>
       <div class="rfp-card">
         <div class="rfp-card-n" id="rcTotal">—</div>
         <div class="rfp-card-label">RFPs</div>
@@ -888,6 +484,15 @@
       <div class="rfp-card rfp-card-clickable" data-label-key="mentions_rtm" data-chip="RTM">
         <div class="rfp-card-n" id="rcRtm">—</div>
         <div class="rfp-card-label">RTM<br><span style="font-size:0.65rem;font-weight:400;">requirements traceability</span></div>
+      </div>
+      <div style="width:100%;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:0.25rem;margin-top:0.5rem;">Awarded contracts (NAICS 541511/512, FY2022&ndash;2026)</div>
+      <div class="rfp-card">
+        <div class="rfp-card-n" id="ccContracts">—</div>
+        <div class="rfp-card-label">contracts</div>
+      </div>
+      <div class="rfp-card">
+        <div class="rfp-card-n" id="ccLpta">—</div>
+        <div class="rfp-card-label">LPTA rate</div>
       </div>
     </div>
 
@@ -982,41 +587,8 @@ async function loadAll() {
     files.map(f => fetch(`data/${f}.json`).then(r => r.json()).catch(() => null))
   );
   files.forEach((f, i) => { DATA[f] = results[i]; });
-  if (!DATA.summary) return;
-  render();
-  setupTabs();
+  if (DATA.rfp_bundles) setupRfpBrowser();
 }
-
-function setupTabs() {
-  const buttons = document.querySelectorAll('.tab-nav button');
-  let rfpReady = false;
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => b.setAttribute('aria-selected', b === btn ? 'true' : 'false'));
-      document.querySelectorAll('.tab-panel').forEach(p => {
-        p.setAttribute('aria-hidden', p.id === btn.getAttribute('aria-controls') ? 'false' : 'true');
-      });
-      if (btn.id === 'tab-rfp' && !rfpReady && DATA.rfp_bundles) {
-        rfpReady = true;
-        setupRfpBrowser();
-      }
-    });
-  });
-}
-
-function render() {
-  renderStats();
-  renderEvalDollars();
-  renderEvalNarrative();
-  renderEvalFY();
-  renderFYNarrative();
-  renderVendorAge();
-  renderAgency();
-  renderProtests();
-  renderVendorTable();
-  renderGaps();
-}
-
 
 function escapeHtml(s) {
   return String(s == null ? '' : s)
@@ -1136,9 +708,52 @@ function setupRfpBrowser() {
     },
   });
 
+  // Contract cards: fuzzy-match dept filter value against DATA.by_agency entries
+  function updateContractCards(deptValue) {
+    const s = DATA.summary || {};
+    const agencyData = DATA.by_agency || [];
+    let contractsVal = '—', lptaVal = '—';
+
+    if (!deptValue) {
+      // Show overall totals
+      if (s.total_contracts != null) contractsVal = s.total_contracts.toLocaleString();
+      if (s.lpta_pct != null) lptaVal = s.lpta_pct + '%';
+    } else {
+      // Fuzzy match: normalize, split on non-word chars, find common words >3 chars
+      function tokenize(str) {
+        return str.toUpperCase().split(/[^A-Z0-9]+/).filter(w => w.length > 3);
+      }
+      const deptTokens = new Set(tokenize(deptValue));
+      let bestMatch = null, bestScore = 0;
+      agencyData.forEach(row => {
+        const agencyTokens = tokenize(row.agency || '');
+        let score = 0;
+        agencyTokens.forEach(w => { if (deptTokens.has(w)) score++; });
+        if (score > bestScore) { bestScore = score; bestMatch = row; }
+      });
+      if (bestMatch && bestScore >= 2) {
+        contractsVal = bestMatch.total.toLocaleString();
+        lptaVal = bestMatch.lpta_pct != null ? bestMatch.lpta_pct + '%' : '—';
+      }
+    }
+
+    document.getElementById('ccContracts').textContent = contractsVal;
+    document.getElementById('ccLpta').textContent = lptaVal;
+
+    // Update date range label in "all" view
+    const sig = DATA.rfp_signals || {};
+    const drEl = document.getElementById('rcDateRange');
+    if (drEl) {
+      drEl.textContent = sig.date_range ? `(${sig.date_range})` : '';
+    }
+  }
+
   // Update cards on every draw
   $('#rfpTable').on('draw.dt', updateRfpCards);
   updateRfpCards();
+
+  // Init contract cards with overall totals
+  updateContractCards('');
 
   document.getElementById('rfpCards').style.display = '';
   document.getElementById('rfpFilterBar').style.display = '';
@@ -1164,7 +779,11 @@ function setupRfpBrowser() {
     const any = activeLabels.size || deptSel.value || typeSel.value;
     document.getElementById('rfpFilterClear').style.display = any ? '' : 'none';
   }
-  deptSel.addEventListener('change', () => { rfpDT.column(3).search(deptSel.value).draw(); updateClearBtn(); });
+  deptSel.addEventListener('change', () => {
+    rfpDT.column(3).search(deptSel.value).draw();
+    updateContractCards(deptSel.value);
+    updateClearBtn();
+  });
   typeSel.addEventListener('change', () => { rfpDT.column(2).search(typeSel.value).draw(); updateClearBtn(); });
 
   // Clear all
@@ -1175,6 +794,7 @@ function setupRfpBrowser() {
     deptSel.value = '';
     typeSel.value = '';
     rfpDT.search('').columns().search('').draw();
+    updateContractCards('');
     updateClearBtn();
   });
 
@@ -1267,289 +887,6 @@ function findInText(text, query, radius = 200) {
 
 function closeRfpModal() {
   document.getElementById('rfpModal').classList.remove('open');
-}
-
-function renderStats() {
-  const s = DATA.summary || {};
-  const f = DATA.filters || {};
-  document.getElementById('statContracts').textContent = (s.total_contracts||0).toLocaleString();
-  document.getElementById('statObligation').textContent = s.total_obligated_b ? `$${s.total_obligated_b}B obligated` : '';
-  document.getElementById('statVendors').textContent = s.unique_vendors ? s.unique_vendors.toLocaleString() : '—';
-  document.getElementById('statAgencies').textContent = s.unique_agencies || '—';
-  const fys = (f.fiscal_years||[]).map(x => x.value).sort();
-  if (fys.length) {
-    document.getElementById('statFYs').textContent = fys.length;
-    document.getElementById('statFYRange').textContent = `FY${fys[0]}–FY${fys[fys.length-1]}`;
-    document.getElementById('fyRange').textContent = `FY${fys[0]} through FY${fys[fys.length-1]}`;
-  }
-}
-
-function renderEvalDollars() {
-  const d = DATA.by_eval_method || [];
-  if (!d.length) return;
-
-  mkChart('chartEvalDollars', {
-    type: 'bar',
-    data: {
-      labels: d.map(x => x.label),
-      datasets: [{
-        data: d.map(x => x.obligated_pct),
-        backgroundColor: d.map(x => (EM[x.method]||EM.Unknown).bgL),
-        borderColor: d.map(x => (EM[x.method]||EM.Unknown).bg),
-        borderWidth: 1,
-      }],
-    },
-    options: {
-      indexAxis: 'y', responsive: true,
-      plugins: {
-        tooltip: { ...tt(), callbacks: {
-          title: ctx => d[ctx[0].dataIndex].label,
-          label: ctx => {
-            const item = d[ctx.dataIndex];
-            return [
-              `${item.obligated_pct}% of obligated dollars ($${item.obligated_b}B)`,
-              `${item.count.toLocaleString()} contracts (${item.pct}% of total)`,
-              `Median contract: $${(item.median_k||0).toLocaleString()}K`,
-            ];
-          }
-        }},
-        legend: { display: false },
-      },
-      scales: {
-        x: { max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
-        y: { grid: { display: false }, ticks: { font: { size: 12 } } },
-      },
-    },
-  });
-}
-
-function renderEvalNarrative() {
-  const d = DATA.by_eval_method || [];
-  if (!d.length) return;
-  const fo = d.find(x => x.method === 'Fair Opportunity');
-  const np = d.find(x => x.method === 'Negotiated Proposal');
-  const ss = d.find(x => x.method === 'Sole Source');
-  const lpta = d.find(x => x.method === 'LPTA');
-  const bv = d.find(x => x.method === 'Best-Value Tradeoff');
-
-  let text = '';
-  if (fo) text += `<strong>Fair Opportunity</strong> (IDIQ/GWAC task orders) accounts for
-    ${fo.obligated_pct}% of dollars but only ${fo.pct}% of contracts &mdash; these are the
-    big multi-award vehicle orders. `;
-  if (np) text += `<strong>Negotiated Proposals</strong> make up ${np.pct}% of contracts
-    by count but only ${np.obligated_pct}% by dollars (median contract: $${(np.median_k||0).toLocaleString()}K). `;
-  if (ss) text += `<strong>Sole source</strong> awards are ${ss.pct}% of contracts but
-    ${ss.obligated_pct}% of dollars ($${ss.obligated_b}B). `;
-  if (lpta && bv) text += `Among contracts where we have FPDS tradeoff codes,
-    <strong>LPTA</strong> is ${lpta.count.toLocaleString()} contracts ($${lpta.obligated_b}B)
-    vs. <strong>best-value tradeoff</strong> at ${bv.count.toLocaleString()} contracts ($${bv.obligated_b}B).`;
-
-  document.getElementById('evalNarrative').innerHTML = text;
-}
-
-function renderEvalFY() {
-  const d = DATA.by_eval_method_fy || {};
-  const fys = Object.keys(d).map(Number).sort();
-  if (!fys.length) return;
-
-  const allMethods = new Set();
-  for (const fy of fys) for (const m of Object.keys(d[fy])) allMethods.add(m);
-  const methods = EM_ORDER.filter(m => allMethods.has(m));
-
-  mkChart('chartEvalFY', {
-    type: 'bar',
-    data: {
-      labels: fys.map(y => `FY${y}`),
-      datasets: methods.map(m => ({
-        label: m,
-        data: fys.map(fy => d[fy]?.[m]?.pct || 0),
-        backgroundColor: (EM[m]||EM.Unknown).bgL,
-        borderColor: (EM[m]||EM.Unknown).bg,
-        borderWidth: 1,
-        stack: 's',
-      })),
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: { ...tt(), callbacks: {
-          label: ctx => {
-            const fy = fys[ctx.dataIndex];
-            const item = d[fy]?.[ctx.dataset.label];
-            return item ? `${ctx.dataset.label}: ${item.pct}% (${item.count.toLocaleString()})` : '';
-          }
-        }},
-        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
-      },
-      scales: {
-        x: { stacked: true, grid: { color: C.grid } },
-        y: { stacked: true, max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
-      },
-    },
-  });
-}
-
-function renderFYNarrative() {
-  const d = DATA.by_eval_method_fy || {};
-  const fys = Object.keys(d).map(Number).sort();
-  if (fys.length < 2) return;
-  document.getElementById('fyNarrative').innerHTML =
-    `The mix has been relatively stable across ${fys.length} fiscal years.
-     The proportions you see above are percentage shares within each year,
-     so shifts in the overall volume of IT contracting don't affect the
-     visualization. Look for changes in the relative size of each color band.`;
-}
-
-function renderVendorAge() {
-  const d = DATA.by_vendor_age || [];
-  if (!d.length) return;
-  document.getElementById('vendorAgeSection').style.display = '';
-
-  const ageBins = d.map(r => r.age_bin);
-  const totals = d.map(r => r.total);
-
-  mkChart('chartVendorAge', {
-    type: 'bar',
-    data: {
-      labels: ageBins,
-      datasets: [{
-        label: 'Contracts',
-        data: totals,
-        backgroundColor: 'rgba(74,144,217,0.65)',
-        borderColor: '#4A90D9',
-        borderWidth: 1,
-      }],
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        tooltip: { ...tt(), callbacks: {
-          label: ctx => {
-            const item = d[ctx.dataIndex];
-            return [
-              `${item.total.toLocaleString()} contracts`,
-              item.LPTA_pct != null ? `LPTA: ${item.LPTA_pct}%` : '',
-              item.TO_pct != null ? `Best-Value: ${item.TO_pct}%` : '',
-            ].filter(Boolean);
-          }
-        }},
-        legend: { display: false },
-      },
-      scales: {
-        y: { ticks: { callback: v => v.toLocaleString() }, grid: { color: C.grid } },
-        x: { grid: { display: false } },
-      },
-    },
-  });
-
-  // Narrative
-  const total = d.reduce((s, r) => s + r.total, 0);
-  const mature = d.filter(r => r.age_bin === '20+ yrs' || r.age_bin === '10–20 yrs');
-  const matureN = mature.reduce((s, r) => s + r.total, 0);
-  const young = d.filter(r => r.age_bin === '<2 yrs' || r.age_bin === '2–5 yrs');
-  const youngN = young.reduce((s, r) => s + r.total, 0);
-  document.getElementById('ageNarrative').innerHTML =
-    `Most IT contracts go to established firms: <strong>${Math.round(matureN/total*100)}%</strong> ` +
-    `of contracts (with age data) went to vendors 10+ years old, while only ` +
-    `<strong>${Math.round(youngN/total*100)}%</strong> went to vendors under 5 years old. ` +
-    `Hover over the bars to see LPTA vs. best-value rates by age group.`;
-}
-
-function renderAgency() {
-  const d = DATA.by_agency || [];
-  if (!d.length) return;
-  const sorted = [...d].sort((a,b) => b.total - a.total).slice(0, 25);
-
-  mkChart('chartAgency', {
-    type: 'bar',
-    data: {
-      labels: sorted.map(x => x.agency),
-      datasets: [{
-        label: 'LPTA %',
-        data: sorted.map(x => x.lpta_pct),
-        backgroundColor: EM.LPTA.bgL,
-        borderColor: EM.LPTA.bg,
-        borderWidth: 1,
-      }],
-    },
-    options: {
-      indexAxis: 'y', responsive: true,
-      plugins: {
-        tooltip: { ...tt(), callbacks: { label: ctx => {
-          const x = sorted[ctx.dataIndex];
-          return [`${ctx.parsed.x}% LPTA`, `${x.lpta} of ${x.total.toLocaleString()} contracts`];
-        }}},
-        legend: { display: false },
-      },
-      scales: {
-        x: { max: 100, ticks: { callback: v => `${v}%` }, grid: { color: C.grid } },
-        y: { grid: { display: false }, ticks: { font: { size: 11 } } },
-      },
-    },
-  });
-}
-
-function renderVendorTable() {
-  const d = DATA.top_vendors || [];
-  document.getElementById('vendorBody').innerHTML = d.map(v => `<tr>
-    <td>${v.name}</td>
-    <td class="num">$${v.total_obligated_m.toLocaleString()}</td>
-    <td class="num">${v.total_contracts.toLocaleString()}</td>
-    <td class="num">${v.lpta_contracts.toLocaleString()}</td>
-    <td class="num">${v.to_contracts.toLocaleString()}</td>
-    <td><span class="bar-inline" style="width:${Math.round(v.lpta_share_pct)}px;background:${EM.LPTA.bg};"></span>${v.lpta_share_pct}%</td>
-  </tr>`).join('');
-}
-
-function renderProtests() {
-  const d = DATA.protests;
-  if (!d || !d.total_protests) return;
-  document.getElementById('protestSection').style.display = '';
-
-  // Stat cards
-  document.getElementById('protestStats').innerHTML = `
-    <div class="stat-card"><h3>Solicitations Protested</h3>
-      <div class="stat-value">${d.solicitations_protested}</div>
-      <div class="stat-sub">of ${DATA.summary?.total_contracts?.toLocaleString() || '?'} IT contracts</div></div>
-    <div class="stat-card"><h3>Total Protests</h3>
-      <div class="stat-value">${d.total_protests}</div>
-      <div class="stat-sub">filed with GAO</div></div>
-    <div class="stat-card"><h3>Sustained</h3>
-      <div class="stat-value">${d.sustained}</div>
-      <div class="stat-sub">protest upheld by GAO</div></div>
-    <div class="stat-card"><h3>Denied</h3>
-      <div class="stat-value">${d.denied}</div>
-      <div class="stat-sub">protest rejected</div></div>
-  `;
-
-  // Table
-  if (d.protests && d.protests.length) {
-    document.getElementById('protestTableCard').style.display = '';
-    document.getElementById('protestBody').innerHTML = d.protests.map(p => {
-      const urls = (p.docket_urls || '').split('; ').filter(Boolean);
-      const link = urls.length ? `<a href="${urls[0]}" target="_blank" style="color:var(--color-accent);">GAO docket</a>` : '';
-      const sustained = p.sustained_count > 0 ? ' style="background:#fde2e2;"' : '';
-      return `<tr${sustained}>
-        <td style="font-family:var(--font-mono,monospace);font-size:0.8rem;">${p.solicitation_identifier}</td>
-        <td>${p.agencies || ''}</td>
-        <td class="num">${p.protest_count}</td>
-        <td>${p.outcomes || ''}</td>
-        <td>${link}</td>
-      </tr>`;
-    }).join('');
-  }
-}
-
-function renderGaps() {
-  const s = DATA.summary || {};
-  if (s.has_tradeoff_pct) {
-    document.getElementById('matchPct').textContent = s.has_tradeoff_pct + '%';
-  }
-  const d = DATA.by_eval_method || [];
-  const np = d.find(x => x.method === 'Negotiated Proposal');
-  if (np) {
-    document.getElementById('npPct').textContent = np.pct + '%';
-  }
 }
 
 loadAll();
