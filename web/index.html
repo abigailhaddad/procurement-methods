@@ -983,18 +983,77 @@ function setupRfpBrowser() {
   document.getElementById('filterSystem').style.display = '';
 
   // Card clicks → toggle label filter
+  const LABEL_VOCAB = {
+    shall_count: {
+      name: "'shall' clauses",
+      desc: "FAR-style requirement language. Matches the word:",
+      terms: ["shall"],
+    },
+    has_user_vocab: {
+      name: "User vocabulary",
+      desc: "Human-centered design language. Matches any of:",
+      terms: ["end user/users", "stakeholders", "user research", "user needs", "user experience", "UX"],
+    },
+    has_agile_vocab: {
+      name: "Agile vocabulary",
+      desc: "Agile/iterative development language. Matches any of:",
+      terms: ["sprint", "agile", "scrum", "kanban", "iteration", "backlog", "user story/stories", "MVP", "working software", "ceremonies", "stand-up", "retrospective"],
+    },
+    mentions_rtm: {
+      name: "RTM",
+      desc: "Requirements traceability. Matches:",
+      terms: ["requirements traceability matrix"],
+    },
+  };
+
   document.querySelectorAll('.rfp-card-clickable').forEach(card => {
-    card.addEventListener('click', () => {
-      const chip = card.dataset.chip;
-      if (activeLabels.has(chip)) {
-        activeLabels.delete(chip);
-        card.classList.remove('active');
-      } else {
-        activeLabels.add(chip);
-        card.classList.add('active');
-      }
-      renderFilterChips();
-      rfpDT.draw();
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const key = card.dataset.labelKey;
+      const vocab = LABEL_VOCAB[key];
+      if (!vocab) return;
+
+      // Remove any existing vocab popup
+      document.querySelectorAll('.vocab-popup').forEach(p => p.remove());
+
+      const pop = document.createElement('div');
+      pop.className = 'vocab-popup';
+      pop.innerHTML = `
+        <div style="font-weight:700;font-size:0.875rem;margin-bottom:0.375rem;color:var(--color-accent)">${vocab.name}</div>
+        <div style="font-size:0.8125rem;color:var(--color-text-muted);margin-bottom:0.5rem">${vocab.desc}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.25rem;">
+          ${vocab.terms.map(t => `<span style="background:rgba(27,67,50,0.1);border:1px solid var(--color-accent);border-radius:999px;padding:0.125rem 0.5rem;font-size:0.75rem;color:var(--color-accent);font-family:var(--font-mono)">${t}</span>`).join('')}
+        </div>
+        <div style="margin-top:0.625rem;padding-top:0.5rem;border-top:1px solid var(--color-border);">
+          <a href="#" class="vocab-filter-link" data-chip="${card.dataset.chip}" style="font-size:0.8rem;color:var(--color-accent);font-weight:600;">Filter to these RFPs →</a>
+        </div>
+      `;
+      pop.style.cssText = 'position:absolute;z-index:300;background:white;border:1px solid var(--color-border);border-radius:0.5rem;box-shadow:var(--shadow-md);padding:0.875rem 1rem;max-width:280px;';
+
+      const rect = card.getBoundingClientRect();
+      const container = card.closest('.rfp-cards-row');
+      container.style.position = 'relative';
+      container.appendChild(pop);
+
+      // Position below the card
+      const containerRect = container.getBoundingClientRect();
+      pop.style.top = (rect.bottom - containerRect.top + 4) + 'px';
+      pop.style.left = Math.max(0, rect.left - containerRect.left) + 'px';
+
+      pop.querySelector('.vocab-filter-link').addEventListener('click', (e2) => {
+        e2.preventDefault();
+        const chip = e2.target.dataset.chip;
+        if (activeLabels.has(chip)) { activeLabels.delete(chip); card.classList.remove('active'); }
+        else { activeLabels.add(chip); card.classList.add('active'); }
+        renderFilterChips();
+        rfpDT.draw();
+        pop.remove();
+      });
+
+      // Close on outside click
+      setTimeout(() => {
+        document.addEventListener('click', () => pop.remove(), { once: true });
+      }, 0);
     });
   });
 
