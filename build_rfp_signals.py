@@ -206,18 +206,19 @@ def aggregate(bundles):
             month_stats.setdefault(month_key, {"total": 0, **{k: 0 for k, _, _ in LABELS}})["total"] += 1
 
         bundle_rows.append({
-            "notice_id":   b.get("notice_id"),
-            "title":       m.get("title"),
-            "type":        m.get("type"),
-            "department":  d,
-            "posted_date": posted_date,
-            "naics":       m.get("naics_code"),
-            "set_aside":   m.get("set_aside_desc") or m.get("set_aside"),
-            "ui_link":     m.get("ui_link"),
-            "label_hits":  label_hits,
-            "attachment_count": len(atts),
-            "snippets":    snippets,
-            "search_text": full_text[:15000],
+            "notice_id":          b.get("notice_id"),
+            "solicitation_number": m.get("solicitation_number"),
+            "title":              m.get("title"),
+            "type":               m.get("type"),
+            "department":         d,
+            "posted_date":        posted_date,
+            "naics":              m.get("naics_code"),
+            "set_aside":          m.get("set_aside_desc") or m.get("set_aside"),
+            "ui_link":            m.get("ui_link"),
+            "label_hits":         label_hits,
+            "attachment_count":   len(atts),
+            "snippets":           snippets,
+            "search_text":        full_text[:15000],
         })
 
     bundle_rows.sort(key=lambda r: (r.get("posted_date") or "", r.get("title") or ""), reverse=True)

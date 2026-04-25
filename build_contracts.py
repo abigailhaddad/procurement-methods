@@ -177,6 +177,7 @@ def main():
         place_country=("primary_place_of_performance_country_code", "last"),
         number_of_actions=("number_of_actions", "last"),
         award_description=("award_description", "last"),
+        solicitation_id=("solicitation_identifier", "last"),
         was_terminated=("_is_termination", "any"),
         _max_term_severity=("_term_severity", "max"),
     ).reset_index()
@@ -246,6 +247,7 @@ def main():
         "place_state", "place_country",
         "number_of_actions", "award_description",
         "was_terminated", "termination_type",
+        "solicitation_id",
     ]
     out = agg[out_cols].copy()
     out.to_csv(OUTPUT_CSV, index=False)

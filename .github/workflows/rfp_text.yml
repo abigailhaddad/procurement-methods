@@ -71,12 +71,16 @@ jobs:
         if: always() && inputs.dry_run != 'true'
         run: python build_rfp_signals.py
 
+      - name: Rebuild combined RFP+contracts table
+        if: always() && inputs.dry_run != 'true'
+        run: python build_combined_table.py
+
       - name: Commit updated dashboard JSONs
         if: always() && inputs.dry_run != 'true'
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add web/data/rfp_signals.json web/data/rfp_bundles.json
+          git add web/data/rfp_signals.json web/data/rfp_bundles.json web/data/combined_table.json
           if git diff --cached --quiet; then
             echo "No dashboard changes to commit."
           else
