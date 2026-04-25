@@ -217,6 +217,7 @@ def aggregate(bundles):
             "label_hits":  label_hits,
             "attachment_count": len(atts),
             "snippets":    snippets,
+            "search_text": full_text[:15000],
         })
 
     bundle_rows.sort(key=lambda r: (r.get("posted_date") or "", r.get("title") or ""), reverse=True)
