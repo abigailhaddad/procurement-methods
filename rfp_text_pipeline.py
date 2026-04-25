@@ -1,9 +1,9 @@
 """
-rfp_text_pipeline.py — Daily pull of RFP attachment text for 541xxx opportunities.
+rfp_text_pipeline.py — Daily pull of RFP attachment text for 541511/541512 opportunities.
 
 Bulk-search mode. One API call returns up to 1,000 opportunities with their
-resourceLinks attached — so the full daily catch of 541xxx notices typically
-needs just a handful of calls, not one-per-opp.
+resourceLinks attached — so the full daily catch typically needs just a handful
+of calls, not one-per-opp.
 
 Flow:
   1. Pull state from R2 (if configured): processed.json, last_fetched_date.json.
@@ -12,7 +12,7 @@ Flow:
   3. Paginate through api.sam.gov/prod/opportunities/v2/search with
      postedFrom/postedTo/limit=1000/offset= until the page is short.
   4. For each opp:
-       - Skip if NAICS prefix doesn't match (default: 541).
+       - Skip if NAICS prefix doesn't match (default: 541511, 541512).
        - Skip if notice type isn't in the RFP-adjacent set.
        - Skip if noticeId already in processed.
        - Download each resourceLink (free S3), extract text via pypdf /
@@ -89,7 +89,7 @@ DEFAULT_NOTICE_TYPES = {
     # the pull_usaspending repo instead — they're about non-competition
     # rationale on awarded contracts, not RFP language.
 }
-DEFAULT_NAICS_PREFIXES = ("541",)
+DEFAULT_NAICS_PREFIXES = ("541511", "541512")
 DEFAULT_LOOKBACK_DAYS  = 180
 
 API_KEY = os.environ.get("SAM_API_KEY")

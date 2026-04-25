@@ -1,0 +1,65 @@
+name: Fetch Tradeoff Codes
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * *"  # daily at 10am UTC
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fetch-tradeoff
+  cancel-in-progress: false
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      TANGO_API_KEY: ${{ secrets.TANGO_API_KEY }}
+      CF_R2_ACCOUNT_ID: ${{ secrets.CF_R2_ACCOUNT_ID }}
+      CF_R2_BUCKET: ${{ secrets.CF_R2_BUCKET }}
+      CF_R2_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY_ID }}
+      CF_R2_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_ACCESS_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download checkpoints from R2
+        run: python r2_sync.py download --dir data/tradeoff_checkpoints --prefix it_tradeoff/
+
+      - name: Run fetch (exits cleanly at daily rate limit)
+        run: python fetch_tradeoff.py
+
+      - name: Upload checkpoints to R2
+        if: always()
+        run: python r2_sync.py upload --dir data/tradeoff_checkpoints --prefix it_tradeoff/
+
+      - name: Upload merged tradeoff_lookup.csv to R2
+        if: always()
+        run: |
+          python -c "
+          import os, boto3
+          from pathlib import Path
+          from botocore.config import Config
+          f = Path('data/tradeoff_lookup.csv')
+          if not f.exists() or f.stat().st_size == 0:
+              print('No tradeoff_lookup.csv to upload')
+              exit(0)
+          s3 = boto3.client('s3',
+              endpoint_url=f'https://{os.environ[\"CF_R2_ACCOUNT_ID\"]}.r2.cloudflarestorage.com',
+              aws_access_key_id=os.environ['CF_R2_ACCESS_KEY_ID'],
+              aws_secret_access_key=os.environ['CF_R2_SECRET_ACCESS_KEY'],
+              config=Config(signature_version='s3v4'), region_name='auto')
+          s3.upload_file(str(f), os.environ['CF_R2_BUCKET'], 'it_tradeoff/tradeoff_lookup.csv')
+          print(f'Uploaded tradeoff_lookup.csv ({f.stat().st_size:,} bytes) to R2')
+          "

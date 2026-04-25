@@ -46,6 +46,7 @@ with open("data/contracts_raw.csv", newline="", encoding="utf-8") as f:
             "key":    row.get("key", ""),
             "vendor": row.get("recipient_name", ""),
             "em":     row.get("eval_method", ""),
+            "tc":     row.get("tradeoff_code", "") or "",
             "ob":     fmt_dollars(ob_raw),
             "ob_raw": ob_float,
             "ct":     CT_LABELS.get(row.get("contract_type", ""), row.get("contract_type", "")),
@@ -88,8 +89,11 @@ if rfp_matches_path.exists():
     print(f"  +{added} from rfp_contract_matches.json")
 
 # ── Load RFP bundles and enrich with matched contracts ────────────────────────
+NAICS_KEEP = {"541511", "541512"}
 print("Loading RFP bundles…")
-bundles = json.loads(Path("web/data/rfp_bundles.json").read_text())
+bundles = [b for b in json.loads(Path("web/data/rfp_bundles.json").read_text())
+           if b.get("naics", "") in NAICS_KEEP]
+print(f"  {len(bundles):,} bundles after NAICS filter (541511 + 541512)")
 
 rows = []
 matched_bundles = 0

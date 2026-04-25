@@ -48,7 +48,7 @@ jobs:
         run: pip install requests boto3
 
       - name: Download checkpoints from R2
-        run: python r2_sync.py download --dir data/bulk_checkpoints
+        run: python r2_sync.py download --dir data/bulk_checkpoints --prefix it_contracts/
 
       - name: Run fetch
         id: fetch
@@ -71,7 +71,7 @@ jobs:
 
       - name: Upload checkpoints to R2
         if: always()
-        run: python r2_sync.py upload --dir data/bulk_checkpoints
+        run: python r2_sync.py upload --dir data/bulk_checkpoints --prefix it_contracts/
 
       - name: Upload merged CSV to R2
         if: steps.fetch.outputs.status == 'done'

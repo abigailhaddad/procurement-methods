@@ -141,12 +141,17 @@ def aggregate(bundles):
     # by_month: "YYYY-MM" -> {total, label_key -> hit_count}
     month_stats: dict[str, dict] = {}
 
+    NAICS_KEEP = {"541511", "541512"}
+
     for b in bundles:
+        m = b.get("metadata") or {}
+        naics = (m.get("naics_code") or "").strip()
+        if naics not in NAICS_KEEP:
+            continue
         total += 1
         atts = b.get("attachments") or []
         if atts:
             with_att += 1
-        m = b.get("metadata") or {}
         d = m.get("department") or "(none)"
         t = m.get("type") or "(none)"
         dept[d] += 1

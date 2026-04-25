@@ -25,78 +25,42 @@ NAICS_KEEP = {"541511", "541512"}
 
 def classify_eval_method(df: pd.DataFrame) -> pd.Series:
     """
-    Classify each contract into a granular evaluation method.
+    Classify each contract by competition method using USASpending fields only.
 
-    USASpending does not publish LPTA vs. best-value tradeoff — that field
-    (tradeoff_process) is only in FPDS, accessible via the Tango API. But
-    USASpending does publish how each contract was competed (extent_competed_code,
-    solicitation_procedures_code), which lets us classify the ~90% of contracts
-    that don't have a Tango tradeoff code.
-
-    Two data sources, combined:
-      1. Tango API tradeoff_process → LPTA or Best-Value Tradeoff (highest priority)
-      2. USASpending competition fields → everything else
-
-    Categories (applied in priority order — later rules override earlier):
-
-      LPTA                   tradeoff_code = "LPTA"
-                             Source: Tango API (FPDS tradeoff_process)
-
-      Best-Value Tradeoff    tradeoff_code = "TO"
-                             Source: Tango API (FPDS tradeoff_process)
+    Categories (applied in reverse priority order — later overwrites earlier):
 
       Fair Opportunity       solicitation_procedures_code = "MAFO"
                              Task orders off IDIQ/GWAC multi-award vehicles.
-                             These are competed among pre-qualified vendors but
-                             don't use formal LPTA/tradeoff evaluation.
 
       Negotiated Proposal    extent_competed in (A, D) AND solicitation = "NP"
                              Full and open competition using negotiated proposals.
-                             A = full and open; D = full and open after exclusion
-                             of sources.
 
       Simplified Acquisition extent_competed in (F, G)
-                             F = competed under SAP (simplified acquisition);
-                             G = not competed under SAP (below threshold).
+                             F = competed under SAP; G = not competed under SAP.
 
       Sole Source            solicitation_procedures_code = "SSS"
-                             Only one source — various FAR 6.302 justifications.
 
       Not Competed           extent_competed in (B, C) AND solicitation != "SSS"
-                             B = not available for competition;
-                             C = not competed (other reasons).
 
       Unknown                None of the above matched.
 
-    The priority order matters: a contract with BOTH tradeoff_code="TO" and
-    solicitation="MAFO" is classified as "Best-Value Tradeoff" because Tango
-    is the more specific source.
+    LPTA / Best-Value Tradeoff are stored separately in the tradeoff_code field
+    (from Tango API / FPDS) and are not mixed into this classification.
 
     Reference:
       extent_competed_code: FAR Part 6 / FPDS data dictionary
       solicitation_procedures_code: FPDS data dictionary
-      tradeoff_process: FPDS source_selection_process via Tango API
     """
     method = pd.Series("Unknown", index=df.index)
 
-    tc = df["tradeoff_code"].fillna("")
     ext = df["extent_competed"].fillna("")
     sol = df["solicitation_procedures"].fillna("")
 
-    # Apply in reverse priority order (later overwrites earlier)
-    # Not competed (B = not available, C = not competed)
     method[ext.isin(["B", "C"])] = "Not Competed"
-    # Sole source
     method[sol == "SSS"] = "Sole Source"
-    # Simplified acquisition (F = competed under SAP, G = not competed under SAP)
     method[ext.isin(["F", "G"])] = "Simplified Acquisition"
-    # Negotiated proposal — full and open competition
     method[(ext.isin(["A", "D"])) & (sol == "NP")] = "Negotiated Proposal"
-    # Fair opportunity — task orders off multi-award vehicles
     method[sol == "MAFO"] = "Fair Opportunity"
-    # Tango tradeoff codes override everything (most specific)
-    method[tc == "TO"] = "Best-Value Tradeoff"
-    method[tc == "LPTA"] = "LPTA"
 
     return method
 

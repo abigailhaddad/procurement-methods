@@ -578,7 +578,7 @@
 <header class="site-header">
   <div class="site-container">
     <h1>How the Federal Government Buys IT Services</h1>
-    <p class="site-subtitle">Federal IT procurement &mdash; contracts: NAICS 541511/512, FY2022&ndash;2026 &middot; RFPs: 541xxx (still filling in)</p>
+    <p class="site-subtitle">Federal IT procurement &mdash; NAICS 541511/512</p>
   </div>
 </header>
 
@@ -591,8 +591,8 @@
   <section id="panel-rfp" aria-hidden="false">
 
     <p class="narrative" style="margin-top:1.25rem;">
-      Each row is one SAM.gov solicitation notice (NAICS 541xxx) with attachment text extracted daily.
-      Contract awards (NAICS 541511/512, FY2022&ndash;2026) are linked where solicitation numbers match &mdash; coverage grows as the RFP backfill runs.
+      Each row is one SAM.gov solicitation notice (NAICS 541511/512) with attachment text extracted daily.
+      Contract awards (NAICS 541511/512, <span class="fy-range"></span>) are linked where solicitation numbers match &mdash; coverage grows as the RFP backfill runs.
       Click a card to see what vocabulary it matches. Use <strong>+ Add filter</strong> to filter the table.
     </p>
 
@@ -619,7 +619,7 @@
         <div class="rfp-card-n" id="rcRtm">—</div>
         <div class="rfp-card-label">RTM<br><span style="font-size:0.65rem;font-weight:400;">requirements traceability</span></div>
       </div>
-      <div style="width:100%;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:0.25rem;margin-top:0.5rem;">Matched awards (NAICS 541511/512, FY2022&ndash;2026)</div>
+      <div style="width:100%;font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:0.25rem;margin-top:0.5rem;">Matched awards (NAICS 541511/512, <span class="fy-range"></span>)</div>
       <div class="rfp-card">
         <div class="rfp-card-n" id="ccContracts">—</div>
         <div class="rfp-card-label">contracts</div>
@@ -633,6 +633,7 @@
         <div id="filterChips"></div>
         <button class="add-filter-btn" id="addFilterBtn">+ Add filter</button>
         <a class="clear-filters-link" id="filterClearAll" href="#" style="display:none;">Clear all</a>
+        <button class="add-filter-btn" id="copyLinkBtn" style="display:none;background:none;border:1px solid var(--color-border);color:var(--color-text-muted);">⎘ Copy link</button>
       </div>
     </div>
 
@@ -657,8 +658,10 @@
             <th>Set-aside</th>
             <th>Labels</th>
             <th>Contracts</th>
+            <th>Eval Method</th>
+            <th>Tradeoff Code</th>
             <th>SAM.gov</th>
-            <th>Att.</th>
+            <th>Docs</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -678,11 +681,81 @@
     </div>
   </div>
 
+  <!-- Methodology -->
+  <section id="panel-methodology" style="margin-top:2.5rem;">
+    <h2 class="section-header">How it works</h2>
+
+    <p class="narrative">Two parallel pipelines feed this dashboard. <a href="https://github.com/abigailhaddad/procurement-methods#methodology" target="_blank">Full methodology on GitHub ↗</a></p>
+
+    <!-- Pipeline flow -->
+    <div style="display:flex;flex-wrap:wrap;gap:0.75rem;margin:1.25rem 0;align-items:flex-start;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:0.5rem;">Contracts pipeline</div>
+        <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.8125rem;">
+          <div style="padding:0.4rem 0.6rem;background:var(--color-surface);border-left:3px solid var(--color-accent);border-radius:0 0.25rem 0.25rem 0;"><strong>USASpending bulk</strong> → contract details, dollars, agencies</div>
+          <div style="padding-left:1rem;color:var(--color-text-muted);font-size:0.75rem;">↓ fetch_bulk.py</div>
+          <div style="padding:0.4rem 0.6rem;background:var(--color-surface);border-left:3px solid var(--color-accent);border-radius:0 0.25rem 0.25rem 0;"><strong>Tango API (FPDS)</strong> → LPTA / tradeoff codes</div>
+          <div style="padding-left:1rem;color:var(--color-text-muted);font-size:0.75rem;">↓ fetch_tradeoff.py + build_contracts.py</div>
+          <div style="padding:0.4rem 0.6rem;background:var(--color-surface);border-left:3px solid var(--color-accent);border-radius:0 0.25rem 0.25rem 0;"><strong>SAM.gov extract</strong> → vendor age, registration date</div>
+          <div style="padding-left:1rem;color:var(--color-text-muted);font-size:0.75rem;">↓ enrich_sam.py + analyze.py</div>
+          <div style="padding:0.4rem 0.6rem;background:var(--color-accent);color:#fff;border-radius:0.25rem;font-weight:600;">contracts_raw.csv → dashboard charts</div>
+        </div>
+      </div>
+      <div style="flex:1;min-width:260px;">
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:0.5rem;">RFP browser pipeline</div>
+        <div style="display:flex;flex-direction:column;gap:0.25rem;font-size:0.8125rem;">
+          <div style="padding:0.4rem 0.6rem;background:var(--color-surface);border-left:3px solid var(--color-gold);border-radius:0 0.25rem 0.25rem 0;"><strong>SAM.gov API</strong> → solicitation notices, attachment text</div>
+          <div style="padding-left:1rem;color:var(--color-text-muted);font-size:0.75rem;">↓ rfp_text_pipeline.py (daily cron)</div>
+          <div style="padding:0.4rem 0.6rem;background:var(--color-surface);border-left:3px solid var(--color-gold);border-radius:0 0.25rem 0.25rem 0;"><strong>Regex classifier</strong> → shall / user / agile / RTM labels</div>
+          <div style="padding-left:1rem;color:var(--color-text-muted);font-size:0.75rem;">↓ build_rfp_signals.py + build_combined_table.py</div>
+          <div style="padding:0.4rem 0.6rem;background:var(--color-gold);color:#1B4332;border-radius:0.25rem;font-weight:600;">combined_table.json → RFP browser table</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Eval fields -->
+    <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin:1.5rem 0 0.5rem;"><code>eval_method</code> — USASpending competition fields (always populated)</div>
+    <table style="width:100%;font-size:0.8125rem;border-collapse:collapse;margin-bottom:1.25rem;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--color-border);">
+          <th style="text-align:left;padding:0.4rem 0.75rem 0.4rem 0;font-weight:600;">Category</th>
+          <th style="text-align:left;padding:0.4rem 0;font-weight:600;">Rule</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:0.4rem 0.75rem 0.4rem 0;font-weight:600;">Fair Opportunity</td><td style="padding:0.4rem 0;"><code>solicitation_procedures = "MAFO"</code></td></tr>
+        <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:0.4rem 0.75rem 0.4rem 0;font-weight:600;">Negotiated Proposal</td><td style="padding:0.4rem 0;"><code>extent_competed</code> in (A, D) + <code>NP</code></td></tr>
+        <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:0.4rem 0.75rem 0.4rem 0;font-weight:600;">Simplified Acquisition</td><td style="padding:0.4rem 0;"><code>extent_competed</code> in (F, G)</td></tr>
+        <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:0.4rem 0.75rem 0.4rem 0;font-weight:600;">Sole Source</td><td style="padding:0.4rem 0;"><code>solicitation_procedures = "SSS"</code></td></tr>
+        <tr><td style="padding:0.4rem 0.75rem 0.4rem 0;font-weight:600;">Not Competed</td><td style="padding:0.4rem 0;"><code>extent_competed</code> in (B, C), not sole source</td></tr>
+      </tbody>
+    </table>
+    <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--color-text-muted);margin-bottom:0.5rem;"><code>tradeoff_code</code> — Tango API / FPDS (partial coverage, grows daily)</div>
+    <table style="width:100%;font-size:0.8125rem;border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:2px solid var(--color-border);">
+          <th style="text-align:left;padding:0.4rem 0.75rem 0.4rem 0;font-weight:600;">Value</th>
+          <th style="text-align:left;padding:0.4rem 0;font-weight:600;">Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:0.4rem 0.75rem 0.4rem 0;"><code>LPTA</code></td><td style="padding:0.4rem 0;">Lowest Price Technically Acceptable</td></tr>
+        <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:0.4rem 0.75rem 0.4rem 0;"><code>TO</code></td><td style="padding:0.4rem 0;">Best-Value Tradeoff</td></tr>
+        <tr style="border-bottom:1px solid var(--color-border);"><td style="padding:0.4rem 0.75rem 0.4rem 0;"><code>O</code></td><td style="padding:0.4rem 0;">Other</td></tr>
+        <tr><td style="padding:0.4rem 0.75rem 0.4rem 0;"><code>null</code></td><td style="padding:0.4rem 0;">Not yet fetched or not reported (~40–60% of awards)</td></tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:0.75rem;color:var(--color-text-muted);margin-top:1rem;line-height:1.6;">
+      <strong>Coverage caveat:</strong> Tango tradeoff codes are contractor-reported and blank for ~40–60% of awards. Only ~5% of contracts currently have LPTA or Best-Value Tradeoff codes — coverage grows daily via GitHub Actions (100 calls/day free tier). Remaining contracts are classified using USASpending competition fields, which are less specific. Vendor age and new-entrant fields require SAM.gov enrichment and are blank for contracts not yet processed.
+    </p>
+  </section>
+
   <!-- Footer -->
   <footer class="site-footer">
     <p>Data: <a href="https://www.usaspending.gov" target="_blank">USASpending</a> &middot;
        <a href="https://govcon.dev" target="_blank">Tango API</a> (FPDS) &middot;
-       Contracts: NAICS 541511/512 &middot; RFPs: 541xxx &middot;
+       NAICS 541511/512 &middot;
        <a href="https://github.com/abigailhaddad/procurement-methods" target="_blank">Source code</a></p>
   </footer>
 
@@ -702,9 +775,6 @@ const EM = {
   'Not Competed':           { bg: '#7A6E62', bgL: 'rgba(122,110,98,0.55)' },
   'Unknown':                { bg: '#BBBBBB', bgL: 'rgba(187,187,187,0.55)' },
 };
-
-const EM_ORDER = ['LPTA','Best-Value Tradeoff','Fair Opportunity','Negotiated Proposal',
-                  'Simplified Acquisition','Sole Source','Not Competed','Unknown'];
 
 Chart.defaults.font.family = "'Inter', -apple-system, sans-serif";
 Chart.defaults.color = C.tick;
@@ -729,7 +799,30 @@ async function loadAll() {
     files.map(f => fetch(`data/${f}.json`).then(r => r.json()).catch(() => null))
   );
   files.forEach((f, i) => { DATA[f] = results[i]; });
-  if (DATA.combined_table || DATA.rfp_bundles) setupRfpBrowser();
+
+  // Populate dynamic contract FY range
+  const fyKeys = Object.keys(DATA.by_eval_method_fy || {}).map(Number).filter(Boolean).sort();
+  if (fyKeys.length) {
+    const fyText = fyKeys.length === 1
+      ? `FY${fyKeys[0]}`
+      : `FY${fyKeys[0]}–${fyKeys[fyKeys.length - 1]}`;
+    document.querySelectorAll('.fy-range-contracts, .fy-range').forEach(el => { el.textContent = fyText; });
+  }
+
+  // Populate dynamic RFP date range from actual bundle posted dates
+  const rfpDates = (DATA.combined_table || DATA.rfp_bundles || [])
+    .map(b => b.posted_date).filter(Boolean).sort();
+  if (rfpDates.length) {
+    const minYear = rfpDates[0].slice(0, 4);
+    const maxYear = rfpDates[rfpDates.length - 1].slice(0, 4);
+    const rfpText = minYear === maxYear ? minYear : `${minYear}–${maxYear}`;
+    document.querySelectorAll('.fy-range-rfps').forEach(el => { el.textContent = rfpText; });
+  }
+
+  if (DATA.combined_table || DATA.rfp_bundles) {
+    setupRfpBrowser();
+    applyFiltersFromURL();
+  }
 }
 
 function escapeHtml(s) {
@@ -750,6 +843,63 @@ const RFP_LABEL_META = {
 let rfpDetailByNid = {};
 
 let rfpDT = null;
+
+// ── Shareable URL ─────────────────────────────────────────────────────────────
+const URL_FIELD_MAP = {
+  q:         { field: 'text',      label: 'Full text search',      type: 'text' },
+  title:     { field: 'title',     label: 'Title',                 type: 'text' },
+  date:      { field: 'date',      label: 'Posted Date',           type: 'text' },
+  type:      { field: 'type',      label: 'Notice Type',           type: 'multiselect' },
+  dept:      { field: 'dept',      label: 'Department',            type: 'multiselect' },
+  naics:     { field: 'naics',     label: 'NAICS',                 type: 'multiselect' },
+  sa:        { field: 'sa',        label: 'Set-aside',             type: 'multiselect' },
+  label:     { field: 'label',     label: 'Label',                 type: 'multiselect' },
+  contracts:  { field: 'contracts',  label: 'Has matched contracts', type: 'multiselect' },
+  evalmethod: { field: 'evalmethod', label: 'Eval method',           type: 'multiselect' },
+  tradeoff:   { field: 'tradeoff',   label: 'Tradeoff code',         type: 'multiselect' },
+};
+
+function updateURLWithFilters() {
+  const params = new URLSearchParams();
+  const byKey = {};
+  activeFilters.forEach(f => {
+    if (f.type === 'daterange') {
+      if (f.from) params.set('date_from', f.from);
+      if (f.to)   params.set('date_to',   f.to);
+      return;
+    }
+    const key = f.field === 'text' ? 'q' : f.field;
+    if (!byKey[key]) byKey[key] = [];
+    if (f.type === 'multiselect') byKey[key].push(...(f.values || []));
+    else byKey[key].push(f.value);
+  });
+  Object.entries(byKey).forEach(([k, vals]) => params.set(k, vals.join(',')));
+  const qs = params.toString();
+  history.replaceState(null, '', qs ? '?' + qs : location.pathname);
+  const btn = document.getElementById('copyLinkBtn');
+  if (btn) btn.style.display = activeFilters.length ? '' : 'none';
+}
+
+function applyFiltersFromURL() {
+  const params = new URLSearchParams(location.search);
+  if (!params.size) return;
+  const from = params.get('date_from'), to = params.get('date_to');
+  if (from || to) {
+    activeFilters.push({ id: ++filterIdSeq, field: 'date', label: 'Posted Date', type: 'daterange', from: from || '', to: to || '' });
+  }
+  params.forEach((val, key) => {
+    if (key === 'date_from' || key === 'date_to') return;
+    const meta = URL_FIELD_MAP[key];
+    if (!meta || !val) return;
+    if (meta.type === 'multiselect') {
+      const values = val.split(',').filter(Boolean);
+      if (values.length) activeFilters.push({ id: ++filterIdSeq, ...meta, values });
+    } else {
+      activeFilters.push({ id: ++filterIdSeq, ...meta, value: val });
+    }
+  });
+  applyFiltersToTable();
+}
 
 // ── Unified filter state (lawcases pattern) ───────────────────────────────────
 // Each filter: { id, field, label, type:'multiselect'|'text', values:[] | value:'' }
@@ -777,8 +927,8 @@ function renderFilterChips() {
   const clearAll = document.getElementById('filterClearAll');
 
   chips.innerHTML = activeFilters.map(f => {
-    const display = f.type === 'multiselect'
-      ? f.values.join(', ')
+    const display = f.type === 'multiselect' ? f.values.join(', ')
+      : f.type === 'daterange' ? `${f.from || '…'} – ${f.to || '…'}`
       : f.value;
     return `<span class="filter-chip-active" data-id="${f.id}">
       <span class="fc-label">${escapeHtml(f.label)}:</span>
@@ -816,8 +966,7 @@ function applyFiltersToTable() {
   // Column-specific searches
   const titleVals = getFilterValues('title');
   rfpDT.column(0).search(titleVals.length ? titleVals.join('|') : '', true, false);
-  const dateVals = getFilterValues('date');
-  rfpDT.column(1).search(dateVals.length ? dateVals.join('|') : '', true, false);
+  rfpDT.column(1).search('', true, false); // date range handled in custom search
   colSearch(2, getFilterValues('type'));
   colSearch(3, getFilterValues('dept'));
   colSearch(4, getFilterValues('naics'));
@@ -832,7 +981,7 @@ function applyFiltersToTable() {
     c.classList.toggle('active', lbls.has(c.dataset.chip));
   });
 
-  updateContractCards(getFilterDept());
+  updateURLWithFilters();
 }
 
 // ── Two-step filter modal ────────────────────────────────────────────────────
@@ -840,13 +989,15 @@ let filterBundles = [];
 
 const FILTER_COLS = [
   { field: 'title',     label: 'Title',                  type: 'text' },
-  { field: 'date',      label: 'Posted Date',            type: 'text' },
+  { field: 'date',      label: 'Posted Date',            type: 'daterange' },
   { field: 'type',      label: 'Notice Type',            type: 'multiselect', getVals: b => b.type },
   { field: 'dept',      label: 'Department',             type: 'multiselect', getVals: b => b.dept || b.department },
   { field: 'naics',     label: 'NAICS',                  type: 'multiselect', getVals: b => b.naics },
   { field: 'sa',        label: 'Set-aside',              type: 'multiselect', getVals: b => typeof b.set_aside === 'string' ? b.set_aside : b.sa },
   { field: 'label',     label: 'Label',                  type: 'multiselect', staticOptions: ['shall clauses', 'user vocab', 'agile vocab', 'RTM'] },
-  { field: 'contracts', label: 'Has matched contracts',  type: 'multiselect', staticOptions: ['yes'] },
+  { field: 'contracts', label: 'Has matched contracts',  type: 'multiselect', staticOptions: ['Yes', 'No'] },
+  { field: 'evalmethod',label: 'Eval method',            type: 'multiselect', getVals: b => (b.contracts || []).map(c => c.em).filter(Boolean) },
+  { field: 'tradeoff',  label: 'Tradeoff code',          type: 'multiselect', getVals: b => (b.contracts || []).map(c => c.tc).filter(Boolean) },
   { field: 'text',      label: 'Full text search',       type: 'text' },
 ];
 
@@ -885,9 +1036,22 @@ function openFilterStep2(col) {
 
   let inputHtml = '';
   if (col.type === 'multiselect') {
-    const opts = col.staticOptions || [...new Set(filterBundles.map(b => col.getVals(b)).filter(v => v && typeof v === 'string'))].sort();
+    let opts, hasBlank;
+    if (col.staticOptions) {
+      opts = col.staticOptions;
+      hasBlank = false;
+    } else {
+      const allVals = filterBundles.flatMap(b => {
+        const v = col.getVals(b);
+        return Array.isArray(v) ? v : [v];
+      });
+      hasBlank = allVals.some(v => !v || v === '');
+      opts = [...new Set(allVals.filter(v => v && typeof v === 'string'))].sort();
+    }
+    if (hasBlank) opts = [...opts, '(blank)'];
+    const showSearch = opts.length > 8;
     inputHtml = `
-      <input type="text" class="filter-search-input" id="fmOptSearch" placeholder="Search options…">
+      ${showSearch ? '<input type="text" class="filter-search-input" id="fmOptSearch" placeholder="Search options…">' : ''}
       <div class="filter-options-list" id="fmOptList">
         ${opts.map(v => `
           <label>
@@ -897,6 +1061,18 @@ function openFilterStep2(col) {
         `).join('')}
       </div>
     `;
+  } else if (col.type === 'daterange') {
+    inputHtml = `
+      <div style="display:flex;gap:0.75rem;">
+        <div style="flex:1;">
+          <div style="font-size:0.75rem;color:var(--color-text-muted);margin-bottom:0.25rem;">From</div>
+          <input type="date" id="fmDateFrom" class="filter-search-input" style="margin-bottom:0;width:100%;">
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:0.75rem;color:var(--color-text-muted);margin-bottom:0.25rem;">To</div>
+          <input type="date" id="fmDateTo" class="filter-search-input" style="margin-bottom:0;width:100%;">
+        </div>
+      </div>`;
   } else {
     inputHtml = `<input type="text" class="filter-search-input" id="fmTextVal" placeholder="Enter search text…" style="margin-bottom:0">`;
   }
@@ -939,6 +1115,11 @@ function openFilterStep2(col) {
       } else {
         activeFilters.push({ id: ++filterIdSeq, field: col.field, label: col.label, type: 'multiselect', values: checked });
       }
+    } else if (col.type === 'daterange') {
+      const from = document.getElementById('fmDateFrom').value;
+      const to = document.getElementById('fmDateTo').value;
+      if (!from && !to) return;
+      activeFilters.push({ id: ++filterIdSeq, field: col.field, label: col.label, type: 'daterange', from, to });
     } else {
       const val = document.getElementById('fmTextVal').value.trim();
       if (!val) return;
@@ -958,7 +1139,26 @@ $.fn.dataTable.ext.search.push(function(settings, data) {
   if (settings.nTable.id !== 'rfpTable') return true;
   const lbls = getActiveLabels();
   if (lbls.size && ![...lbls].every(l => data[6].includes(l))) return false;
-  if (activeFilters.some(f => f.field === 'contracts') && data[7] === '—') return false;
+  const dateFilters = activeFilters.filter(f => f.field === 'date' && f.type === 'daterange');
+  for (const f of dateFilters) {
+    const d = data[1] || '';
+    if (f.from && d < f.from) return false;
+    if (f.to && d > f.to) return false;
+  }
+  const contractVals = activeFilters.filter(f => f.field === 'contracts').flatMap(f => f.values || []);
+  if (contractVals.length && !contractVals.includes(data[7])) return false;
+  const emVals = activeFilters.filter(f => f.field === 'evalmethod').flatMap(f => f.values || []);
+  if (emVals.length) {
+    const cell = data[8] || '';
+    const match = emVals.some(v => v === '(blank)' ? cell === '—' : cell.includes(v));
+    if (!match) return false;
+  }
+  const tradeoffVals = activeFilters.filter(f => f.field === 'tradeoff').flatMap(f => f.values || []);
+  if (tradeoffVals.length) {
+    const cell = data[9] || '';
+    const match = tradeoffVals.some(v => v === '(blank)' ? cell === '—' : cell.includes(v));
+    if (!match) return false;
+  }
   return true;
 });
 
@@ -1001,9 +1201,7 @@ function setupRfpBrowser() {
   }
 
   function makeContractsCell(b) {
-    const contracts = b.contracts || [];
-    if (!contracts.length) return '—';
-    return `<span class="chip" style="background:#1B4332;font-size:0.68rem;">${contracts.length} contract${contracts.length>1?'s':''}</span>`;
+    return (b.contracts || []).length ? 'Yes' : 'No';
   }
 
   function makeSamLink(b) {
@@ -1017,6 +1215,9 @@ function setupRfpBrowser() {
     const sa = typeof b.set_aside === 'string' ? b.set_aside
       : (b.set_aside && b.set_aside.description) ? b.set_aside.description
       : (b.sa || '');
+    const contracts = b.contracts || [];
+    const emVals  = [...new Set(contracts.map(c => c.em).filter(Boolean))];
+    const tcVals  = [...new Set(contracts.map(c => c.tc).filter(Boolean))];
     return [
       escapeHtml(b.title || b.name || '(untitled)'), // 0
       b.posted_date || b.date || '',                  // 1
@@ -1025,34 +1226,38 @@ function setupRfpBrowser() {
       escapeHtml(b.naics || '—'),                     // 4
       escapeHtml(sa || '—'),                          // 5
       makeChips(b),                                   // 6 labels
-      makeContractsCell(b),                           // 7 contracts
-      makeSamLink(b),                                 // 8 SAM link
-      b.attachment_count || b.att || 0,               // 9 att
-      // hidden search column: RFP full text + contract vendors + solicitation number
+      makeContractsCell(b),                           // 7 contracts Yes/No
+      emVals.join(', ') || '—',                       // 8 eval_method
+      tcVals.join(', ') || '—',                       // 9 tradeoff_code
+      makeSamLink(b),                                 // 10 SAM link
+      b.attachment_count || b.att || 0,               // 11 docs
+      // hidden search column
       [
         b.search_text || (rfpDetailByNid[b.nid] || {}).search_text || '',
         b.sol || b.solicitation_number || '',
-        (b.contracts || []).map(c => c.vendor || '').join(' '),
-      ].join(' '), // 10 hidden
-      i,                                              // 11 hidden bundle index
+        contracts.map(c => c.vendor || '').join(' '),
+      ].join(' '), // 12 hidden
+      i,                                              // 13 hidden bundle index
     ];
   });
 
   rfpDT = $('#rfpTable').DataTable({
     data: tableData,
     columns: [
-      { title: 'Title',      className: 'rfp-title-cell' },
+      { title: 'Title',         className: 'rfp-title-cell' },
       { title: 'Date' },
       { title: 'Type' },
       { title: 'Department' },
       { title: 'NAICS' },
-      { title: 'Set-aside', orderable: false },
-      { title: 'Labels',    orderable: false },
-      { title: 'Contracts', orderable: false },
-      { title: 'SAM.gov',   orderable: false },
-      { title: 'Att.',      className: 'num' },
-      { title: '_text',     visible: false, searchable: true },
-      { title: '_idx',      visible: false, searchable: false },
+      { title: 'Set-aside' },
+      { title: 'Labels',        orderable: false },
+      { title: 'Contracts',     render: d => d === 'Yes' ? '<span class="chip" style="background:#1B4332;font-size:0.68rem;">Yes</span>' : '<span style="color:var(--color-text-muted)">No</span>' },
+      { title: 'Eval Method' },
+      { title: 'Tradeoff Code' },
+      { title: 'SAM.gov',       orderable: false },
+      { title: 'Docs',          className: 'num' },
+      { title: '_text',         visible: false, searchable: true },
+      { title: '_idx',          visible: false, searchable: false },
     ],
     order: [[1, 'desc']],
     pageLength: 25,
@@ -1068,41 +1273,21 @@ function setupRfpBrowser() {
     },
   });
 
-  // Contract cards: fuzzy-match dept filter value against DATA.by_agency entries
-  function updateContractCards(deptValue) {
-    const allBundles = DATA.combined_table || DATA.rfp_bundles || [];
-    let contractsVal = '—';
-
-    if (!deptValue) {
-      const totalMatched = allBundles.reduce((sum, b) => sum + (b.contracts || []).length, 0);
-      if (totalMatched > 0) contractsVal = totalMatched.toLocaleString() + ' matched';
-    } else {
-      function tokenize(str) {
-        return str.toUpperCase().split(/[^A-Z0-9]+/).filter(w => w.length > 3);
-      }
-      const deptTokens = new Set(tokenize(deptValue));
-      const deptBundles = allBundles.filter(b => {
-        const d = b.dept || b.department || '';
-        return tokenize(d).some(w => deptTokens.has(w));
-      });
-      const deptMatched = deptBundles.reduce((sum, b) => sum + (b.contracts || []).length, 0);
-      contractsVal = deptMatched > 0 ? deptMatched.toLocaleString() + ' matched' : '—';
+  function updateContractCards() {
+    if (!rfpDT) return;
+    const rows = rfpDT.rows({ search: 'applied' }).data();
+    let total = 0;
+    for (let i = 0; i < rows.length; i++) {
+      const b = bundles[rows[i][13]];
+      if (b) total += (b.contracts || []).length;
     }
-
-    document.getElementById('ccContracts').textContent = contractsVal;
-
-    const sig = DATA.rfp_signals || {};
-    const drEl = document.getElementById('rcDateRange');
-    if (drEl) {
-      const dr = sig.date_range;
-      drEl.textContent = dr ? `(${dr.from || ''} → ${dr.to || ''})` : '';
-    }
+    document.getElementById('ccContracts').textContent =
+      total > 0 ? total.toLocaleString() + ' matched' : '0';
   }
 
-  $('#rfpTable').on('draw.dt', updateRfpCards);
+  $('#rfpTable').on('draw.dt', () => { updateRfpCards(); updateContractCards(); });
   updateRfpCards();
-
-  updateContractCards('');
+  updateContractCards();
 
   document.getElementById('rfpCards').style.display = '';
   document.getElementById('filterSystem').style.display = '';
@@ -1201,14 +1386,24 @@ function setupRfpBrowser() {
     document.querySelectorAll('.rfp-card-clickable').forEach(c => c.classList.remove('active'));
     rfpDT.search('').columns().search('').draw();
     renderFilterChips();
-    updateContractCards('');
+    updateURLWithFilters();
+  });
+
+  // Copy shareable link
+  document.getElementById('copyLinkBtn').addEventListener('click', () => {
+    navigator.clipboard.writeText(location.href).then(() => {
+      const btn = document.getElementById('copyLinkBtn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied';
+      setTimeout(() => { btn.textContent = orig; }, 1500);
+    });
   });
 
   // Row click → modal
   $('#rfpTable tbody').on('click', 'tr', function() {
     const data = rfpDT.row(this).data();
     if (!data) return;
-    const b = bundles[data[11]];
+    const b = bundles[data[13]];
     const detail = rfpDetailByNid[b.nid] || b;
     openRfpModal(b, detail, rfpDT.search());
   });
@@ -1227,7 +1422,7 @@ function openRfpModal(bundle, detail, query) {
     : (bundle.set_aside && bundle.set_aside.description) ? bundle.set_aside.description : '';
 
   let html = `<div class="rfp-modal-meta">
-    Notice ID: <code>${escapeHtml(bundle.notice_id||'')}</code> &middot;
+    Notice ID: <code>${escapeHtml(bundle.nid||bundle.notice_id||'')}</code> &middot;
     ${escapeHtml(bundle.type||'')} &middot;
     ${escapeHtml(bundle.department||bundle.dept||'')} &middot;
     NAICS ${escapeHtml(bundle.naics||'—')} &middot;
@@ -1277,23 +1472,65 @@ function openRfpModal(bundle, detail, query) {
   if (contracts.length) {
     html += `<div class="rfp-modal-section-title">${contracts.length} Matched Contract${contracts.length>1?'s':''}</div>`;
     html += `<div style="font-size:0.78rem;color:var(--color-text-muted);margin-bottom:0.5rem">Matched via solicitation number ${escapeHtml(bundle.sol||'')}</div>`;
-    html += contracts.slice(0, 20).map(c => `
+    html += contracts.slice(0, 20).map(c => {
+      const usaLink = c.key
+        ? `<a href="https://www.usaspending.gov/award/${encodeURIComponent(c.key)}/" target="_blank" style="color:var(--color-accent);margin-left:0.5rem;font-size:0.75rem;" onclick="event.stopPropagation()">USASpending ↗</a>`
+        : '';
+      return `
       <div style="padding:0.5rem 0.75rem;border-left:3px solid var(--color-gold);margin:0.375rem 0;background:var(--color-surface);font-size:0.8125rem;">
-        <strong>${escapeHtml(c.vendor||'')}</strong>
-        &middot; ${escapeHtml(c.em||'')}
+        <strong>${escapeHtml(c.vendor||'')}</strong>${usaLink}
+        &middot; ${escapeHtml(c.em||'')}${c.tc ? ` <span style="font-size:0.7rem;background:var(--color-surface);border:1px solid var(--color-border);border-radius:3px;padding:0 4px;">${escapeHtml(c.tc)}</span>` : ''}
         &middot; ${escapeHtml(c.ob||'')}
         &middot; ${escapeHtml(c.ct||'')}
         &middot; FY${escapeHtml(String(c.fy||''))}
         &middot; ${escapeHtml(c.date||'')}
       </div>
-    `).join('');
+    `;
+    }).join('');
     if (contracts.length > 20) {
       html += `<div style="font-size:0.78rem;color:var(--color-text-muted);">… and ${contracts.length - 20} more</div>`;
     }
   }
 
+  // Full extracted text
+  const fullText = bundle.search_text || (rfpDetailByNid[bundle.nid || bundle.notice_id] || {}).search_text || '';
+  if (fullText && fullText.trim() && !fullText.trim().startsWith('http')) {
+    const query = getFilterText().trim().toLowerCase();
+    // Normalize PDF line-breaks: collapse single newlines into spaces, preserve paragraph breaks
+    const normalized = fullText
+      .replace(/\r\n/g, '\n')
+      .replace(/\n{2,}/g, '\x00')       // mark paragraph breaks
+      .replace(/\n/g, ' ')              // collapse soft line-wraps to space
+      .replace(/  +/g, ' ')             // collapse multiple spaces
+      .replace(/\x00/g, '\n\n')         // restore paragraph breaks
+      .trim();
+    const escaped = escapeHtml(normalized);
+    const displayText = query
+      ? escaped.replace(
+          new RegExp(escapeHtml(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'),
+          m => `<mark>${m}</mark>`
+        )
+      : escaped;
+    // Convert paragraph breaks to <p> tags for clean rendering
+    const paragraphed = displayText.split('\n\n').map(p => `<p style="margin:0 0 0.6em">${p.trim()}</p>`).join('');
+    html += `
+      <details style="margin-top:1rem;">
+        <summary class="rfp-modal-section-title" style="cursor:pointer;user-select:none;list-style:none;display:flex;align-items:center;gap:0.4rem;">
+          <span>▶</span> Full extracted text
+        </summary>
+        <div style="margin-top:0.5rem;padding:0.75rem;background:var(--color-surface);border-radius:0.375rem;font-size:0.8rem;line-height:1.6;max-height:400px;overflow-y:auto;">${paragraphed}</div>
+      </details>`;
+  }
+
   document.getElementById('rfpModalTitle').textContent = bundle.title || bundle.name || '(untitled)';
   document.getElementById('rfpModalBody').innerHTML = html;
+
+  // Rotate summary arrow on open/close
+  document.querySelectorAll('#rfpModalBody details').forEach(d => {
+    const arrow = d.querySelector('summary span');
+    d.addEventListener('toggle', () => { if (arrow) arrow.textContent = d.open ? '▼' : '▶'; });
+  });
+
   document.getElementById('rfpModal').classList.add('open');
 }
 

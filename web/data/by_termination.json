@@ -1,0 +1,59 @@
+{
+  "overall": {
+    "total": 7070,
+    "terminated": 58,
+    "terminated_pct": 0.82
+  },
+  "by_eval_method": [
+    {
+      "method": "Fair Opportunity",
+      "label": "Fair Opportunity (IDIQ/GWAC)",
+      "total": 2060,
+      "terminated": 40,
+      "terminated_pct": 1.94,
+      "convenience": 40,
+      "default_cause": 0,
+      "default_cause_pct": 0.0
+    },
+    {
+      "method": "Negotiated Proposal",
+      "label": "Negotiated Proposal",
+      "total": 4040,
+      "terminated": 5,
+      "terminated_pct": 0.12,
+      "convenience": 5,
+      "default_cause": 0,
+      "default_cause_pct": 0.0
+    },
+    {
+      "method": "Simplified Acquisition",
+      "label": "Simplified Acquisition",
+      "total": 448,
+      "terminated": 2,
+      "terminated_pct": 0.45,
+      "convenience": 2,
+      "default_cause": 0,
+      "default_cause_pct": 0.0
+    },
+    {
+      "method": "Sole Source",
+      "label": "Sole Source",
+      "total": 504,
+      "terminated": 10,
+      "terminated_pct": 1.98,
+      "convenience": 10,
+      "default_cause": 0,
+      "default_cause_pct": 0.0
+    },
+    {
+      "method": "Unknown",
+      "label": "Unknown",
+      "total": 18,
+      "terminated": 1,
+      "terminated_pct": 5.56,
+      "convenience": 1,
+      "default_cause": 0,
+      "default_cause_pct": 0.0
+    }
+  ]
+}

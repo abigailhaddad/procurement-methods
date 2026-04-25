@@ -10,7 +10,7 @@ corruption, or political donations.
 
 ## Sibling pipeline: `rfp_text_pipeline.py`
 
-Independent daily pipeline that extracts text from RFP attachments for 541xxx
+Independent daily pipeline that extracts text from RFP attachments for 541511/541512
 opportunities on SAM.gov. Self-contained, doesn't feed the dashboard.
 
 **Bulk-search mode.** One call to `opportunities/v2/search` returns up to 1,000
@@ -74,14 +74,14 @@ image-only PDFs (no OCR yet).
 ### Step 1 — `fetch_bulk.py`
 Downloads transaction-level contract records from USASpending bulk award archives.
 - Downloads one ZIP per agency per fiscal year from files.usaspending.gov
-- Filters to NAICS prefix `5415` (IT services), keeps ~75 columns
+- Filters to NAICS 541511 + 541512 (custom programming + systems design), keeps ~75 columns
 - Checkpoints per agency/FY at `data/bulk_checkpoints/`
 - Resume-safe: re-running skips completed agencies
 - May get IP-blocked after ~50 agencies; re-run to continue from a new IP
 - Output: `data/contracts_bulk.csv` (transaction-level, all agencies merged)
 
 ```bash
-python3 fetch_bulk.py                    # all agencies, FY2022-FY2026
+python3 fetch_bulk.py                    # all agencies, FY2022–present
 python3 fetch_bulk.py --fy 2026          # one year
 python3 fetch_bulk.py --agencies 097 036 # specific agencies
 ```
@@ -94,7 +94,7 @@ Pulls LPTA/tradeoff evaluation codes from the Tango API (FPDS data).
 - USASpending does NOT publish `source_selection_process` (LPTA vs tradeoff)
 - This script fetches only `key` + `tradeoff_process` to minimize API calls
 - Batches by NAICS + month with checkpoints at `data/tradeoff_checkpoints/`
-- Rate-limited: free tier ~100 calls/day. Run daily until complete.
+- Rate-limited: free tier ~100 calls/day. Runs daily via `.github/workflows/fetch_tradeoff.yml`.
 - Output: `data/tradeoff_lookup.csv`
 
 ### Step 3 — `build_contracts.py`
@@ -129,32 +129,33 @@ Joins contracts + SAM data, computes derived fields, outputs dashboard JSONs to 
   `top_vendors.json`, `filters.json`
 - **Commit `web/data/` after running** — these are what Vercel serves
 
-## Evaluation method classification (`eval_method`)
+## Evaluation method classification
 
-Each contract is classified using two data sources. Tango tradeoff codes take
-priority when available; USASpending competition fields classify the rest.
-See `build_contracts.py: classify_eval_method()` for the implementation.
+Two separate fields — kept distinct because they come from different sources
+and have different coverage.
 
-| Category | Rule | Data source |
-|---|---|---|
-| **LPTA** | `tradeoff_process.code` = "LPTA" | Tango API (FPDS) |
-| **Best-Value Tradeoff** | `tradeoff_process.code` = "TO" | Tango API (FPDS) |
-| **Fair Opportunity** | `solicitation_procedures_code` = "MAFO" | USASpending |
-| **Negotiated Proposal** | `extent_competed` in (A, D) AND `solicitation_procedures` = "NP" | USASpending |
-| **Simplified Acquisition** | `extent_competed` in (F, G) | USASpending |
-| **Sole Source** | `solicitation_procedures` = "SSS" | USASpending |
-| **Not Competed** | `extent_competed` in (B, C), not sole source | USASpending |
+### `eval_method` — USASpending competition fields (always populated)
 
-Key design decisions:
-- **Priority order matters.** A contract with both `tradeoff_code=TO` and
-  `solicitation_procedures=MAFO` is "Best-Value Tradeoff" because Tango is
-  more specific than USASpending competition fields.
-- **"Negotiated Proposal" is broad.** It captures full-and-open competitions
-  that aren't LPTA, tradeoff, or fair opportunity. Likely includes multiple
-  evaluation approaches we can't distinguish from available data.
-- **LPTA/tradeoff coverage is partial.** FPDS `tradeoff_process` is
-  contractor-reported and blank for ~40–60% of awards. Only ~10% of contracts
-  currently have Tango tradeoff codes matched.
+| Category | Rule |
+|---|---|
+| **Fair Opportunity** | `solicitation_procedures_code` = "MAFO" |
+| **Negotiated Proposal** | `extent_competed` in (A, D) AND `solicitation_procedures` = "NP" |
+| **Simplified Acquisition** | `extent_competed` in (F, G) |
+| **Sole Source** | `solicitation_procedures` = "SSS" |
+| **Not Competed** | `extent_competed` in (B, C), not sole source |
+| **Unknown** | None of the above matched |
+
+### `tradeoff_code` — Tango API / FPDS (partial coverage)
+
+| Value | Meaning |
+|---|---|
+| `LPTA` | Lowest Price Technically Acceptable |
+| `TO` | Best-Value Tradeoff |
+| `O` | Other |
+| null | Not yet fetched or not reported |
+
+FPDS `tradeoff_process` is contractor-reported and blank for ~40–60% of awards.
+Coverage grows daily as `fetch_tradeoff.py` runs via GitHub Actions.
 
 ## Other derived fields
 
@@ -230,26 +231,33 @@ has non-null `median_vendor_age_yrs` — degrades gracefully without SAM data.
 ## Files
 
 ```
-fetch_bulk.py         — USASpending bulk archive download
-fetch_tradeoff.py     — Tango API tradeoff code pull (run daily)
-build_contracts.py    — Join bulk + tradeoff, classify eval_method
-enrich_sam.py         — SAM bulk extract enrichment
-analyze.py            — Build dashboard JSONs
-fetch.py              — (legacy) Full Tango API pull, now superseded
-r2_sync.py            — R2 checkpoint sync for GitHub Actions
+fetch_bulk.py              — USASpending bulk archive download
+fetch_tradeoff.py          — Tango API tradeoff code pull (run daily)
+build_contracts.py         — Join bulk + tradeoff, classify eval_method
+enrich_sam.py              — SAM bulk extract enrichment
+fetch_protests.py          — Tango API GAO protest pull
+analyze.py                 — Build dashboard JSONs from contracts + SAM + protests
+fetch_solicitations.py     — SAM.gov opportunity CSV download + NAICS filter
+build_rfp_signals.py       — Pull RFP bundles from R2, build rfp_signals.json + rfp_bundles.json
+build_combined_table.py    — Join RFP bundles with matched contracts → combined_table.json
+rfp_text_pipeline.py       — Independent daily pipeline: SAM.gov RFP text extraction to R2
+r2_sync.py                 — R2 checkpoint sync for GitHub Actions
 .github/workflows/
-  fetch.yml           — GitHub Actions: fetch_bulk.py with R2 persistence
-web/index.html        — Dashboard
-web/shared/filters.js — FilterManager (+ Add Filter → chips UX)
-web/shared/shared.css — Design tokens + component styles
-web/data/*.json       — Dashboard data (committed for Vercel)
-data/                 — Raw data (gitignored)
-  contracts_bulk.csv        — USASpending transactions (from fetch_bulk.py)
-  tradeoff_lookup.csv       — Tango tradeoff codes (from fetch_tradeoff.py)
-  contracts_raw.csv         — Joined + classified (from build_contracts.py)
-  sam_lookup.csv             — SAM entity data (from enrich_sam.py)
-  bulk_checkpoints/          — fetch_bulk.py per-agency checkpoints
-  tradeoff_checkpoints/      — fetch_tradeoff.py per-month checkpoints
-.env                  — TANGO_API_KEY + SAM_API_KEY (gitignored)
-vercel.json           — Routes / → web/
+  fetch.yml                — GitHub Actions: fetch_bulk.py with R2 persistence (monthly)
+  fetch_tradeoff.yml       — GitHub Actions: fetch_tradeoff.py daily at 10:00 UTC
+  rfp_text.yml             — GitHub Actions: rfp_text_pipeline.py daily at 09:00 UTC
+web/index.html             — Dashboard + RFP browser
+web/shared/filters.js      — FilterManager class (shared filter UX component)
+web/shared/shared.css      — Design tokens + component styles
+web/data/*.json            — Dashboard data (committed for Vercel)
+data/                      — Raw data (gitignored)
+  contracts_bulk.csv             — USASpending transactions (from fetch_bulk.py)
+  tradeoff_lookup.csv            — Tango tradeoff codes (from fetch_tradeoff.py)
+  contracts_raw.csv              — Joined + classified (from build_contracts.py)
+  sam_lookup.csv                 — SAM entity data (from enrich_sam.py)
+  solicitations/filtered.csv     — SAM.gov opportunities (from fetch_solicitations.py)
+  bulk_checkpoints/              — fetch_bulk.py per-agency checkpoints
+  tradeoff_checkpoints/          — fetch_tradeoff.py per-month checkpoints
+.env                       — TANGO_API_KEY + SAM_API_KEY (gitignored)
+vercel.json                — Routes / → web/
 ```

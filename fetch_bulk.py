@@ -2,7 +2,7 @@
 fetch_bulk.py — Download IT services contracts from USASpending bulk archives.
 
 Downloads agency/FY ZIP files from files.usaspending.gov, filters to IT-related
-NAICS codes (5415xx), and saves transaction-level rows with ~75 columns covering
+NAICS codes (541511 + 541512), and saves transaction-level rows with ~75 columns covering
 competition method, evaluation preference, contract pricing, and firm characteristics.
 
 Each agency/FY is checkpointed individually. Re-running skips completed files.
@@ -37,7 +37,7 @@ CHECKPOINT_DIR = Path("data/bulk_checkpoints")
 OUTPUT_CSV     = Path("data/contracts_bulk.csv")
 
 # NAICS prefixes to keep — all computer/IT services
-NAICS_PREFIXES = ("5415",)  # 541511, 541512, 541513, 541519, etc.
+NAICS_PREFIXES = ("541511", "541512")  # custom programming + systems design
 
 def _get_latest_datestamp(fallback: str = "20260306") -> str:
     """Fetch the archive index page and find the most recent datestamp."""

@@ -1,44 +1,44 @@
 {
   "Deliverable (FFP)": {
     "LPTA": {
-      "count": 1133,
-      "pct": 15.8
+      "count": 89,
+      "pct": 9.6
     },
     "O": {
-      "count": 4736,
-      "pct": 65.9
+      "count": 592,
+      "pct": 63.9
     },
     "TO": {
-      "count": 1321,
-      "pct": 18.4
+      "count": 245,
+      "pct": 26.5
     }
   },
   "Staff Aug (Labor Hours)": {
     "LPTA": {
-      "count": 54,
-      "pct": 8.0
+      "count": 6,
+      "pct": 2.8
     },
     "O": {
-      "count": 237,
-      "pct": 34.9
+      "count": 86,
+      "pct": 40.2
     },
     "TO": {
-      "count": 388,
-      "pct": 57.1
+      "count": 122,
+      "pct": 57.0
     }
   },
   "Staff Aug (T&M)": {
     "LPTA": {
-      "count": 16,
-      "pct": 3.5
+      "count": 4,
+      "pct": 2.4
     },
     "O": {
-      "count": 201,
-      "pct": 44.6
+      "count": 75,
+      "pct": 44.1
     },
     "TO": {
-      "count": 234,
-      "pct": 51.9
+      "count": 91,
+      "pct": 53.5
     }
   }
 }

@@ -1,7 +1,6 @@
 """
-r2_sync.py — Sync bulk checkpoint files to/from Cloudflare R2.
+r2_sync.py — Sync checkpoint files to/from Cloudflare R2.
 
-Uses the same R2 bucket as pull_usaspending, with a separate prefix.
 Credentials from environment variables:
   CF_R2_ACCOUNT_ID, CF_R2_BUCKET, CF_R2_ACCESS_KEY_ID, CF_R2_SECRET_ACCESS_KEY
 """
@@ -17,8 +16,6 @@ BUCKET     = os.environ["CF_R2_BUCKET"]
 ACCESS_KEY = os.environ["CF_R2_ACCESS_KEY_ID"]
 SECRET_KEY = os.environ["CF_R2_SECRET_ACCESS_KEY"]
 
-PREFIX = "it_contracts/"
-
 
 def _client():
     return boto3.client(
@@ -31,13 +28,13 @@ def _client():
     )
 
 
-def download_state(local_dir: Path) -> int:
+def download_state(local_dir: Path, prefix: str) -> int:
     """Download all checkpoint files from R2 to local_dir. Returns count."""
     local_dir.mkdir(parents=True, exist_ok=True)
     s3 = _client()
     paginator = s3.get_paginator("list_objects_v2")
     count = 0
-    for page in paginator.paginate(Bucket=BUCKET, Prefix=PREFIX):
+    for page in paginator.paginate(Bucket=BUCKET, Prefix=prefix):
         for obj in page.get("Contents", []):
             key = obj["Key"]
             local_path = local_dir / Path(key).name
@@ -49,13 +46,13 @@ def download_state(local_dir: Path) -> int:
     return count
 
 
-def upload_state(local_dir: Path) -> int:
+def upload_state(local_dir: Path, prefix: str) -> int:
     """Upload all checkpoint files from local_dir to R2. Returns count."""
     s3 = _client()
     count = 0
     for f in sorted(local_dir.iterdir()):
-        if f.suffix in {".csv", ".not_found"}:
-            key = PREFIX + f.name
+        if f.suffix in {".csv", ".not_found", ".cursor"}:
+            key = prefix + f.name
             s3.upload_file(str(f), BUCKET, key)
             count += 1
     print(f"Uploaded {count} files to R2")
@@ -67,9 +64,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("action", choices=["upload", "download"])
     parser.add_argument("--dir", default="data/bulk_checkpoints")
+    parser.add_argument("--prefix", default="it_contracts/")
     args = parser.parse_args()
     d = Path(args.dir)
     if args.action == "download":
-        download_state(d)
+        download_state(d, args.prefix)
     else:
-        upload_state(d)
+        upload_state(d, args.prefix)
