@@ -8,7 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="shared/shared.css" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
   <style>
     .site-container { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
 
@@ -102,75 +105,84 @@
     .tab-panel { display: none; }
     .tab-panel[aria-hidden="false"] { display: block; }
 
-    /* ── RFP bundle browser ────────────────────────────────────────────── */
-    .rfp-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem 0.75rem;
-      align-items: center;
-      padding: 0.75rem 1rem;
-      background: var(--color-surface);
-      border-radius: 4px;
-      margin-bottom: 1rem;
-      font-size: 0.875rem;
-    }
-    .rfp-filters input[type="text"] {
-      flex: 1 1 220px;
-      min-width: 180px;
+    /* ── RFP DataTable theme overrides ────────────────────────────────── */
+    .dataTables_wrapper { font-family: var(--font-body); font-size: 0.875rem; color: var(--color-text); }
+    .dataTables_filter { margin-bottom: 0.5rem; }
+    .dataTables_filter label { font-weight: 600; font-family: var(--font-heading); font-size: 0.875rem; }
+    .dataTables_filter input {
+      border: 1px solid var(--color-border);
+      border-radius: 3px;
       padding: 0.375rem 0.625rem;
-      border: 1px solid var(--color-border);
-      border-radius: 3px;
-      font: inherit;
-    }
-    .rfp-filters select {
-      padding: 0.375rem 0.5rem;
-      border: 1px solid var(--color-border);
-      border-radius: 3px;
       font: inherit;
       background: var(--color-bg);
+      color: var(--color-text);
+      margin-left: 0.5rem;
+      min-width: 220px;
     }
-    .rfp-filters .label-chip-filter {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.25rem 0.5rem;
+    .dataTables_length select {
       border: 1px solid var(--color-border);
-      border-radius: 999px;
-      cursor: pointer;
-      user-select: none;
-      font-size: 0.78rem;
+      border-radius: 3px;
+      padding: 0.25rem 0.375rem;
+      font: inherit;
+      background: var(--color-bg);
+      color: var(--color-text);
+      margin: 0 0.25rem;
     }
-    .rfp-filters .label-chip-filter input { margin: 0; }
-    .rfp-count { color: var(--color-text-muted); font-size: 0.8125rem; margin-left: auto; }
-
-    .rfp-list { display: flex; flex-direction: column; gap: 0.5rem; }
-    .rfp-row {
-      padding: 0.75rem 1rem;
+    table.dataTable { width: 100% !important; border-collapse: collapse; font-size: 0.875rem; }
+    table.dataTable thead th {
       background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.08s;
-    }
-    .rfp-row:hover { background: var(--color-border); }
-    .rfp-row .rfp-row-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      align-items: baseline;
-    }
-    .rfp-row .rfp-title {
       font-family: var(--font-heading);
       font-weight: 600;
-      font-size: 0.9375rem;
+      font-size: 0.8125rem;
+      padding: 0.625rem 0.75rem;
+      border-bottom: 2px solid var(--color-border) !important;
       color: var(--color-text);
+      white-space: nowrap;
     }
-    .rfp-row .rfp-meta {
-      font-size: 0.78rem;
-      color: var(--color-text-muted);
-      margin-top: 0.25rem;
+    table.dataTable thead th.sorting:after,
+    table.dataTable thead th.sorting_asc:after,
+    table.dataTable thead th.sorting_desc:after { opacity: 0.5; }
+    table.dataTable tbody td {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--color-border) !important;
+      vertical-align: top;
     }
-    .rfp-row .rfp-chips { margin-top: 0.375rem; display: flex; gap: 0.25rem; flex-wrap: wrap; }
+    table.dataTable tbody tr.odd td  { background: var(--color-bg); }
+    table.dataTable tbody tr.even td { background: var(--color-surface); }
+    table.dataTable tbody tr:hover td { background: var(--color-border); cursor: pointer; }
+    .dataTables_info { font-size: 0.8125rem; color: var(--color-text-muted); padding-top: 0.5rem; }
+    .dataTables_paginate { padding-top: 0.5rem; }
+    .dataTables_paginate .paginate_button {
+      padding: 0.25rem 0.625rem !important;
+      border-radius: 3px !important;
+      border: 1px solid var(--color-border) !important;
+      cursor: pointer;
+      color: var(--color-text) !important;
+      margin: 0 1px;
+      font-size: 0.8125rem;
+    }
+    .dataTables_paginate .paginate_button.current,
+    .dataTables_paginate .paginate_button.current:hover {
+      background: var(--color-accent) !important;
+      color: white !important;
+      border-color: var(--color-accent) !important;
+    }
+    .dataTables_paginate .paginate_button:hover:not(.current) {
+      background: var(--color-surface) !important;
+      color: var(--color-text) !important;
+    }
+    .dataTables_paginate .paginate_button.disabled,
+    .dataTables_paginate .paginate_button.disabled:hover {
+      color: var(--color-text-muted) !important;
+      cursor: default;
+      background: none !important;
+    }
+    .rfp-dt-top { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem; }
+    .rfp-dt-bottom { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+    td.rfp-title-cell { font-family: var(--font-heading); font-weight: 600; max-width: 320px; }
+    td.rfp-title-cell a { color: var(--color-accent); text-decoration: none; }
+    td.rfp-title-cell a:hover { text-decoration: underline; }
+
     .chip {
       display: inline-block;
       padding: 0.125rem 0.5rem;
@@ -186,43 +198,6 @@
     .chip.chip-agile     { background: #e76f51; }
     .chip.chip-rtm       { background: #6a0572; }
 
-    .rfp-detail {
-      margin-top: 0.75rem;
-      padding: 1rem 1.25rem;
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      font-size: 0.875rem;
-    }
-    .rfp-detail h4 {
-      font-family: var(--font-heading);
-      font-size: 0.9375rem;
-      font-weight: 600;
-      margin: 0.75rem 0 0.25rem;
-      color: var(--color-text);
-    }
-    .rfp-detail h4:first-child { margin-top: 0; }
-    .snippet {
-      margin-bottom: 0.375rem;
-      padding: 0.375rem 0.5rem;
-      background: var(--color-surface);
-      border-left: 2px solid var(--color-accent);
-      font-size: 0.8125rem;
-      line-height: 1.55;
-    }
-    .snippet .snippet-src {
-      font-family: var(--font-mono, monospace);
-      font-size: 0.7rem;
-      color: var(--color-text-muted);
-      margin-bottom: 0.125rem;
-    }
-    .snippet mark {
-      background: #fff3b0;
-      color: #5a3e00;
-      padding: 0 0.125rem;
-      border-radius: 2px;
-      font-weight: 600;
-    }
 
     /* ── RFP text modal ────────────────────────────────────────────────── */
     .rfp-modal-overlay {
@@ -321,12 +296,27 @@
       gap: 0.5rem 0.75rem;
       align-items: baseline;
       margin-bottom: 0.875rem;
+      cursor: pointer;
+      border-radius: 4px;
+      padding: 0.5rem 0.625rem;
+      margin-left: -0.625rem;
+      margin-right: -0.625rem;
+      transition: background 0.1s;
     }
+    .signal-row:hover { background: var(--color-surface); }
     .signal-row .signal-label {
       font-family: var(--font-heading);
       font-size: 0.9375rem;
       font-weight: 600;
       color: var(--color-text);
+    }
+    .signal-row .signal-hint {
+      font-size: 0.7rem;
+      color: var(--color-accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      grid-column: 1 / -1;
     }
     .signal-row .signal-pct {
       font-family: var(--font-mono, monospace);
@@ -403,7 +393,8 @@
 
   <nav class="tab-nav" role="tablist">
     <button role="tab" id="tab-contracts" aria-controls="panel-contracts" aria-selected="true">Contracts</button>
-    <button role="tab" id="tab-rfp"       aria-controls="panel-rfp"       aria-selected="false">RFP text</button>
+    <button role="tab" id="tab-rfp"       aria-controls="panel-rfp"       aria-selected="false">RFP signals</button>
+    <button role="tab" id="tab-table"     aria-controls="panel-table"     aria-selected="false">RFP browser</button>
   </nav>
 
   <section id="panel-contracts" class="tab-panel" role="tabpanel" aria-labelledby="tab-contracts" aria-hidden="false">
@@ -852,28 +843,38 @@
       </div>
     </div>
 
-    <h2 class="section-header">Browse RFPs</h2>
+  </section><!-- /panel-rfp -->
+
+  <section id="panel-table" class="tab-panel" role="tabpanel" aria-labelledby="tab-table" aria-hidden="true">
+
+    <h2 class="section-header" style="margin-top:1.5rem;">Browse &amp; search RFPs</h2>
 
     <p class="narrative">
-      Each row is one SAM.gov notice. Click to expand and see the snippets of
-      extracted text where the labels fired, with the matched words highlighted.
-      For the full document, follow the SAM.gov link.
+      Each row is one SAM.gov notice. The search box scans full extracted attachment
+      text in addition to title, department, and NAICS — type anything to find it.
+      Click any row to see matches highlighted in context.
     </p>
 
-    <div class="rfp-filters">
-      <input type="text" id="rfpSearch" placeholder="Search title, dept, NAICS…" />
-      <select id="rfpDept"><option value="">All departments</option></select>
-      <select id="rfpType"><option value="">All notice types</option></select>
-      <label class="label-chip-filter"><input type="checkbox" id="rfpLabelShall">&nbsp;shall</label>
-      <label class="label-chip-filter"><input type="checkbox" id="rfpLabelUser">&nbsp;user</label>
-      <label class="label-chip-filter"><input type="checkbox" id="rfpLabelAgile">&nbsp;agile</label>
-      <label class="label-chip-filter"><input type="checkbox" id="rfpLabelRtm">&nbsp;RTM</label>
-      <span class="rfp-count" id="rfpCount"></span>
+    <div style="overflow-x:auto;">
+      <table id="rfpTable" class="display" style="width:100%">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Department</th>
+            <th>NAICS</th>
+            <th>Set-aside</th>
+            <th>Labels</th>
+            <th>SAM.gov</th>
+            <th>Att.</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
 
-    <div class="rfp-list" id="rfpList"></div>
-
-  </section><!-- /panel-rfp -->
+  </section><!-- /panel-table -->
 
   <!-- RFP text modal -->
   <div id="rfpModal" class="rfp-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="rfpModalTitle">
@@ -940,17 +941,21 @@ async function loadAll() {
   if (!DATA.summary) return;
   render();
   setupTabs();
-  setupRfpBrowser();
 }
 
 function setupTabs() {
   const buttons = document.querySelectorAll('.tab-nav button');
+  let tableReady = false;
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
       buttons.forEach(b => b.setAttribute('aria-selected', b === btn ? 'true' : 'false'));
       document.querySelectorAll('.tab-panel').forEach(p => {
         p.setAttribute('aria-hidden', p.id === btn.getAttribute('aria-controls') ? 'false' : 'true');
       });
+      if (btn.id === 'tab-table' && !tableReady && DATA.rfp_bundles) {
+        tableReady = true;
+        setupRfpBrowser();
+      }
     });
   });
 }
@@ -983,13 +988,18 @@ function renderRfpSignals() {
 
   const bars = document.getElementById('rfpSignalsBars');
   bars.innerHTML = s.labels.map(lb => `
-    <div class="signal-row">
+    <div class="signal-row" data-label-key="${escapeHtml(lb.key)}" title="Click to browse matching RFPs">
       <div class="signal-label">${escapeHtml(lb.label)}</div>
       <div class="signal-pct">${lb.percent}%</div>
-      <div class="signal-desc">${escapeHtml(lb.description)} &mdash; ${lb.count} of ${s.total_bundles} bundles</div>
+      <div class="signal-desc">${escapeHtml(lb.description)} &mdash; ${lb.count.toLocaleString()} of ${s.total_bundles.toLocaleString()} bundles</div>
       <div class="signal-track"><div class="signal-fill" style="width:${lb.percent}%"></div></div>
+      <div class="signal-hint">↗ click to browse these ${lb.count.toLocaleString()} RFPs</div>
     </div>
   `).join('');
+
+  bars.querySelectorAll('.signal-row').forEach(row => {
+    row.addEventListener('click', () => drilldownRfpLabel(row.dataset.labelKey));
+  });
 
   const topLabel = s.labels.find(l => l.examples && l.examples.length);
   const ex = document.getElementById('rfpSignalsExamples');
@@ -1117,24 +1127,92 @@ const RFP_LABEL_META = {
   mentions_rtm:    { short: 'RTM',    cls: 'chip-rtm',    h4: "RTM mention" },
 };
 
+let rfpDT = null;
+
+function drilldownRfpLabel(labelKey) {
+  const chipShort = (RFP_LABEL_META[labelKey] || {}).short || labelKey;
+  document.getElementById('tab-table').click();
+  setTimeout(() => {
+    if (rfpDT) {
+      rfpDT.search('').columns().search('');
+      rfpDT.column(6).search(chipShort).draw();
+    }
+  }, 60);
+}
+
 function setupRfpBrowser() {
   const bundles = DATA.rfp_bundles;
   if (!bundles || !bundles.length) return;
 
-  const depts = [...new Set(bundles.map(b => b.department).filter(Boolean))].sort();
-  const types = [...new Set(bundles.map(b => b.type).filter(Boolean))].sort();
-  const deptSel = document.getElementById('rfpDept');
-  const typeSel = document.getElementById('rfpType');
-  depts.forEach(d => deptSel.appendChild(new Option(d, d)));
-  types.forEach(t => typeSel.appendChild(new Option(t, t)));
+  function makeChips(b) {
+    return Object.keys(b.label_hits || {}).map(lb => {
+      const m = RFP_LABEL_META[lb] || { short: lb, cls: '' };
+      const n = b.label_hits[lb];
+      const suffix = lb === 'shall_count' ? ` ${n}` : '';
+      return `<span class="chip ${m.cls}">${m.short}${suffix}</span>`;
+    }).join(' ');
+  }
 
-  const inputs = ['rfpSearch','rfpDept','rfpType','rfpLabelShall','rfpLabelUser','rfpLabelAgile','rfpLabelRtm'];
-  inputs.forEach(id => {
-    const el = document.getElementById(id);
-    el.addEventListener('input', renderRfpList);
-    el.addEventListener('change', renderRfpList);
+  function makeSamLink(b) {
+    return b.ui_link
+      ? `<a href="${b.ui_link}" target="_blank" style="color:var(--color-accent);white-space:nowrap;font-size:0.8rem;" onclick="event.stopPropagation()">SAM ↗</a>`
+      : '—';
+  }
+
+  const tableData = bundles.map((b, i) => {
+    const saRaw = typeof b.set_aside === 'string' ? b.set_aside
+      : (b.set_aside && b.set_aside.description) ? b.set_aside.description : '';
+    return [
+      escapeHtml(b.title || '(untitled)'),  // 0
+      b.posted_date || '',                   // 1
+      escapeHtml(b.type || ''),              // 2
+      escapeHtml(b.department || ''),        // 3
+      escapeHtml(b.naics || '—'),            // 4
+      escapeHtml(saRaw || '—'),              // 5  set-aside
+      makeChips(b),                          // 6  labels (orderable=false)
+      makeSamLink(b),                        // 7  SAM link (orderable=false)
+      b.attachment_count || 0,               // 8  att count
+      b.search_text || '',                   // 9  hidden full text
+      i,                                     // 10 hidden bundle index
+    ];
   });
-  renderRfpList();
+
+  rfpDT = $('#rfpTable').DataTable({
+    data: tableData,
+    columns: [
+      { title: 'Title',      className: 'rfp-title-cell' },
+      { title: 'Date' },
+      { title: 'Type' },
+      { title: 'Department' },
+      { title: 'NAICS' },
+      { title: 'Set-aside',  orderable: false },
+      { title: 'Labels',     orderable: false },
+      { title: 'SAM.gov',    orderable: false, searchable: false },
+      { title: 'Att.',       className: 'num' },
+      { title: '_text',      visible: false, searchable: true },
+      { title: '_idx',       visible: false, searchable: false },
+    ],
+    order: [[1, 'desc']],
+    pageLength: 25,
+    lengthMenu: [25, 50, 100],
+    dom: "<'rfp-dt-top'lf>rt<'rfp-dt-bottom'ip>",
+    language: {
+      search: '',
+      searchPlaceholder: 'Search title, dept, set-aside, or full RFP text…',
+      lengthMenu: 'Show _MENU_ per page',
+      info: '_START_–_END_ of _TOTAL_ RFPs',
+      infoFiltered: '(filtered from _MAX_)',
+      paginate: { previous: '‹', next: '›' },
+    },
+  });
+
+  $('#rfpTable tbody').on('click', 'tr', function() {
+    const row = rfpDT.row(this);
+    const data = row.data();
+    if (!data) return;
+    const bundleIdx = data[10];
+    openRfpModal(bundles[bundleIdx], rfpDT.search());
+  });
 
   document.getElementById('rfpModalClose').addEventListener('click', closeRfpModal);
   document.getElementById('rfpModal').addEventListener('click', function(e) {
@@ -1145,67 +1223,8 @@ function setupRfpBrowser() {
   });
 }
 
-function renderRfpList() {
-  const bundles = DATA.rfp_bundles || [];
-  const q      = document.getElementById('rfpSearch').value.trim().toLowerCase();
-  const dept   = document.getElementById('rfpDept').value;
-  const type   = document.getElementById('rfpType').value;
-  const filterLabels = [
-    document.getElementById('rfpLabelShall').checked ? 'shall_count' : null,
-    document.getElementById('rfpLabelUser').checked  ? 'has_user_vocab' : null,
-    document.getElementById('rfpLabelAgile').checked ? 'has_agile_vocab' : null,
-    document.getElementById('rfpLabelRtm').checked   ? 'mentions_rtm' : null,
-  ].filter(Boolean);
-
-  const matches = bundles.filter(b => {
-    if (dept && b.department !== dept) return false;
-    if (type && b.type !== type) return false;
-    if (filterLabels.length && !filterLabels.every(lb => b.label_hits && b.label_hits[lb])) return false;
-    if (q) {
-      const hay = `${b.title||''}  ${b.department||''}  ${b.naics||''}  ${b.notice_id||''}  ${b.search_text||''}`.toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
-    return true;
-  });
-
-  document.getElementById('rfpCount').textContent =
-    `${matches.length.toLocaleString()} of ${bundles.length.toLocaleString()} bundles`;
-
-  const list = document.getElementById('rfpList');
-  const capped = matches.slice(0, 100);
-  list.innerHTML = capped.map((b, i) => {
-    const chips = Object.keys(b.label_hits || {}).map(lb => {
-      const m = RFP_LABEL_META[lb] || { short: lb, cls: '' };
-      const n = b.label_hits[lb];
-      const suffix = (lb === 'shall_count') ? ` ${n}` : '';
-      return `<span class="chip ${m.cls}">${m.short}${suffix}</span>`;
-    }).join('');
-    return `
-      <div class="rfp-row" data-idx="${i}">
-        <div class="rfp-row-top">
-          <div class="rfp-title">${escapeHtml(b.title || '(untitled)')}</div>
-          <div style="font-size:0.78rem; color:var(--color-text-muted); white-space:nowrap;">${escapeHtml(b.posted_date || '')}</div>
-        </div>
-        <div class="rfp-meta">
-          ${escapeHtml(b.type || '')} &middot;
-          ${escapeHtml(b.department || '')} &middot;
-          NAICS ${escapeHtml(b.naics || '—')} &middot;
-          ${b.attachment_count} attachment${b.attachment_count === 1 ? '' : 's'}
-        </div>
-        <div class="rfp-chips">${chips}</div>
-      </div>`;
-  }).join('') + (matches.length > 100
-    ? `<div class="chart-note" style="text-align:center;padding:0.75rem;">Showing first 100 of ${matches.length.toLocaleString()}. Refine filters to narrow.</div>`
-    : '');
-
-  list.querySelectorAll('.rfp-row').forEach(row => {
-    row.style.cursor = 'pointer';
-    row.addEventListener('click', () => openRfpModal(capped[Number(row.dataset.idx)]));
-  });
-}
-
-function openRfpModal(bundle) {
-  const q = document.getElementById('rfpSearch').value.trim().toLowerCase();
+function openRfpModal(bundle, query) {
+  const q = (query || '').trim().toLowerCase();
   const saRaw = typeof bundle.set_aside === 'string' ? bundle.set_aside
     : (bundle.set_aside && bundle.set_aside.description) ? bundle.set_aside.description : '';
 
