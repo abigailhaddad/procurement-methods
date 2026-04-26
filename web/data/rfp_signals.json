@@ -1,47 +1,303 @@
 {
-  "generated_at": "2026-04-25T18:57Z",
-  "total_bundles": 0,
-  "with_attachments": 0,
+  "generated_at": "2026-04-26T01:09Z",
+  "total_bundles": 166,
+  "with_attachments": 126,
   "date_range": {
-    "from": null,
-    "to": null
+    "from": "2025-11-07",
+    "to": "2026-04-22"
   },
   "labels": [
     {
       "key": "shall_count",
       "label": "Contains 'shall' clauses",
       "description": "FAR-style requirement language ('the contractor shall...')",
-      "count": 0,
-      "percent": 0,
-      "examples": []
+      "count": 104,
+      "percent": 62.7,
+      "examples": [
+        {
+          "title": "Foundation Sustainment Support, Software and Integration (FS3i)",
+          "type": "Presolicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-06",
+          "ui_link": "https://sam.gov/workspace/contract/opp/000452db627e430b924fe16572912f7f/view"
+        },
+        {
+          "title": "Request for Information - USACE-HPCMP HITS-UIII",
+          "type": "Sources Sought",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-02-17",
+          "ui_link": "https://sam.gov/workspace/contract/opp/01a9caf034ad4ea68603448fd619b012/view"
+        },
+        {
+          "title": "AMC/A6 Information Technology Needs Commercial Solutions Opening (CSO) - Amendment 02",
+          "type": "Combined Synopsis/Solicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-15",
+          "ui_link": "https://sam.gov/workspace/contract/opp/038a2ee6acfe49aeba67173ccc9d963e/view"
+        }
+      ]
     },
     {
       "key": "has_user_vocab",
       "label": "Mentions users / stakeholders",
       "description": "end users, stakeholders, user research, UX",
-      "count": 0,
-      "percent": 0,
-      "examples": []
+      "count": 75,
+      "percent": 45.2,
+      "examples": [
+        {
+          "title": "Foundation Sustainment Support, Software and Integration (FS3i)",
+          "type": "Presolicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-06",
+          "ui_link": "https://sam.gov/workspace/contract/opp/000452db627e430b924fe16572912f7f/view"
+        },
+        {
+          "title": "Request for Information - USACE-HPCMP HITS-UIII",
+          "type": "Sources Sought",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-02-17",
+          "ui_link": "https://sam.gov/workspace/contract/opp/01a9caf034ad4ea68603448fd619b012/view"
+        },
+        {
+          "title": "Post Quantum Cryptography Support for FAA Information Technology and National Air Space Systems",
+          "type": "Sources Sought",
+          "department": "TRANSPORTATION, DEPARTMENT OF",
+          "posted_date": "2026-03-24",
+          "ui_link": "https://sam.gov/workspace/contract/opp/03a6704e102945708807878ac8dae17e/view"
+        }
+      ]
     },
     {
       "key": "has_agile_vocab",
       "label": "Uses agile vocabulary",
       "description": "sprints, scrum, kanban, backlog, user stories",
-      "count": 0,
-      "percent": 0,
-      "examples": []
+      "count": 41,
+      "percent": 24.7,
+      "examples": [
+        {
+          "title": "Foundation Sustainment Support, Software and Integration (FS3i)",
+          "type": "Presolicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-06",
+          "ui_link": "https://sam.gov/workspace/contract/opp/000452db627e430b924fe16572912f7f/view"
+        },
+        {
+          "title": "Request for Information - USACE-HPCMP HITS-UIII",
+          "type": "Sources Sought",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-02-17",
+          "ui_link": "https://sam.gov/workspace/contract/opp/01a9caf034ad4ea68603448fd619b012/view"
+        },
+        {
+          "title": "Post Quantum Cryptography Support for FAA Information Technology and National Air Space Systems",
+          "type": "Sources Sought",
+          "department": "TRANSPORTATION, DEPARTMENT OF",
+          "posted_date": "2026-03-24",
+          "ui_link": "https://sam.gov/workspace/contract/opp/03a6704e102945708807878ac8dae17e/view"
+        }
+      ]
     },
     {
       "key": "mentions_rtm",
       "label": "Mentions an RTM",
       "description": "requirements traceability matrix",
-      "count": 0,
-      "percent": 0,
-      "examples": []
+      "count": 9,
+      "percent": 5.4,
+      "examples": [
+        {
+          "title": "Foundation Sustainment Support, Software and Integration (FS3i)",
+          "type": "Presolicitation",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-06",
+          "ui_link": "https://sam.gov/workspace/contract/opp/000452db627e430b924fe16572912f7f/view"
+        },
+        {
+          "title": "DA01--Revenue Operations Workflow, Payer Compliance and Technical  Process Optimization - New Requirement",
+          "type": "Sources Sought",
+          "department": "VETERANS AFFAIRS, DEPARTMENT OF",
+          "posted_date": "2026-04-07",
+          "ui_link": "https://sam.gov/workspace/contract/opp/130f49426ec2434aaa503e72b8a8a108/view"
+        },
+        {
+          "title": "United States Space Force (USSF) Human Resources Information Technology (HRIT) Guardian Automation Layer (GAL) Request for Information",
+          "type": "Special Notice",
+          "department": "DEPT OF DEFENSE",
+          "posted_date": "2026-04-08",
+          "ui_link": "https://sam.gov/workspace/contract/opp/26cefad7bad1498bb65cabd548fcbdf7/view"
+        }
+      ]
     }
   ],
-  "top_departments": [],
-  "top_notice_types": [],
-  "by_dept": [],
-  "by_month": []
+  "top_departments": [
+    {
+      "name": "DEPT OF DEFENSE",
+      "count": 81
+    },
+    {
+      "name": "VETERANS AFFAIRS, DEPARTMENT OF",
+      "count": 36
+    },
+    {
+      "name": "INTERIOR, DEPARTMENT OF THE",
+      "count": 8
+    },
+    {
+      "name": "HOMELAND SECURITY, DEPARTMENT OF",
+      "count": 5
+    },
+    {
+      "name": "HEALTH AND HUMAN SERVICES, DEPARTMENT OF",
+      "count": 4
+    },
+    {
+      "name": "COMMERCE, DEPARTMENT OF",
+      "count": 4
+    },
+    {
+      "name": "TRANSPORTATION, DEPARTMENT OF",
+      "count": 3
+    },
+    {
+      "name": "GENERAL SERVICES ADMINISTRATION",
+      "count": 3
+    },
+    {
+      "name": "TREASURY, DEPARTMENT OF THE",
+      "count": 3
+    },
+    {
+      "name": "ENERGY, DEPARTMENT OF",
+      "count": 3
+    }
+  ],
+  "top_notice_types": [
+    {
+      "name": "Sources Sought",
+      "count": 63
+    },
+    {
+      "name": "Special Notice",
+      "count": 35
+    },
+    {
+      "name": "Solicitation",
+      "count": 29
+    },
+    {
+      "name": "Combined Synopsis/Solicitation",
+      "count": 22
+    },
+    {
+      "name": "Presolicitation",
+      "count": 11
+    },
+    {
+      "name": "Justification",
+      "count": 6
+    }
+  ],
+  "by_dept": [
+    {
+      "dept": "DEPT OF DEFENSE",
+      "total": 81,
+      "pcts": {
+        "shall_count": 54.3,
+        "has_user_vocab": 32.1,
+        "has_agile_vocab": 19.8,
+        "mentions_rtm": 6.2
+      }
+    },
+    {
+      "dept": "VETERANS AFFAIRS, DEPARTMENT OF",
+      "total": 36,
+      "pcts": {
+        "shall_count": 80.6,
+        "has_user_vocab": 61.1,
+        "has_agile_vocab": 38.9,
+        "mentions_rtm": 8.3
+      }
+    },
+    {
+      "dept": "INTERIOR, DEPARTMENT OF THE",
+      "total": 8,
+      "pcts": {
+        "shall_count": 50.0,
+        "has_user_vocab": 50.0,
+        "has_agile_vocab": 25.0,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
+      "dept": "HOMELAND SECURITY, DEPARTMENT OF",
+      "total": 5,
+      "pcts": {
+        "shall_count": 40.0,
+        "has_user_vocab": 60.0,
+        "has_agile_vocab": 0.0,
+        "mentions_rtm": 0.0
+      }
+    }
+  ],
+  "by_month": [
+    {
+      "month": "2025-11",
+      "total": 2,
+      "pcts": {
+        "shall_count": 50.0,
+        "has_user_vocab": 50.0,
+        "has_agile_vocab": 0.0,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
+      "month": "2025-12",
+      "total": 3,
+      "pcts": {
+        "shall_count": 33.3,
+        "has_user_vocab": 33.3,
+        "has_agile_vocab": 0.0,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
+      "month": "2026-01",
+      "total": 9,
+      "pcts": {
+        "shall_count": 55.6,
+        "has_user_vocab": 22.2,
+        "has_agile_vocab": 11.1,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
+      "month": "2026-02",
+      "total": 12,
+      "pcts": {
+        "shall_count": 50.0,
+        "has_user_vocab": 16.7,
+        "has_agile_vocab": 16.7,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
+      "month": "2026-03",
+      "total": 35,
+      "pcts": {
+        "shall_count": 68.6,
+        "has_user_vocab": 60.0,
+        "has_agile_vocab": 37.1,
+        "mentions_rtm": 0.0
+      }
+    },
+    {
+      "month": "2026-04",
+      "total": 105,
+      "pcts": {
+        "shall_count": 63.8,
+        "has_user_vocab": 45.7,
+        "has_agile_vocab": 23.8,
+        "mentions_rtm": 8.6
+      }
+    }
+  ]
 }
