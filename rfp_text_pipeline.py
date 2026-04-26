@@ -75,7 +75,8 @@ BUNDLE_DIR     = DATA_DIR / "bundles"
 PROCESSED_JSON   = STATE_DIR / "processed.json"
 LAST_DATE_JSON   = STATE_DIR / "last_fetched_date.json"
 QUOTA_JSON       = STATE_DIR / "quota.json"
-SCAN_CURSOR_JSON = STATE_DIR / "scan_cursor.json"  # pinned window + offset for multi-day drains
+SCAN_CURSOR_JSON    = STATE_DIR / "scan_cursor.json"     # pinned window + offset for multi-day drains
+DONE_CHUNKS_JSON    = STATE_DIR / "completed_chunks.json" # (ncode, from, to) chunks fully drained
 
 OPP_SEARCH_API = "https://api.sam.gov/prod/opportunities/v2/search"
 
@@ -234,12 +235,30 @@ def iter_opps_in_window(
     max_calls: int,
     start_offset: int = 0,
 ) -> Iterator[tuple[dict, int]]:
-    """Yield each opp + page number across all NAICS codes and year-sized chunks."""
+    """Yield each opp + page number across all NAICS codes and year-sized chunks.
+
+    Completed (ncode, chunk_from, chunk_to) tuples are recorded in
+    completed_chunks.json so re-runs with the same window skip them.
+    """
+    done_chunks: set[tuple] = set()
+    if DONE_CHUNKS_JSON.exists():
+        for entry in json.loads(DONE_CHUNKS_JSON.read_text()):
+            done_chunks.add(tuple(entry))
+
+    def _save_done(ncode: str, cf: date, ct: date) -> None:
+        done_chunks.add((ncode, str(cf), str(ct)))
+        DONE_CHUNKS_JSON.parent.mkdir(parents=True, exist_ok=True)
+        DONE_CHUNKS_JSON.write_text(json.dumps(sorted(done_chunks)))
+
     calls = 0
     page = 0
     chunks = _year_chunks(posted_from, posted_to)
     for ncode in NAICS_CODES:
         for chunk_from, chunk_to in chunks:
+            chunk_key = (ncode, str(chunk_from), str(chunk_to))
+            if chunk_key in done_chunks:
+                print(f"  NAICS {ncode} {chunk_from}→{chunk_to}: already done, skipping")
+                continue
             offset = start_offset if page == 0 else 0
             naics_total = None
             while calls < max_calls:
@@ -250,10 +269,12 @@ def iter_opps_in_window(
                     naics_total = total_records
                     print(f"  NAICS {ncode} {chunk_from}→{chunk_to}: {naics_total:,} opps")
                 if not opps:
+                    _save_done(ncode, chunk_from, chunk_to)
                     break
                 for opp in opps:
                     yield opp, page
                 if len(opps) < 1000:
+                    _save_done(ncode, chunk_from, chunk_to)
                     break
                 offset += 1000
                 time.sleep(1.0)
