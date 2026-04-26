@@ -12,7 +12,7 @@ Flow:
   3. Paginate through api.sam.gov/prod/opportunities/v2/search with
      postedFrom/postedTo/limit=1000/offset= until the page is short.
   4. For each opp:
-       - Skip if NAICS prefix doesn't match (default: 541511, 541512).
+       - Skip if NAICS prefix doesn't match (filtered at API level + verified locally).
        - Skip if notice type isn't in the RFP-adjacent set.
        - Skip if noticeId already in processed.
        - Download each resourceLink (free S3), extract text via pypdf /
@@ -196,6 +196,7 @@ def search_page(
             "postedTo":   _mmddyyyy(posted_to),
             "limit":      limit,
             "offset":     offset,
+            "naicsCode":  "541511,541512",
         },
         timeout=120,
     )
