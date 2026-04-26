@@ -180,14 +180,18 @@ def _mmddyyyy(d: date) -> str:
     return d.strftime("%m/%d/%Y")
 
 
+NAICS_CODES = ["541511", "541512"]
+
+
 def search_page(
     session: requests.Session,
     posted_from: date,
     posted_to: date,
     offset: int,
+    ncode: str,
     limit: int = 1000,
 ) -> tuple[list[dict], int]:
-    """One bulk search call. Returns (opportunitiesData, totalRecords)."""
+    """One bulk search call filtered to a single NAICS code. Returns (opportunitiesData, totalRecords)."""
     r = session.get(
         OPP_SEARCH_API,
         params={
@@ -196,7 +200,7 @@ def search_page(
             "postedTo":   _mmddyyyy(posted_to),
             "limit":      limit,
             "offset":     offset,
-            "naicsCode":  "541511,541512",
+            "ncode":      ncode,
         },
         timeout=120,
     )
@@ -215,24 +219,27 @@ def iter_opps_in_window(
     max_calls: int,
     start_offset: int = 0,
 ) -> Iterator[tuple[dict, int]]:
-    """Yield each opp + running page number. Stops at max_calls or when drained."""
-    offset = start_offset
+    """Yield each opp + running page number across all NAICS codes. Stops at max_calls or when drained."""
+    calls = 0
     page = 0
-    total = None
-    while page < max_calls:
-        page += 1
-        opps, total_records = search_page(session, posted_from, posted_to, offset)
-        if total is None:
-            total = total_records
-            print(f"  window has {total:,} opps total; up to {max_calls} page(s) * 1000 this run")
-        if not opps:
-            break
-        for opp in opps:
-            yield opp, page
-        if len(opps) < 1000:
-            break
-        offset += 1000
-        time.sleep(1.0)  # light throttle between pages
+    for ncode in NAICS_CODES:
+        offset = start_offset if page == 0 else 0
+        naics_total = None
+        while calls < max_calls:
+            calls += 1
+            page += 1
+            opps, total_records = search_page(session, posted_from, posted_to, offset, ncode)
+            if naics_total is None:
+                naics_total = total_records
+                print(f"  NAICS {ncode}: {naics_total:,} opps in window")
+            if not opps:
+                break
+            for opp in opps:
+                yield opp, page
+            if len(opps) < 1000:
+                break
+            offset += 1000
+            time.sleep(1.0)
 
 
 # ---------------------------------------------------------------------------
