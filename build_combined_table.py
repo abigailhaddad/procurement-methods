@@ -30,33 +30,36 @@ def fmt_dollars(v):
 
 # ── Load contracts keyed by solicitation_id ───────────────────────────────────
 # Source 1: pre-fetched contracts_raw.csv (NAICS 541511/512 only)
-print("Loading contracts from contracts_raw.csv…")
 contracts_by_sol = defaultdict(list)
-with open("data/contracts_raw.csv", newline="", encoding="utf-8") as f:
-    for row in csv.DictReader(f):
-        sid = (row.get("solicitation_id") or "").strip()
-        if not sid:
-            continue
-        ob_raw = row.get("obligated", "")
-        try:
-            ob_float = float(ob_raw)
-        except (TypeError, ValueError):
-            ob_float = 0.0
-        contracts_by_sol[sid].append({
-            "key":    row.get("key", ""),
-            "vendor": row.get("recipient_name", ""),
-            "em":     row.get("eval_method", ""),
-            "tc":     row.get("tradeoff_code", "") or "",
-            "ob":     fmt_dollars(ob_raw),
-            "ob_raw": ob_float,
-            "ct":     CT_LABELS.get(row.get("contract_type", ""), row.get("contract_type", "")),
-            "sa":     row.get("set_aside", ""),
-            "fy":     row.get("fiscal_year", ""),
-            "date":   (row.get("award_date") or "")[:10],
-        })
-
-total_with_sol = sum(len(v) for v in contracts_by_sol.values())
-print(f"  {total_with_sol:,} contracts have a solicitation_id ({len(contracts_by_sol):,} unique)")
+_contracts_csv = Path("data/contracts_raw.csv")
+if not _contracts_csv.exists():
+    print("contracts_raw.csv not found — skipping contract join (run build_contracts.py first)")
+else:
+    print("Loading contracts from contracts_raw.csv…")
+    with open(_contracts_csv, newline="", encoding="utf-8") as f:
+        for row in csv.DictReader(f):
+            sid = (row.get("solicitation_id") or "").strip()
+            if not sid:
+                continue
+            ob_raw = row.get("obligated", "")
+            try:
+                ob_float = float(ob_raw)
+            except (TypeError, ValueError):
+                ob_float = 0.0
+            contracts_by_sol[sid].append({
+                "key":    row.get("key", ""),
+                "vendor": row.get("recipient_name", ""),
+                "em":     row.get("eval_method", ""),
+                "tc":     row.get("tradeoff_code", "") or "",
+                "ob":     fmt_dollars(ob_raw),
+                "ob_raw": ob_float,
+                "ct":     CT_LABELS.get(row.get("contract_type", ""), row.get("contract_type", "")),
+                "sa":     row.get("set_aside", ""),
+                "fy":     row.get("fiscal_year", ""),
+                "date":   (row.get("award_date") or "")[:10],
+            })
+    total_with_sol = sum(len(v) for v in contracts_by_sol.values())
+    print(f"  {total_with_sol:,} contracts have a solicitation_id ({len(contracts_by_sol):,} unique)")
 
 # Source 2: live USASpending API matches (all NAICS, from fetch_rfp_contracts.py)
 rfp_matches_path = Path("data/rfp_contract_matches.json")

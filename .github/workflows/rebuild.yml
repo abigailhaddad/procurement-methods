@@ -96,6 +96,25 @@ jobs:
       - name: Run data integrity tests (must pass before committing)
         run: python -m pytest tests/data/ -v
 
+      - name: Upload contracts_raw.csv to R2 (for rfp_text pipeline)
+        run: |
+          python -c "
+          import os, boto3
+          from pathlib import Path
+          from botocore.config import Config
+          f = Path('data/contracts_raw.csv')
+          if not f.exists():
+              print('No contracts_raw.csv to upload')
+              exit(0)
+          s3 = boto3.client('s3',
+              endpoint_url=f'https://{os.environ[\"CF_R2_ACCOUNT_ID\"]}.r2.cloudflarestorage.com',
+              aws_access_key_id=os.environ['CF_R2_ACCESS_KEY_ID'],
+              aws_secret_access_key=os.environ['CF_R2_SECRET_ACCESS_KEY'],
+              config=Config(signature_version='s3v4'), region_name='auto')
+          s3.upload_file(str(f), os.environ['CF_R2_BUCKET'], 'it_contracts/contracts_raw.csv')
+          print(f'Uploaded contracts_raw.csv ({f.stat().st_size/1e6:.1f} MB) to R2')
+          "
+
       - name: Update baseline (raise the floor)
         run: python tests/data/update_baseline.py
 

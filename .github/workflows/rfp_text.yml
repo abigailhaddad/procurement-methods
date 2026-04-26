@@ -71,6 +71,26 @@ jobs:
         if: always() && inputs.dry_run != 'true'
         run: python build_rfp_signals.py
 
+      - name: Download contracts_raw.csv from R2 (optional)
+        if: always() && inputs.dry_run != 'true'
+        run: |
+          python -c "
+          import os, boto3
+          from pathlib import Path
+          from botocore.config import Config
+          Path('data').mkdir(exist_ok=True)
+          s3 = boto3.client('s3',
+              endpoint_url=f'https://{os.environ[\"CF_R2_ACCOUNT_ID\"]}.r2.cloudflarestorage.com',
+              aws_access_key_id=os.environ['CF_R2_ACCESS_KEY_ID'],
+              aws_secret_access_key=os.environ['CF_R2_SECRET_ACCESS_KEY'],
+              config=Config(signature_version='s3v4'), region_name='auto')
+          try:
+              s3.download_file(os.environ['CF_R2_BUCKET'], 'it_contracts/contracts_raw.csv', 'data/contracts_raw.csv')
+              print('Downloaded contracts_raw.csv')
+          except Exception as e:
+              print(f'contracts_raw.csv not in R2 yet ({e}) — combined table will have no contract matches')
+          "
+
       - name: Rebuild combined RFP+contracts table
         if: always() && inputs.dry_run != 'true'
         run: python build_combined_table.py
