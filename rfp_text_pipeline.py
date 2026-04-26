@@ -212,6 +212,21 @@ def search_page(
     return data.get("opportunitiesData") or [], int(data.get("totalRecords") or 0)
 
 
+MAX_WINDOW_DAYS = 364  # SAM.gov rejects ranges >= 365 days
+
+
+def _year_chunks(start: date, end: date) -> list[tuple[date, date]]:
+    """Split a date range into chunks of at most MAX_WINDOW_DAYS days."""
+    chunks = []
+    chunk_start = start
+    from datetime import timedelta
+    while chunk_start < end:
+        chunk_end = min(chunk_start + timedelta(days=MAX_WINDOW_DAYS), end)
+        chunks.append((chunk_start, chunk_end))
+        chunk_start = chunk_end + timedelta(days=1)
+    return chunks
+
+
 def iter_opps_in_window(
     session: requests.Session,
     posted_from: date,
@@ -219,27 +234,31 @@ def iter_opps_in_window(
     max_calls: int,
     start_offset: int = 0,
 ) -> Iterator[tuple[dict, int]]:
-    """Yield each opp + running page number across all NAICS codes. Stops at max_calls or when drained."""
+    """Yield each opp + page number across all NAICS codes and year-sized chunks."""
     calls = 0
     page = 0
+    chunks = _year_chunks(posted_from, posted_to)
     for ncode in NAICS_CODES:
-        offset = start_offset if page == 0 else 0
-        naics_total = None
-        while calls < max_calls:
-            calls += 1
-            page += 1
-            opps, total_records = search_page(session, posted_from, posted_to, offset, ncode)
-            if naics_total is None:
-                naics_total = total_records
-                print(f"  NAICS {ncode}: {naics_total:,} opps in window")
-            if not opps:
-                break
-            for opp in opps:
-                yield opp, page
-            if len(opps) < 1000:
-                break
-            offset += 1000
-            time.sleep(1.0)
+        for chunk_from, chunk_to in chunks:
+            offset = start_offset if page == 0 else 0
+            naics_total = None
+            while calls < max_calls:
+                calls += 1
+                page += 1
+                opps, total_records = search_page(session, chunk_from, chunk_to, offset, ncode)
+                if naics_total is None:
+                    naics_total = total_records
+                    print(f"  NAICS {ncode} {chunk_from}→{chunk_to}: {naics_total:,} opps")
+                if not opps:
+                    break
+                for opp in opps:
+                    yield opp, page
+                if len(opps) < 1000:
+                    break
+                offset += 1000
+                time.sleep(1.0)
+            if calls >= max_calls:
+                return
 
 
 # ---------------------------------------------------------------------------
